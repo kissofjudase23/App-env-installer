@@ -2,24 +2,9 @@
 # author: Tom_Lin
 # date:   2015/12/2
 
+#include common functions
+source ./script_funcs.sh
 
-function Check_File_and_Create(){
-    checkFile=$1
-    echo $checkFile
-    if [[ ! -f "$checkFile" ]];then
-    	touch "$checkFile"
-    fi
-    chmod +x "$checkFile"
-}
-
-
-function Check_File_and_Delete(){
-    checkFile=$1
-    echo $checkFile
-    if [[ -f "$checkFile" ]];then
-    	rm -rf  "$checkFile"
-    fi
-}
 
 # For. bashrc
 # create a symbolic link to config script.
@@ -36,7 +21,6 @@ Check_File_and_Create $FILE
 # add a entry porint to user-defined script in .bashrc.
 # add LINE to FILE only if this LINE dose not exists.
 grep -q "$LINE" "$FILE" || echo "$LINE" >> "$FILE"
-
 
 # For .vimrc
 # check .bashrc and delete if necessary.
