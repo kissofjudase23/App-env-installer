@@ -24,6 +24,10 @@ PS1="$GREEN\u@\h$NO_COLOR:\w$YELLOW\$(parse_git_branch)$NO_COLOR\$ "
 go_src=/usr/local
 export PATH=$PATH:${go_src}/go/bin
 
+# <4>. set vim as default editor
+export VISUAL=vim
+export EDITOR="$VISUAL"
+
 # your go project.
 export GOPATH=${HOME}/e23-Git-Dev/Go_Practice
 export PATH=$PATH:$GOPATH/bin
