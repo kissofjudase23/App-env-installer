@@ -53,35 +53,40 @@ filetype plugin indent on    " required
 " Put your non-Plugin stuff after this line
 
 " general
+" Please refer http://vimdoc.sourceforge.net/htmldoc/options.html for more
+" info.
 filetype plugin indent on    " enable filetype-specific plugins
-set history=50               " keep 50 lines of command line history
 set number                   " enable line numbers
 set autoindent               " enable autoindent
-set expandtab                " use space instead of tab
+"set expandtab                " use space instead of tab
 set tabstop=2                " insert 2 spaces for a tab
 set shiftwidth=2             " the number of space characters inserted for
+
 syntax on                    " enable syntax highlighting
+set listchars=tab:>-,trail:~ 
+set list                     " show invisible characters
+
 set background=dark
 set autoread                 " auto read when file is changed from outside
 set history=50               " keep 50 lines of command line history
-"set mouse=a                  " mouse support
-if has("gui_running")        " GUI color and font settings
-  colors Tomorrow-Night-Bright " vim color scheme
-  set guifont=Monaco:h14
-  set t_Co=256               " 256 color mode
-end
-if has("gui_macvim")         " macvim shift movement
-      let macvim_hig_shift_movement = 1
-endif
 set cursorline               " highlight current line
 set clipboard=unnamed        " yank to the system register (*) by
 set showmatch                " Cursor shows matching ) and }
 set showmode                 " Show current mode
 set backspace=2              " make backspace work like most other
-set hlsearch
-set ruler
-set showmode
-set background=dark
+set hlsearch                 " hightlight search parrtern  
+set ruler             " show the line and column number of the cursor position
+set background=dark   " when set to "dark", Vim will try to use colors that look                      "good on a dark background.
+
+"set mouse=a                  " mouse support
+"if has("gui_running")        " GUI color and font settings
+"  colors Tomorrow-Night-Bright " vim color scheme
+"  set guifont=Monaco:h14
+"  set t_Co=256               " 256 color mode
+"end
+"if has("gui_macvim")         " macvim shift movement
+"      let macvim_hig_shift_movement = 1
+"endif
 
 "ctags
 set tags=./tags

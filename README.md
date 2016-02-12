@@ -1,8 +1,9 @@
-# README #
+# Install dotfiles
+<pre><code>source ./install.sh
+or make install
+</code></pre>
 
-*Install dotfiles:
-  make install or sh ./install.sh
-
-*Uninstall dotfiles:
-  make clean or sh ./un_install.sh
-
+# Uninstall dotfiles
+<pre><code>source ./un_install.sh
+or make clean
+</code></pre>

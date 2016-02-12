@@ -1,0 +1,37 @@
+startup_message off
+
+caption always "%{=u .r} %-w%<%{=ub .Y}%n %t%{=u .r}%+w "
+hardstatus alwaysignore
+hardstatus alwayslastline "%{= .K} [%l]%<%=%{= .Y}$USER%{= .R}@%H %=%{= .m} %Y/%m/%d%{= .M} %0c "
+
+defutf8 on
+altscreen on
+shelltitle '$ |bash'
+vbell off
+
+# bind F9 to create a new screen
+bindkey -k k9 screen
+# bind F10 to kill current screen window
+bindkey -k k; kill
+# bind F11 to move to previous window
+bindkey -k F1 prev
+# bind F12 to move to next window
+bindkey -k F2 next
+# bind Alt+s to split window
+bindkey "^[s" split
+# bind Alt+f to switch window
+bindkey "^[f" focus
+# bind Alt+q to quit splited window
+bindkey "^[q" only
+
+# remove some stupid / dangerous key bindings
+bind s
+bind k
+bind W
+bind ^k
+bind .
+bind ^\
+bind \\
+bind ^h
+bind h
+

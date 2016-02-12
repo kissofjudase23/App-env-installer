@@ -1,3 +1,4 @@
 #Temp swap Files.
 *.swp
 tags
+conf_bk/
