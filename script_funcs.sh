@@ -9,7 +9,7 @@ ARCH=$(uname -m)
 VER=$(uname -r)
 
 #get absolute working directory
-SCRIPT_DIR=$(realpath $0)
+SCRIPT_DIR=$(readlink -f $0)
 WORK_DIR=$(dirname $SCRIPT_DIR)
 BK_DIR=${WORK_DIR}/conf_bk
 SRC_DIR=${WORK_DIR}/conf

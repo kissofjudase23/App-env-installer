@@ -76,7 +76,8 @@ set showmode                 " Show current mode
 set backspace=2              " make backspace work like most other
 set hlsearch                 " hightlight search parrtern  
 set ruler             " show the line and column number of the cursor position
-set background=dark   " when set to "dark", Vim will try to use colors that look                      "good on a dark background.
+set background=dark   " when set to "dark", Vim will try to use colors that look
+                      " good on a dark background.
 
 "set mouse=a                  " mouse support
 "if has("gui_running")        " GUI color and font settings
