@@ -5,6 +5,7 @@ source ~/.git-prompt.sh
 # See bash(1) for more options
 HISTCONTROL=ignoreboth
 
+alias vi='vim'
 
 alias grep='grep --color=auto'
 alias fgrep='fgrep --color=auto'
