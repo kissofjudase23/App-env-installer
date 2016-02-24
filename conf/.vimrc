@@ -23,18 +23,21 @@ call vundle#begin()
 " call vundle#begin('~/some/path/here')
 
 " let Vundle manage Vundle, required
+" https://github.com/VundleVim/Vundle.vim
 Plugin 'VundleVim/Vundle.vim'
 
-" The following are examples of different formats supported.
-" Keep Plugin commands between vundle#begin/end.
-" plugin on GitHub repo
+" https://github.com/tpope/vim-fugitive
 Plugin 'tpope/vim-fugitive'
-" The sparkup vim script is in a subdirectory of this repo called vim.
-" Pass the path to set the runtimepath properly.
-Plugin 'rstacruz/sparkup', {'rtp': 'vim/'}
 
+
+" Pass the path to set the runtimepath properly.
+" https://github.com/rstacruz/sparkup
+" Plugin 'rstacruz/sparkup', {'rtp': 'vim/'}
+
+" https://github.com/vim-scripts/taglist-plus
 Plugin 'taglist-plus'
 
+"https://github.com/fatih/vim-go
 Plugin 'fatih/vim-go'
 
 " All of your Plugins must be added before the following line
@@ -48,10 +51,11 @@ filetype plugin indent on    " required
 " :PluginInstall    - installs plugins; append `!` to update or just :PluginUpdate
 " :PluginSearch foo - searches for foo; append `!` to refresh local cache
 " :PluginClean      - confirms removal of unused plugins; append `!` to  auto-approve removal
-"
 " see :h vundle for more details or wiki for FAQ
-" Put your non-Plugin stuff after this line
 
+
+
+" Put your non-Plugin stuff after this line
 " general
 " Please refer http://vimdoc.sourceforge.net/htmldoc/options.html for more
 " info.
@@ -65,7 +69,6 @@ set shiftwidth=2             " the number of space characters inserted for
 syntax on                    " enable syntax highlighting
 set listchars=tab:>-,trail:~ 
 set list                     " show invisible characters
-
 set background=dark
 set autoread                 " auto read when file is changed from outside
 set history=50               " keep 50 lines of command line history
@@ -77,7 +80,13 @@ set backspace=2              " make backspace work like most other
 set hlsearch                 " hightlight search parrtern  
 set ruler             " show the line and column number of the cursor position
 set background=dark   " when set to "dark", Vim will try to use colors that look
-                      " good on a dark background.
+                      " good on a dark background
+
+" Taglist options setting
+" http://vim-taglist.sourceforge.net/manual.html
+let Tlist_Auto_Highligh_Tag = 1 "Automatically highlight the current tag in the taglist.
+let Tlist_Auto_Open = 1         "Open the taglist window when Vim starts.
+let Tlist_Exit_OnlyWindow = 1   "Close Vim if the taglist is the only window
 
 "set mouse=a                  " mouse support
 "if has("gui_running")        " GUI color and font settings
@@ -89,6 +98,6 @@ set background=dark   " when set to "dark", Vim will try to use colors that look
 "      let macvim_hig_shift_movement = 1
 "endif
 
-"ctags
+"ctags path
 set tags=./tags
 set tags=../tags
