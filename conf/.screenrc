@@ -10,18 +10,31 @@ shelltitle '$ |bash'
 vbell off
 
 # bind F9 to create a new screen
+# (default:Ctrl+a c)
 bindkey -k k9 screen
-# bind F10 to kill current screen window
+
+# bind F10 to kill current screen
+# (default:just type exit)
 bindkey -k k; kill
-# bind F11 to move to previous window
+
+# bind F11 to move to previous windo
+# (default:Ctrl+a p)
 bindkey -k F1 prev
-# bind F12 to move to next window
+
+# bind F12 to move to next windo
+# (default:Ctrl+a n)
 bindkey -k F2 next
+
 # bind Alt+s to split window
+# (default:Ctrl+a S)
 bindkey "^[s" split
+
 # bind Alt+f to switch window
-bindkey "^[f" focus
+# (defaut:Ctrl+a tab)
+bindkey "^[f" focus,
+
 # bind Alt+q to quit splited window
+# (default:Ctrl+a X)
 bindkey "^[q" only
 
 # remove some stupid / dangerous key bindings

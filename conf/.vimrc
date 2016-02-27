@@ -62,17 +62,18 @@ filetype plugin indent on    " required
 filetype plugin indent on    " enable filetype-specific plugins
 set number                   " enable line numbers
 set autoindent               " enable autoindent
-"set expandtab                " use space instead of tab
-set tabstop=2                " insert 2 spaces for a tab
-set shiftwidth=2             " the number of space characters inserted for
+"set expandtab               " use space instead of tab
+"set tabstop=2               " insert 2 spaces for a tab
+set ts=4                     " set tabs to have 4 spaces
+set shiftwidth=4             " the number of space characters inserted for
 
-syntax on                    " enable syntax highlighting
+syntax enable                " enable syntax highlighting
 set listchars=tab:>-,trail:~ 
 set list                     " show invisible characters
 set background=dark
 set autoread                 " auto read when file is changed from outside
 set history=50               " keep 50 lines of command line history
-set cursorline               " highlight current line
+set cursorline               " show a visual lin under the cursor's current line
 set clipboard=unnamed        " yank to the system register (*) by
 set showmatch                " Cursor shows matching ) and }
 set showmode                 " Show current mode
@@ -87,6 +88,9 @@ set background=dark   " when set to "dark", Vim will try to use colors that look
 let Tlist_Auto_Highligh_Tag = 1 "Automatically highlight the current tag in the taglist.
 let Tlist_Auto_Open = 1         "Open the taglist window when Vim starts.
 let Tlist_Exit_OnlyWindow = 1   "Close Vim if the taglist is the only window
+
+" enable all Python syntax highlighting features
+let python_highlight_all = 1
 
 "set mouse=a                  " mouse support
 "if has("gui_running")        " GUI color and font settings
