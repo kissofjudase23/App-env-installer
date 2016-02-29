@@ -31,7 +31,7 @@ bindkey "^[s" split
 
 # bind Alt+f to switch window
 # (defaut:Ctrl+a tab)
-bindkey "^[f" focus,
+bindkey "^[f" focus
 
 # bind Alt+q to quit splited window
 # (default:Ctrl+a X)
