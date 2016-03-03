@@ -61,10 +61,11 @@ filetype plugin indent on    " required
 " info.
 filetype plugin indent on    " enable filetype-specific plugins
 set number                   " enable line numbers
+
 set autoindent               " enable autoindent
-"set expandtab               " use space instead of tab
-"set tabstop=2               " insert 2 spaces for a tab
-set ts=4                     " set tabs to have 4 spaces
+"set expandtab                " use space instead of tab
+set tabstop=4                " insert 4 spaces for a tab
+set softtabstop=4            " http://vi.stackexchange.com/questions/4244/what-is-softtabstop-used-for
 set shiftwidth=4             " the number of space characters inserted for
 
 syntax enable                " enable syntax highlighting
@@ -74,7 +75,7 @@ set background=dark
 set autoread                 " auto read when file is changed from outside
 set history=50               " keep 50 lines of command line history
 set cursorline               " show a visual lin under the cursor's current line
-set clipboard=unnamed        " yank to the system register (*) by
+set clipboard=unnamed        " access system clipboard
 set showmatch                " Cursor shows matching ) and }
 set showmode                 " Show current mode
 set backspace=2              " make backspace work like most other
@@ -82,6 +83,15 @@ set hlsearch                 " hightlight search parrtern
 set ruler             " show the line and column number of the cursor position
 set background=dark   " when set to "dark", Vim will try to use colors that look
                       " good on a dark background
+set splitbelow
+set splitright
+set encoding=utf-8
+" Enable folding with indent
+set foldmethod=indent
+set foldlevel=99
+" Enable folding with the spacebar
+nnoremap <space> za
+
 
 " Taglist options setting
 " http://vim-taglist.sourceforge.net/manual.html
