@@ -83,6 +83,7 @@ set hlsearch                 " hightlight search parrtern
 set ruler             " show the line and column number of the cursor position
 set background=dark   " when set to "dark", Vim will try to use colors that look
                       " good on a dark background
+set cc=80
 set splitbelow
 set splitright
 set encoding=utf-8
