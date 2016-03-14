@@ -1,9 +1,14 @@
+# Description
+ This project is used to provide basic development setting.
+ 1. bash shell setting (.bashrc)
+ 2. vim editor with several plugins (.vimrc)
+ 3. screen setting (.screenrc)
+ 3. git config  (.gitconfig)
+
 # Install dotfiles
 <pre><code>source ./install.sh
-or make install
 </code></pre>
 
 # Uninstall dotfiles
 <pre><code>source ./un_install.sh
-or make clean
 </code></pre>
