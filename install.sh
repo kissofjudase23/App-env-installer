@@ -74,7 +74,7 @@ install_linux_package() {
 
 	apt-get -v >/dev/null 2>&1 || { echo "no apt-get found. exit 1" >&2; exit 1; }
 	sudo apt-get update
-	sudo apt-get install git vim screen
+	sudo apt-get install git vim screen ctags cscope
 
 	mkdir -p ~/.vim/bundle
 	git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim

@@ -40,6 +40,9 @@ Plugin 'taglist-plus'
 "https://github.com/fatih/vim-go
 Plugin 'fatih/vim-go'
 
+"https://github.com/vim-scripts/cscope.vim
+Plugin 'cscope.vim'
+
 " All of your Plugins must be added before the following line
 call vundle#end()            " required
 filetype plugin indent on    " required
@@ -114,5 +117,10 @@ let python_highlight_all = 1
 "endif
 
 "ctags path
-set tags=./tags
-set tags=../tags
+"http://stackoverflow.com/questions/563616/vim-and-ctags-tips-and-tricks
+"This will look in the current directory for "tags",
+"and work up the tree towards root until one is found.
+set tags=./tags;/
+"does not work for xshell
+"map <C-\> :tab split<CR>:exec("tag ".expand("<cword>"))<CR>
+"map <A-]> :vsp <CR>:exec("tag ".expand("<cword>"))<CR>
