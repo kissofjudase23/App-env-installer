@@ -36,6 +36,7 @@ Plugin 'https://github.com/vim-scripts/taglist.vim.git'
 Plugin 'https://github.com/fatih/vim-go.git'
 Plugin 'https://github.com/vim-scripts/python.vim.git'
 Plugin 'https://github.com/scrooloose/nerdtree.git'
+Plugin 'https://github.com/scrooloose/syntastic.git'
 " All of your Plugins must be added before the following line
 call vundle#end()            " required
 filetype plugin indent on    " required
@@ -146,6 +147,29 @@ let g:NERDTreeDirArrowCollapsible = '▾'
 "&& b:NERDTree.isTabTree()) | q | endif
 
 
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Syntastic setting
+" https://github.com/scrooloose/syntastic
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+set statusline+=%#warningmsg#
+set statusline+=%{SyntasticStatuslineFlag()}
+set statusline+=%*
+
+let g:syntastic_always_populate_loc_list = 1
+let g:syntastic_auto_loc_list = 1
+let g:syntastic_check_on_open = 1
+let g:syntastic_check_on_wq = 0
+
+"Checker options
+" use ':SyntasticInfo' to showwhich checkers are enabled.
+
+"C option
+let g:syntastic_c_include_dirs = [ '../lib/']
+"C++ option
+let g:syntastic_cpp_include_dirs = [ '../lib/']
+"let g:syntastic_cpp_compiler_options = ' -std=c++0x'
+"
+"
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " python.vim setting
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
