@@ -83,11 +83,21 @@ set splitright
 set encoding=utf-8
 
 " Enable folding with indent
-set foldmethod=indent
+set foldmethod=indent 
 set foldlevel=99
+set foldclose=all
 " Enable folding with the spacebar
 nnoremap <space> za
 
+"split navigations
+"move to the split below
+nnoremap <C-K> <C-W><C-J>
+"move to the split above
+nnoremap <C-I> <C-W><C-K>
+"move to the split to the right
+nnoremap <C-L> <C-W><C-L>
+"move to the split to the left
+nnoremap <C-J> <C-W><C-H>
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " autoloading functionality for Ctags
@@ -105,16 +115,43 @@ set tags=./tags;/
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let Tlist_Auto_Highligh_Tag = 1 "Automatically highlight the current tag in
 								"the taglist
-								"
 "Open the taglist window when Vim starts.
 "let Tlist_Auto_Open = 1
 "Close Vim if the taglist is the only window
 "let Tlist_Exit_OnlyWindow = 1
 
-" map TlistOpen to <F5>
-nnoremap <silent> <F5> :TlistToggle<CR>
-" map TlistClose to <F6>
-nnoremap <silent> <F6> :TlistClose<CR>
+" map TlistToggle to <F3>
+nnoremap <silent> <F3> :TlistToggle<CR>
+" map TlistClose to <F4>
+nnoremap <silent> <F4> :TlistClose<CR>
+
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" NETDTree setting
+" use ':help NERD_tree.txt' to get more info
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" map NERDTreeToggle to <F5>
+nnoremap <silent> <F5> :NERDTreeToggle<CR>
+" map NERDTreeClose  to <F6>
+nnoremap <silent> <F6> :NERDTreeClose<CR>
+" default arrows
+let g:NERDTreeDirArrowExpandable = '▸'
+let g:NERDTreeDirArrowCollapsible = '▾'
+
+"Open the NERDTree window when Vim starts.
+"autocmd StdinReadPre * let s:std_in=1
+"autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
+"Close Vim if the NETDTree is the only window
+"autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") \
+"&& b:NERDTree.isTabTree()) | q | endif
+
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" python.vim setting
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" enable all Python syntax highlighting features
+let python_highlight_all = 1
+
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Cscope setting
@@ -189,11 +226,4 @@ if has("cscope")
 	"terminal time out
 	set ttimeoutlen=100
 endif
-
-
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" enable all Python syntax highlighting features
-" python.vim
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-let python_highlight_all = 1
 
