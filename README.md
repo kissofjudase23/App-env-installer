@@ -1,14 +1,17 @@
 # Description
  This project is used to provide basic development setting.
  1. bash shell setting (.bashrc)
- 2. vim editor with several plugins (.vimrc)
+ 2. vim editor with several plugins (.vimrc) 
+ <pre>
 	a.cscope
 	b.taglist
-	b.vim-fugitive
+	c.vim-fugitive
 	d.nerdtree
 	e.syntastic
+	f.YouCompleteMe
+ </pre>
  3. screen setting (.screenrc)
- 3. git config  (.gitconfig)
+ 4. git config  (.gitconfig)
 
 # Install dotfiles
 <pre><code>source ./install.sh
