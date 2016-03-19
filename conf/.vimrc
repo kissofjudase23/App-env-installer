@@ -37,6 +37,7 @@ Plugin 'https://github.com/fatih/vim-go.git'
 Plugin 'https://github.com/vim-scripts/python.vim.git'
 Plugin 'https://github.com/scrooloose/nerdtree.git'
 Plugin 'https://github.com/scrooloose/syntastic.git'
+Plugin 'https://github.com/Valloric/YouCompleteMe.git'
 " All of your Plugins must be added before the following line
 call vundle#end()            " required
 filetype plugin indent on    " required
@@ -161,15 +162,43 @@ let g:syntastic_check_on_open = 1
 let g:syntastic_check_on_wq = 0
 
 "Checker options
-" use ':SyntasticInfo' to showwhich checkers are enabled.
+" use ':SyntasticInfo' to show which checkers are enabled.
+" https://github.com/scrooloose/syntastic/wiki to get more info
+"
+"C family languages
+"
+	"check header file
+	let g:syntastic_c_check_header = 0
+	let g:syntastic_cpp_check_header = 0
+	"add cflag
+	let b:syntastic_cpp_include_dirs_cflags = '-I../lib'
+	let b:syntastic_cpp_cflags = '-I../lib'
 
-"C option
-let g:syntastic_c_include_dirs = [ '../lib/']
-"C++ option
-let g:syntastic_cpp_include_dirs = [ '../lib/']
-"let g:syntastic_cpp_compiler_options = ' -std=c++0x'
+	"customer include directory
+	let g:syntastic_c_include_dirs = [ '../lib/']
+	let g:syntastic_cpp_include_dirs = [ '../lib/']
+	"
+	"compiler option
+	let g:syntastic_c_compiler = 'gcc'
+	let g:syntastic_cpp_compiler_options = '-std=c++0x'
 "
-"
+"Python
+	"use python3
+	let g:syntastic_python_python_exec = '/usr/bin/python3'
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" YouCompleteMe  setting
+" https://github.com/Valloric/YouCompleteMe
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+"syntastic setting (use Syntastic instad)
+	let g:ycm_show_diagnostics_ui = 0
+
+"Python
+	"use python3
+	let g:ycm_python_binary_path = '/usr/bin/python3'
+
+
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " python.vim setting
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
