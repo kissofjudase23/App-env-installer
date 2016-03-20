@@ -1,7 +1,4 @@
 #!/bin/bash
-#!/bin/bash
-# create date:2016/02/07
-
 
 #get basic system info
 OS=$(uname -s)

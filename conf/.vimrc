@@ -1,3 +1,6 @@
+"include vim local setting
+"source ./.vim_local_setting 
+
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Vundle
 " https://github.com/VundleVim/Vundle.vim
