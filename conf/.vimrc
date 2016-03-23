@@ -171,8 +171,8 @@ let g:syntastic_check_on_wq = 0
 "C family languages
 "
 	"check header file
-	let g:syntastic_c_check_header = 0
-	let g:syntastic_cpp_check_header = 0
+	let g:syntastic_c_check_header = 1
+	let g:syntastic_cpp_check_header = 1
 	"add cflag
 	let b:syntastic_cpp_include_dirs_cflags = '-I../lib'
 	let b:syntastic_cpp_cflags = '-I../lib'
@@ -193,6 +193,9 @@ let g:syntastic_check_on_wq = 0
 " YouCompleteMe  setting
 " https://github.com/Valloric/YouCompleteMe
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+let g:ycm_autoclose_preview_window_after_completion = 1
+let g:ycm_autoclose_preview_window_after_insertion = 1
 
 "syntastic setting (use Syntastic instad)
 	let g:ycm_show_diagnostics_ui = 0
