@@ -193,15 +193,23 @@ let g:syntastic_check_on_wq = 0
 " YouCompleteMe  setting
 " https://github.com/Valloric/YouCompleteMe
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-
+"close the preview automatically
 let g:ycm_autoclose_preview_window_after_completion = 1
 let g:ycm_autoclose_preview_window_after_insertion = 1
 
 "syntastic setting (use Syntastic instad)
 	let g:ycm_show_diagnostics_ui = 0
 
-"Python
-	"use python3
+"When this option is set to 1 YCM will ask once per .ycm_extra_conf.py file if
+"it is safe to be loaded. This is to prevent execution of malicious code from 
+"a .ycm_extra_conf.py file you didn't write.
+let g:ycm_confirm_extra_conf = 1
+
+	"Python
+	"By default YCM runs jedi with the same Python interpreter used by the
+	"ycmd server, so if you would like to use a different interpreter, use the
+	"following option specifying the Python binary to use. For example, to
+	"provide Python 3 completion in your project, set:
 	let g:ycm_python_binary_path = '/usr/bin/python3'
 
 
