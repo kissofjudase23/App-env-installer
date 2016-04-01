@@ -41,6 +41,7 @@ Plugin 'https://github.com/vim-scripts/python.vim.git'
 Plugin 'https://github.com/scrooloose/nerdtree.git'
 Plugin 'https://github.com/scrooloose/syntastic.git'
 Plugin 'https://github.com/Valloric/YouCompleteMe.git'
+Plugin 'https://github.com/altercation/vim-colors-solarized.git'
 " All of your Plugins must be added before the following line
 call vundle#end()            " required
 filetype plugin indent on    " required
@@ -68,6 +69,14 @@ set tabstop=4                " insert 4 spaces for a tab
 set softtabstop=4
 set shiftwidth=4             " the number of space characters inserted for
 syntax enable                " enable syntax highlighting
+if has('gui_running')
+	    set background=light
+	else
+		set background=dark
+	endif
+"colorscheme solarized
+"let g:solarized_termcolors=256
+
 set listchars=tab:>-,trail:~ 
 set list                     " show invisible characters
 set background=dark
@@ -80,8 +89,6 @@ set showmode                 " Show current mode
 set backspace=2              " make backspace work like most other
 set hlsearch                 " hightlight search parrtern  
 set ruler             " show the line and column number of the cursor position
-set background=dark   " when set to "dark", Vim will try to use colors that look
-                      " good on a dark background
 set cc=80
 set splitbelow
 set splitright
@@ -173,13 +180,14 @@ let g:syntastic_check_on_wq = 0
 	"check header file
 	let g:syntastic_c_check_header = 1
 	let g:syntastic_cpp_check_header = 1
+
 	"add cflag
-	let b:syntastic_cpp_include_dirs_cflags = '-I../lib'
-	let b:syntastic_cpp_cflags = '-I../lib'
+	let b:syntastic_cpp_include_dirs_cflags = '-I../lib -I./lib'
+	let b:syntastic_cpp_cflags = '-I../lib -I./lib'
 
 	"customer include directory
-	let g:syntastic_c_include_dirs = [ '../lib/']
-	let g:syntastic_cpp_include_dirs = [ '../lib/']
+	let g:syntastic_c_include_dirs = ['../lib/', './lib']
+	let g:syntastic_cpp_include_dirs = [ '../lib/', './lib' ]
 	"
 	"compiler option
 	let g:syntastic_c_compiler = 'gcc'
