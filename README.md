@@ -3,12 +3,10 @@
  1. bash shell setting (.bashrc)
  2. vim editor with several plugins (.vimrc) 
  <pre>
-	a.cscope
-	b.taglist
-	c.vim-fugitive
-	d.nerdtree
-	e.syntastic
-	f.YouCompleteMe
+	a.vim-fugitive
+	c.nerdtree
+	d.syntastic     (syntax error check)
+	e.YouCompleteMe (auto completion)
  </pre>
  3. screen setting (.screenrc)
  4. git config  (.gitconfig)
