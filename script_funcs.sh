@@ -15,7 +15,6 @@ SRC_DIR=${WORK_DIR}/conf
 FILE_LIST=(".bashrc" ".vimrc" ".gitconfig" ".git-prompt.sh" ".screenrc")
 
 print_var() {
-
 	echo "OS=$OS"
 	echo "ARCH=$VER"
 	echo "VER=$VER"
