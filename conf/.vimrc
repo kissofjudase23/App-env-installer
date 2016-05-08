@@ -130,7 +130,7 @@ let Tlist_Auto_Highligh_Tag = 1 "Automatically highlight the current tag in
 "Open the taglist window when Vim starts.
 "let Tlist_Auto_Open = 1
 "Close Vim if the taglist is the only window
-"let Tlist_Exit_OnlyWindow = 1
+let Tlist_Exit_OnlyWindow = 1
 
 " map TlistToggle to <F3>
 nnoremap <silent> <F3> :TlistToggle<CR>
@@ -154,10 +154,8 @@ let g:NERDTreeDirArrowCollapsible = '▾'
 "autocmd StdinReadPre * let s:std_in=1
 "autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
 "Close Vim if the NETDTree is the only window
-"autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") \
-"&& b:NERDTree.isTabTree()) | q | endif
-
-
+autocmd bufenter * if (winnr("$") == 1 
+			\&& exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Syntastic setting
 " https://github.com/scrooloose/syntastic
