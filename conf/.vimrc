@@ -150,6 +150,9 @@ nnoremap <silent> <F6> :NERDTreeClose<CR>
 let g:NERDTreeDirArrowExpandable = '▸'
 let g:NERDTreeDirArrowCollapsible = '▾'
 
+let NERDTreeIgnore = 
+		\[ '\.pyc$', '\.pyo$', '\.obj$', '\.o$', '\.so$', '\.egg$', '^\.git$']
+
 "Open the NERDTree window when Vim starts.
 "autocmd StdinReadPre * let s:std_in=1
 "autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
@@ -218,6 +221,28 @@ let g:ycm_confirm_extra_conf = 1
 	"provide Python 3 completion in your project, set:
 	let g:ycm_python_binary_path = '/usr/bin/python3'
 
+"let g:ycm_collect_identifiers_from_tag_files = 1 
+"default map leader is '\'
+"let mapleader = ","
+"
+"This command tries to perform the "most sensible" GoTo operation it can.
+nnoremap <leader>jd :YcmCompleter GoTo<CR>
+
+"Displays the preview window prpulated with qick info
+nnoremap <leader>gd :YcmCompleter GetDoc<CR>
+
+"This command attempts to find all of the references within the project to the
+"identifier under the cursor and populates the quickfix list with those
+"locations.
+nnoremap <leader>gr :YcmCompleter GoToReferences<CR>
+
+"Echos the type of the variable or method under the cursor, and where it
+"differs, the derived type.
+nnoremap <leader>gt :YcmCompleter GetType<CR>
+
+"Restarts the semantic-engine-as-localhost-server for those semantic engines 
+"that work as separate servers that YCM talks to.
+nnoremap <leader>restart :YcmCompleter RestartServer /usr/bin/python3.5 <CR>
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " python.vim setting
