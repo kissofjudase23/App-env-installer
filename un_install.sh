@@ -2,24 +2,22 @@
 # Create Date: 2015/12/02
 
 #include common functions:
-source ./script_funcs.sh
-
+source ./system_info.sh
 
 depracted_code() {
-cd ~
-local file_list=("e23_config_symbolic" ".vimrc");
-for filename in "${file_list[@]}"
-do
-    Check_Link_and_Delete $filename
-done
+	cd ~
+	local file_list=("e23_config_symbolic" ".vimrc");
+	for filename in "${file_list[@]}"
+	do
+		Check_Link_and_Delete $filename
+	done
 
-LINE='source ~/e23_config_symbolic'
-FILE=.bashrc
-sed -i "/$LINE/d" $FILE
+	LINE='source ~/e23_config_symbolic'
+	FILE=.bashrc
+	sed -i "/$LINE/d" $FILE
 }
 
 restore_dotfiles() {
-
 	#restore from backup folder
 	cd ${BK_DIR}
 	for file in "${FILE_LIST[@]}"
@@ -36,7 +34,6 @@ restore_dotfiles() {
 }
 
 un_install_dotfiles() {
-
 	cd ~
 	for file in "${FILE_LIST[@]}"
 	do
@@ -47,29 +44,31 @@ un_install_dotfiles() {
 			echo "no ${file} detected in ${HOME}"
 		fi
 	done
-
 }
 
 uninstall_for_linux() {
-
 	un_install_dotfiles
 	#restore_dotfiles
 }
 
+uninstall_for_darwin() {
+	un_install_dotfiles
+	#restore_dotfiles
+}
 
 main() {
-
 	 print_var
-
 	 case ${OS} in
 		"Linux")
 		uninstall_for_linux
-    ;;
+		;;
+		"Darwin")
+		uninstall_for_darwin
+		;;
 		*)
 		echo "Do not support ${OS} now"
 		;;
 	esac
-
 }
 
 main

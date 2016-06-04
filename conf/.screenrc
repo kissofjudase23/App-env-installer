@@ -9,21 +9,21 @@ altscreen on
 shelltitle '$ |bash'
 vbell off
 
-# bind F9 to create a new screen
+# bind F8 to create a new screen
 # (default:Ctrl+a c)
-bindkey -k k9 screen
+bindkey -k k8 screen
 
-# bind F10 to kill current screen
-# (default:just type exit)
-bindkey -k k; kill
+# bind F8 to kill current screen
+# (default:just type exit or ctrl + d)
+#bindkey -k k8; kill
 
-# bind F11 to move to previous windo
+# bind F9 to move to previous windo
 # (default:Ctrl+a p)
-bindkey -k F1 prev
+bindkey -k k9 prev
 
-# bind F12 to move to next windo
+# bind F10 to move to next windo
 # (default:Ctrl+a n)
-bindkey -k F2 next
+bindkey -k k; next
 
 # bind Alt+s to split window
 # (default:Ctrl+a S)

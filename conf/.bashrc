@@ -1,24 +1,8 @@
 source ~/.git-prompt.sh
-
-
-# don't put duplicate lines or lines starting with space in the history.
-# See bash(1) for more options
-HISTCONTROL=ignoreboth
-
-alias vi='vim'
-
-alias grep='grep --color=auto'
-alias fgrep='fgrep --color=auto'
-alias egrep='egrep --color=auto'
-alias ls='ls --colo=auto'
-alias ll='ls -alF --color=auto'
-alias la='ls -A --color=auto'
-alias l='ls -CF --color=auto'
+#source ../system_info.sh
 
 function exitstatus {
-
 	EXITSTATUS="$?"
-
 
 	# Colors
 	RCol='\e[0m'    # Text Reset
@@ -43,22 +27,72 @@ function exitstatus {
 
 	PS2="${BOLD}>${RCol} "
 }
-PROMPT_COMMAND=exitstatus
 
-# <3>. go language environment
-# go bin position.
-go_src=/usr/local
-export PATH=$PATH:${go_src}/go/bin
+envir_var_setting() {
+	#set vim as default editor
+	export VISUAL=vim
+	export EDITOR="$VISUAL"
+	# don't put duplicate lines or lines starting with space in the history.
+	# See bash(1) for more options
+	HISTCONTROL=ignoreboth
+	PROMPT_COMMAND=exitstatus
+}
 
-# <4>. set vim as default editor
-export VISUAL=vim
-export EDITOR="$VISUAL"
+go_pro_setting() {
+	# go language environment
+	# go bin position.
+	go_src=/usr/local
+	export PATH=$PATH:${go_src}/go/bin
+    # your go project.
+	#export GOPATH=${HOME}/e23-Git-Dev/Go_Practice
+	#export PATH=$PATH:$GOPATH/bin
+}
 
-# your go project.
-#export GOPATH=${HOME}/e23-Git-Dev/Go_Practice
-#export PATH=$PATH:$GOPATH/bin
+linux_alias() {
+	alias vi='vim'
+	alias grep='grep --color=auto'
+	alias fgrep='fgrep --color=auto'
+	alias egrep='egrep --color=auto'
+	alias ls='ls --colo=auto'
+	alias ll='ls -alF --color=auto'
+	alias la='ls -A --color=auto'
+	alias l='ls -CF --color=auto'
+}
 
+darwin_alias() {
+	export CLICOLOR='true'
+	export LSCOLORS="gxfxcxdxcxegedabagacad"
+	alias vi='vim'
+	alias grep='grep'
+	alias fgrep='fgrep'
+	alias egrep='egrep'
+	alias ls='ls'
+	alias ll='ls -alF'
+	alias la='ls -A'
+	alias l='ls -CF'
+}
 
+alias_setting() {
+	OS=$(uname -s)
+	case ${OS} in
+		"Linux")
+			linux_alias
+			;;
+		"Darwin")
+			darwin_alias
+			;;
+		*)
+		echo "Do not support ${OS} now"
+esac
 
+}
+
+main() {
+	alias_setting
+	envir_var_setting
+	go_pro_setting
+}
+
+main
 
 

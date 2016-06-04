@@ -135,7 +135,7 @@ let Tlist_Exit_OnlyWindow = 1
 " map TlistToggle to <F3>
 nnoremap <silent> <F3> :TlistToggle<CR>
 " map TlistClose to <F4>
-nnoremap <silent> <F4> :TlistClose<CR>
+" nnoremap <silent> <F4> :TlistClose<CR>
 
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -145,7 +145,7 @@ nnoremap <silent> <F4> :TlistClose<CR>
 " map NERDTreeToggle to <F5>
 nnoremap <silent> <F5> :NERDTreeToggle<CR>
 " map NERDTreeClose  to <F6>
-nnoremap <silent> <F6> :NERDTreeClose<CR>
+" nnoremap <silent> <F6> :NERDTreeClose<CR>
 " default arrows
 let g:NERDTreeDirArrowExpandable = '▸'
 let g:NERDTreeDirArrowCollapsible = '▾'

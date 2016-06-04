@@ -11,3 +11,5 @@
 	ci = commit
 	st = status
 	br = branch
+[branch  "master"]
+	mergeoptions = --no-ff
