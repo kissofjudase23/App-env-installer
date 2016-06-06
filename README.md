@@ -17,11 +17,8 @@ $ :PluginInstall
 </code></pre>
 
 # Prerequisite for <a href="https://github.com/Valloric/YouCompleteMe"> YouCompleteMe </a> 
-1. <a href="https://github.com/Valloric/YouCompleteMe/wiki/Building-Vim-from-source"> Building Vim from source </a> <br>
-2. <a href="https://github.com/Valloric/YouCompleteMe#ubuntu-linux-x64"> Quick installation </a>
-
-# Prerequisite for Darwin 
-1. xCode (git) <br>
+1. <a href="https://github.com/Valloric/YouCompleteMe#installation"> Installation </a> <br>
+2. <a href="https://github.com/Valloric/YouCompleteMe#user-guide"> User Guide </a> <br>
 
 # Uninstall dotfiles
 <pre><code>$ ./un_install.sh
