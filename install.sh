@@ -75,7 +75,7 @@ install_bundle() {
 install_linux_package() {
 	apt-get -v >/dev/null 2>&1 || { echo "no apt-get found. exit 1" >&2; exit 1; }
 	sudo apt-get update
-	sudo apt-get install git screen ctags cscope
+	sudo apt-get install git screen ctags cscope realpath
 	install_bundle
 }
 
@@ -111,7 +111,7 @@ install_for_darwin() {
 }
 
 main() {
-	 print_var
+	 #print_var
 	 case ${OS} in
 		"Linux")
 		install_for_Linux

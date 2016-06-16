@@ -43,7 +43,7 @@ Plugin 'https://github.com/vim-scripts/taglist.vim.git'
 Plugin 'https://github.com/fatih/vim-go.git'
 Plugin 'https://github.com/vim-scripts/python.vim.git'
 Plugin 'https://github.com/scrooloose/nerdtree.git'
-Plugin 'https://github.com/scrooloose/syntastic.git'
+" Plugin 'https://github.com/scrooloose/syntastic.git'
 Plugin 'https://github.com/Valloric/YouCompleteMe.git'
 Plugin 'https://github.com/altercation/vim-colors-solarized.git'
 " All of your Plugins must be added before the following line
@@ -167,14 +167,14 @@ autocmd bufenter * if (winnr("$") == 1
 " Syntastic setting
 " https://github.com/scrooloose/syntastic
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-set statusline+=%#warningmsg#
-set statusline+=%{SyntasticStatuslineFlag()}
-set statusline+=%*
+"set statusline+=%#warningmsg#
+"set statusline+=%{SyntasticStatuslineFlag()}
+"set statusline+=%*
 
-let g:syntastic_always_populate_loc_list = 1
-let g:syntastic_auto_loc_list = 1
-let g:syntastic_check_on_open = 1
-let g:syntastic_check_on_wq = 0
+"let g:syntastic_always_populate_loc_list = 1
+"let g:syntastic_auto_loc_list = 1
+"let g:syntastic_check_on_open = 1
+"let g:syntastic_check_on_wq = 0
 
 "Checker options
 " use ':SyntasticInfo' to show which checkers are enabled.
@@ -183,24 +183,24 @@ let g:syntastic_check_on_wq = 0
 "C family languages
 "
 	"check header file
-	let g:syntastic_c_check_header = 1
-	let g:syntastic_cpp_check_header = 1
+"	let g:syntastic_c_check_header = 1
+"	let g:syntastic_cpp_check_header = 1
 
 	"add cflag
-	let b:syntastic_c_cflags = '-I../lib -I./lib '
-	let b:syntastic_cpp_cflags = '-I../lib -I./lib '
+	"let b:syntastic_c_cflags = '-I../lib -I./lib '
+	"let b:syntastic_cpp_cflags = '-I../lib -I./lib '
 
 	"customer include directory
-	let g:syntastic_c_include_dirs = ['./lib/', '../lib/', '../Data_Structure' ]
-	let g:syntastic_cpp_include_dirs = [ './lib','../lib/', '../Data_Structure' ]
+	"let g:syntastic_c_include_dirs = ['./lib/', '../lib/', '../Data_Structure' ]
+	"let g:syntastic_cpp_include_dirs = [ './lib','../lib/', '../Data_Structure' ]
 	
 	"compiler option
-	let g:syntastic_c_compiler = 'gcc'
-	let g:syntastic_cpp_compiler_options = '-std=c++0x'
+"	let g:syntastic_c_compiler = 'gcc'
+"	let g:syntastic_cpp_compiler_options = '-std=c++0x'
 "
 "Python
-	"use python3
-	let g:syntastic_python_python_exec = '/usr/bin/python3'
+"	"use python3
+"	let g:syntastic_python_python_exec = '/usr/bin/python3'
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " YouCompleteMe  setting
@@ -211,7 +211,7 @@ let g:ycm_autoclose_preview_window_after_completion = 1
 let g:ycm_autoclose_preview_window_after_insertion = 1
 
 "syntastic setting (use Syntastic instad)
-	let g:ycm_show_diagnostics_ui = 0
+	let g:ycm_show_diagnostics_ui = 1
 
 "When this option is set to 1 YCM will ask once per .ycm_extra_conf.py file if
 "it is safe to be loaded. This is to prevent execution of malicious code from 
