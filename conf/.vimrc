@@ -37,13 +37,12 @@ call vundle#begin()
 " let Vundle manage Vundle, required
 " https://github.com/VundleVim/Vundle.vim
 Plugin 'VundleVim/Vundle.vim'
-
 Plugin 'https://github.com/tpope/vim-fugitive.git'
 Plugin 'https://github.com/vim-scripts/taglist.vim.git'
 Plugin 'https://github.com/fatih/vim-go.git'
 Plugin 'https://github.com/vim-scripts/python.vim.git'
 Plugin 'https://github.com/scrooloose/nerdtree.git'
-" Plugin 'https://github.com/scrooloose/syntastic.git'
+Plugin 'https://github.com/scrooloose/syntastic.git'
 Plugin 'https://github.com/Valloric/YouCompleteMe.git'
 Plugin 'https://github.com/altercation/vim-colors-solarized.git'
 " All of your Plugins must be added before the following line
@@ -176,6 +175,10 @@ autocmd bufenter * if (winnr("$") == 1
 "let g:syntastic_check_on_open = 1
 "let g:syntastic_check_on_wq = 0
 
+"Python
+"	"use python3
+"	let g:syntastic_python_python_exec = '/usr/bin/python3'
+
 "Checker options
 " use ':SyntasticInfo' to show which checkers are enabled.
 " https://github.com/scrooloose/syntastic/wiki to get more info
@@ -198,9 +201,6 @@ autocmd bufenter * if (winnr("$") == 1
 "	let g:syntastic_c_compiler = 'gcc'
 "	let g:syntastic_cpp_compiler_options = '-std=c++0x'
 "
-"Python
-"	"use python3
-"	let g:syntastic_python_python_exec = '/usr/bin/python3'
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " YouCompleteMe  setting
@@ -210,13 +210,19 @@ autocmd bufenter * if (winnr("$") == 1
 let g:ycm_autoclose_preview_window_after_completion = 1
 let g:ycm_autoclose_preview_window_after_insertion = 1
 
-"syntastic setting (use Syntastic instad)
-	let g:ycm_show_diagnostics_ui = 1
+"When set, this option turns on YCM's diagnostic display features
+"This option also makes YCM remove all Syntastic checkers set for
+"the c, cpp, objc and objcpp filetypes since this would conflict with YCM's
+"own diagnostics UI.
+let g:ycm_show_diagnostics_ui = 1
+let g:ycm_error_symbol = '>>'
+let g:ycm_warning_symbol = '>>'
 
 "When this option is set to 1 YCM will ask once per .ycm_extra_conf.py file if
 "it is safe to be loaded. This is to prevent execution of malicious code from 
 "a .ycm_extra_conf.py file you didn't write.
 let g:ycm_confirm_extra_conf = 1
+
 
 	"Python
 	"By default YCM runs jedi with the same Python interpreter used by the

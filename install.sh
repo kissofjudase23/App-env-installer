@@ -34,7 +34,7 @@ backup_dotfiles() {
 	mkdir -p ${BK_DIR}/
 
 	cd ${BK_DIR}
-	for file in "${FILE_LIST[@]}"
+	for file in "${DOT_FILE_LIST[@]}"
 	do
 		if [ -e ~/${file} ]; then
 			echo "backup ${file}"
@@ -47,7 +47,7 @@ backup_dotfiles() {
 
 install_dotfiles() {
 	cd ${SRC_DIR}
-	for file in "${FILE_LIST[@]}"
+	for file in "${DOT_FILE_LIST[@]}"
 	do
 		if [ -f ${file} ]; then
 			echo "install ${file}"
@@ -64,8 +64,8 @@ backup_and_install() {
 }
 
 install_bundle() {
+	echo "install bundle"
 	bundleDir=~/.vim/bundle/Vundle.vim/
-	echo "${bundleDir}"
 	if [[ ! -d ${bundleDir} ]]; then
 		mkdir -p ~/.vim/bundle
 		git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
@@ -74,19 +74,31 @@ install_bundle() {
 
 install_linux_package() {
 	apt-get -v >/dev/null 2>&1 || { echo "no apt-get found. exit 1" >&2; exit 1; }
+	install_list=( "git"\
+			"screen"\
+			"ctags"\
+			"cscope"\
+			"realpath"\
+	)
 	sudo apt-get update
-	sudo apt-get install git screen ctags cscope realpath
+	for file in "${install_list[@]}"
+	do
+		${file} --version > /dev/null 2>&1 || {\
+			echo "install ${file}";\
+			sudo apt-get install ${file}
+		}
+	done
 	install_bundle
 }
 
 install_darwin_package() {
 	#install homebrew
-	brew -v > /dev/null 2>&1 || { \
+	brew -v > /dev/null 2>&1 || {\
 		echo "install homebrew";\
 		/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)";\
 	}
 	#install realpath
-	realpath ~ > /dev/null 2>&1 || {\
+	realpath > /dev/null 2>&1 || {\
 		echo "install realpath";\
 		brew tap iveney/mocha;\
 		brew install realpath;\

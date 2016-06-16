@@ -12,8 +12,8 @@ WORK_DIR=$(dirname $SCRIPT_DIR)
 BK_DIR=${WORK_DIR}/conf_bk
 SRC_DIR=${WORK_DIR}/conf
 
-#dotfile list
-FILE_LIST=( ".bashrc"\
+#dot files list
+DOT_FILE_LIST=( ".bashrc"\
 			".vimrc"\
 			".gitconfig"\
 			".git-prompt.sh"\
