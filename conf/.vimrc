@@ -1,5 +1,9 @@
 "include vim local setting
 "source ./.vim_local_setting 
+"
+"if filereadable(".vim.custom")
+"    so .vim.custom
+"endif
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Vundle
@@ -183,13 +187,13 @@ let g:syntastic_check_on_wq = 0
 	let g:syntastic_cpp_check_header = 1
 
 	"add cflag
-	let b:syntastic_cpp_include_dirs_cflags = '-I../lib -I./lib'
-	let b:syntastic_cpp_cflags = '-I../lib -I./lib'
+	let b:syntastic_c_cflags = '-I../lib -I./lib '
+	let b:syntastic_cpp_cflags = '-I../lib -I./lib '
 
 	"customer include directory
-	let g:syntastic_c_include_dirs = ['../lib/', './lib']
-	let g:syntastic_cpp_include_dirs = [ '../lib/', './lib' ]
-	"
+	let g:syntastic_c_include_dirs = ['./lib/', '../lib/', '../Data_Structure' ]
+	let g:syntastic_cpp_include_dirs = [ './lib','../lib/', '../Data_Structure' ]
+	
 	"compiler option
 	let g:syntastic_c_compiler = 'gcc'
 	let g:syntastic_cpp_compiler_options = '-std=c++0x'
