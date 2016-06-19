@@ -71,14 +71,9 @@ set tabstop=4                " insert 4 spaces for a tab
 "http://vi.stackexchange.com/questions/4244/what-is-softtabstop-used-for
 set softtabstop=4
 set shiftwidth=4             " the number of space characters inserted for
+
 syntax enable                " enable syntax highlighting
-if has('gui_running')
-	    set background=light
-	else
-		set background=dark
-	endif
-"colorscheme solarized
-"let g:solarized_termcolors=256
+
 
 set listchars=tab:>-,trail:~ 
 set list                     " show invisible characters
@@ -114,6 +109,17 @@ nnoremap <C-L> <C-W><C-L>
 "move to the split to the left
 nnoremap <C-J> <C-W><C-H>
 
+if has('gui_running')
+    "colorscheme solarized
+    let g:solarized_termcolors=256
+    set background=light
+else
+    set background=dark
+endif
+" determine operating system
+let os = substitute(system('uname'), "\n", "", "")
+
+
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " autoloading functionality for Ctags
 " http://stackoverflow.com/questions/563616/vim-and-ctags-tips-and-tricks
@@ -123,13 +129,12 @@ set tags=./tags;/
 "map <C-\> :tab split<CR>:exec("tag ".expand("<cword>"))<CR>
 "map <A-]> :vsp <CR>:exec("tag ".expand("<cword>"))<CR>
 
-
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Taglist options
 " http://vim-taglist.sourceforge.net/manual.html
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-let Tlist_Auto_Highligh_Tag = 1 "Automatically highlight the current tag in
-								"the taglist
+"Automatically highlight the current tag in the taglist
+let Tlist_Auto_Highligh_Tag = 1 
 "Open the taglist window when Vim starts.
 "let Tlist_Auto_Open = 1
 "Close Vim if the taglist is the only window
@@ -154,30 +159,36 @@ let g:NERDTreeDirArrowExpandable = '▸'
 let g:NERDTreeDirArrowCollapsible = '▾'
 
 let NERDTreeIgnore = 
-		\[ '\.pyc$', '\.pyo$', '\.obj$', '\.o$', '\.so$', '\.egg$', '^\.git$']
+\[ '\.pyc$', '\.pyo$', '\.obj$', '\.o$', '\.so$', '\.egg$', '^\.git$']
 
 "Open the NERDTree window when Vim starts.
 "autocmd StdinReadPre * let s:std_in=1
 "autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
 "Close Vim if the NETDTree is the only window
 autocmd bufenter * if (winnr("$") == 1 
-			\&& exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
+\&& exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Syntastic setting
 " https://github.com/scrooloose/syntastic
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"set statusline+=%#warningmsg#
-"set statusline+=%{SyntasticStatuslineFlag()}
-"set statusline+=%*
+set statusline+=%#warningmsg#
+set statusline+=%{SyntasticStatuslineFlag()}
+set statusline+=%*
 
-"let g:syntastic_always_populate_loc_list = 1
-"let g:syntastic_auto_loc_list = 1
-"let g:syntastic_check_on_open = 1
-"let g:syntastic_check_on_wq = 0
+let g:syntastic_always_populate_loc_list = 1
+let g:syntastic_auto_loc_list = 1
+let g:syntastic_check_on_open = 1
+let g:syntastic_check_on_wq = 0
 
-"Python
-"	"use python3
-"	let g:syntastic_python_python_exec = '/usr/bin/python3'
+let tabsize = 100
+execute "set tabstop=".escape(tabsize, '')
+
+"use python3
+if os == "Darwin"
+    let g:syntastic_python_python_exec = '/usr/local/bin/python3'
+elseif os == "Linux"
+    let g:syntastic_python_python_exec = '/usr/bin/python3'
+endif
 
 "Checker options
 " use ':SyntasticInfo' to show which checkers are enabled.
@@ -185,21 +196,21 @@ autocmd bufenter * if (winnr("$") == 1
 "
 "C family languages
 "
-	"check header file
-"	let g:syntastic_c_check_header = 1
-"	let g:syntastic_cpp_check_header = 1
+"check header file
+"let g:syntastic_c_check_header = 1
+"let g:syntastic_cpp_check_header = 1
 
-	"add cflag
-	"let b:syntastic_c_cflags = '-I../lib -I./lib '
-	"let b:syntastic_cpp_cflags = '-I../lib -I./lib '
+"add cflag
+"let b:syntastic_c_cflags = '-I../lib -I./lib '
+"let b:syntastic_cpp_cflags = '-I../lib -I./lib '
 
-	"customer include directory
-	"let g:syntastic_c_include_dirs = ['./lib/', '../lib/', '../Data_Structure' ]
-	"let g:syntastic_cpp_include_dirs = [ './lib','../lib/', '../Data_Structure' ]
-	
-	"compiler option
-"	let g:syntastic_c_compiler = 'gcc'
-"	let g:syntastic_cpp_compiler_options = '-std=c++0x'
+"customer include directory
+"let g:syntastic_c_include_dirs = ['./lib/', '../lib/', '../Data_Structure' ]
+"let g:syntastic_cpp_include_dirs = [ './lib','../lib/', '../Data_Structure' ]
+
+"compiler option
+"let g:syntastic_c_compiler = 'gcc'
+"let g:syntastic_cpp_compiler_options = '-std=c++0x'
 "
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -214,7 +225,7 @@ let g:ycm_autoclose_preview_window_after_insertion = 1
 "This option also makes YCM remove all Syntastic checkers set for
 "the c, cpp, objc and objcpp filetypes since this would conflict with YCM's
 "own diagnostics UI.
-let g:ycm_show_diagnostics_ui = 1
+let g:ycm_show_diagnostics_ui = 0
 let g:ycm_error_symbol = '>>'
 let g:ycm_warning_symbol = '>>'
 
@@ -224,12 +235,20 @@ let g:ycm_warning_symbol = '>>'
 let g:ycm_confirm_extra_conf = 1
 
 
-	"Python
-	"By default YCM runs jedi with the same Python interpreter used by the
-	"ycmd server, so if you would like to use a different interpreter, use the
-	"following option specifying the Python binary to use. For example, to
-	"provide Python 3 completion in your project, set:
-	let g:ycm_python_binary_path = '/usr/bin/python3'
+"Python
+if os == "Darwin"
+    "By default YCM runs jedi with the same Python interpreter used by the
+    "ycmd server, so if you would like to use a different interpreter, use the
+    "following option specifying the Python binary to use. For example, to
+    "provide Python 3 completion in your project, set:
+    let g:ycm_python_binary_path = '/usr/local/bin/python3'
+    "Restarts the semantic-engine-as-localhost-server for those semantic engines 
+    "that work as separate servers that YCM talks to.
+    nnoremap <leader>restart :YcmCompleter RestartServer /usr/local/bin/python3.5 <CR>
+elseif os == "Linux"
+    let g:ycm_python_binary_path = '/usr/bin/python3'
+    nnoremap <leader>restart :YcmCompleter RestartServer /usr/bin/python3.5 <CR>
+endif
 
 "let g:ycm_collect_identifiers_from_tag_files = 1 
 "default map leader is '\'
@@ -250,16 +269,12 @@ nnoremap <leader>gr :YcmCompleter GoToReferences<CR>
 "differs, the derived type.
 nnoremap <leader>gt :YcmCompleter GetType<CR>
 
-"Restarts the semantic-engine-as-localhost-server for those semantic engines 
-"that work as separate servers that YCM talks to.
-nnoremap <leader>restart :YcmCompleter RestartServer /usr/bin/python3.5 <CR>
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " python.vim setting
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " enable all Python syntax highlighting features
 let python_highlight_all = 1
-
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Cscope setting
