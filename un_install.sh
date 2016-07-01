@@ -20,7 +20,7 @@ depracted_code() {
 restore_dotfiles() {
 	#restore from backup folder
 	cd ${BK_DIR}
-	for file in "${FILE_LIST[@]}"
+	for file in "${DOT_FILE_LIST[@]}"
 	do
 		if [ -e ${file} ]; then
 			echo "restore ${file}"
@@ -35,7 +35,7 @@ restore_dotfiles() {
 
 un_install_dotfiles() {
 	cd ~
-	for file in "${FILE_LIST[@]}"
+	for file in "${DOT_FILE_LIST[@]}"
 	do
 		if [ -L ${file} ]; then
 			echo "un-install ${file}"
