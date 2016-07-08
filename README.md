@@ -18,7 +18,7 @@
 # Install dotfiles
 <pre><code>$ ./install.sh
 $ vim
-$ :PluginInstall
+$ :PluginInstall  (install all vimplugin)
 </code></pre>
 
 # Prerequisite for <a href="https://github.com/Valloric/YouCompleteMe"> YouCompleteMe </a> 

@@ -45,6 +45,7 @@ Plugin 'https://github.com/scrooloose/nerdtree.git'
 Plugin 'https://github.com/scrooloose/syntastic.git'
 Plugin 'https://github.com/Valloric/YouCompleteMe.git'
 Plugin 'https://github.com/altercation/vim-colors-solarized.git'
+Plugin 'https://github.com/MattesGroeger/vim-bookmarks.git'
 " All of your Plugins must be added before the following line
 call vundle#end()            " required
 filetype plugin indent on    " required
@@ -231,7 +232,9 @@ let g:ycm_warning_symbol = '>>'
 "a .ycm_extra_conf.py file you didn't write.
 let g:ycm_confirm_extra_conf = 1
 
-
+"default map leader is '\'
+"let mapleader = ","
+"
 "Python
 if os == "Darwin"
     "By default YCM runs jedi with the same Python interpreter used by the
@@ -248,9 +251,6 @@ elseif os == "Linux"
 endif
 
 "let g:ycm_collect_identifiers_from_tag_files = 1 
-"default map leader is '\'
-"let mapleader = ","
-"
 "This command tries to perform the "most sensible" GoTo operation it can.
 nnoremap <leader>jd :YcmCompleter GoTo<CR>
 
@@ -265,6 +265,53 @@ nnoremap <leader>gr :YcmCompleter GoToReferences<CR>
 "Echos the type of the variable or method under the cursor, and where it
 "differs, the derived type.
 nnoremap <leader>gt :YcmCompleter GetType<CR>
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" vim-bookmarks  setting
+" https://github.com/MattesGroeger/vim-bookmarks
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" disable default key mapping
+" basic usage:
+" 1.Add/remove bookmark at current line	mm	:BookmarkToggle
+" 2.Add/edit/remove annotation at current line" mi	:BookmarkAnnotate <TEXT>
+"
+" 3.Jump to next bookmark in buffer	mn	:BookmarkNext
+" 4.Jump to previous bookmark in buffer	mp	:BookmarkPrev
+"
+" 5.Show all bookmarks (toggle)	ma	:BookmarkShowAll
+" 
+" 6.Clear bookmarks in current buffer only	mc	:BookmarkClear
+" 7.Clear bookmarks in all buffers	mx	:BookmarkClearAll
+" 8.Move up bookmark at current line	mkk	:BookmarkMoveUp
+" 9.Move down bookmark at current line	mjj	:BookmarkMoveDown
+"
+" 10.Save all bookmarks to a file		:BookmarkSave <FILE_PATH>
+" 11.Load bookmarks from a file		:BookmarkLoad <FILE_PATH>
+"
+
+" let g:bookmark_no_default_key_mappings = 1
+" nnoremap <Leader><Leader> <Plug>BookmarkToggle
+" nnoremap <Leader>i <Plug>BookmarkAnnotate
+" nnoremap <Leader>a <Plug>BookmarkShowAll
+" nnoremap <Leader>j <Plug>BookmarkNext
+" nnoremap <Leader>k <Plug>BookmarkPrev
+" nnoremap <Leader>c <Plug>BookmarkClear
+" nnoremap <Leader>x <Plug>BookmarkClearAll
+" nnoremap <Leader>kk <Plug>BookmarkMoveUp
+" nnoremap <Leader>jj <Plug>BookmarkMoveDown
+"
+" default ⚑
+let g:bookmark_sign = '♥♥'
+
+" This feature allows the grouping of bookmarks per root directory. This way
+" bookmarks from other projects are not interfering. This is done by saving a
+" file called .vim-bookmarks into the current working directory (the folder
+" you opened vim from).
+" You should add the filename .vim-bookmarks to your (global) .gitignore 
+" file so it doesn't get checked into version control.
+"
+let g:bookmark_save_per_working_dir = 1
+let g:bookmark_auto_save = 1
 
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
