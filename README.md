@@ -10,6 +10,11 @@
  4. git config (.gitconfig) 
  5. gdb config (.gdbinit)
 
+# Support Distribution
+ 1. Ubuntu
+ 2. CentOS
+ 3. Darwin
+ 
 # Install dotfiles
 <pre><code>$ ./install.sh
 $ vim

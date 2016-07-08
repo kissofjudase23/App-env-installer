@@ -72,26 +72,51 @@ install_bundle() {
 	fi	
 }
 
-install_linux_package() {
+
+install_ubuntu_package() {
+	echo "install for Ubuntu"
 	apt-get -v >/dev/null 2>&1 || { echo "no apt-get found. exit 1" >&2; exit 1; }
+	sudo apt-get update
+	for package in "${install_list[@]}"
+	do
+		${package} --version > /dev/null 2>&1 || {\
+			echo "install ${package}";\
+			sudo apt-get install ${package}
+		}
+	done
+}
+
+install_centos_package() {
+	echo "install for CentOS"
+	sudo yum update
+	for package in "${install_list[@]}"
+	do
+		${package} --version > /dev/null 2>&1 || {\
+			echo "install ${package}";\
+			sudo yum install ${package}
+		}
+	done
+}
+
+install_linux_package() {
 	install_list=( "git"\
 			"screen"\
 			"ctags"\
 			"cscope"\
 			"realpath"\
 	)
-	sudo apt-get update
-	for file in "${install_list[@]}"
-	do
-		${file} --version > /dev/null 2>&1 || {\
-			echo "install ${file}";\
-			sudo apt-get install ${file}
-		}
-	done
+	dist=`grep DISTRIB_ID /etc/*-release | awk -F '=' '{print $2}'`
+	if [ "$dist" == "Ubuntu" ]; then
+		install_ubuntu_package
+	else
+		install_centos_package
+	fi
 	install_bundle
 }
 
 install_darwin_package() {
+	echo "install for Darwin"
+
 	#install homebrew
 	brew -v > /dev/null 2>&1 || {\
 		echo "install homebrew";\
