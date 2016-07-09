@@ -199,16 +199,16 @@ endif
 "let g:syntastic_cpp_check_header = 1
 
 "add cflag
-"let b:syntastic_c_cflags = '-I../lib -I./lib '
-"let b:syntastic_cpp_cflags = '-I../lib -I./lib '
+let b:syntastic_c_cflags = '-I../lib -I./lib '
+let b:syntastic_cpp_cflags = '-I../lib -I./lib '
 
 "customer include directory
-"let g:syntastic_c_include_dirs = ['./lib/', '../lib/', '../Data_Structure' ]
-"let g:syntastic_cpp_include_dirs = [ './lib','../lib/', '../Data_Structure' ]
+let g:syntastic_c_include_dirs = ['./lib/', '../lib/', '../Data_Structure' ]
+let g:syntastic_cpp_include_dirs = [ './lib','../lib/', '../Data_Structure' ]
 
 "compiler option
-"let g:syntastic_c_compiler = 'gcc'
-"let g:syntastic_cpp_compiler_options = '-std=c++0x'
+let g:syntastic_c_compiler = 'gcc'
+let g:syntastic_cpp_compiler_options = '-std=c++0x'
 "
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -302,6 +302,12 @@ nnoremap <leader>gt :YcmCompleter GetType<CR>
 "
 " default ⚑
 let g:bookmark_sign = '♥♥'
+
+" default ☰
+let g:bookmark_annotation_sign = '⚑⚑'
+
+" Automatically close bookmarks split when jumping to a bookmark
+let g:bookmark_auto_close = 1
 
 " This feature allows the grouping of bookmarks per root directory. This way
 " bookmarks from other projects are not interfering. This is done by saving a
