@@ -1,5 +1,9 @@
 "include vim local setting
 "source ./.vim_local_setting 
+"
+"if filereadable(".vim.custom")
+"    so .vim.custom
+"endif
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Vundle
@@ -33,7 +37,6 @@ call vundle#begin()
 " let Vundle manage Vundle, required
 " https://github.com/VundleVim/Vundle.vim
 Plugin 'VundleVim/Vundle.vim'
-
 Plugin 'https://github.com/tpope/vim-fugitive.git'
 Plugin 'https://github.com/vim-scripts/taglist.vim.git'
 Plugin 'https://github.com/fatih/vim-go.git'
@@ -42,6 +45,7 @@ Plugin 'https://github.com/scrooloose/nerdtree.git'
 Plugin 'https://github.com/scrooloose/syntastic.git'
 Plugin 'https://github.com/Valloric/YouCompleteMe.git'
 Plugin 'https://github.com/altercation/vim-colors-solarized.git'
+Plugin 'https://github.com/MattesGroeger/vim-bookmarks.git'
 " All of your Plugins must be added before the following line
 call vundle#end()            " required
 filetype plugin indent on    " required
@@ -68,14 +72,9 @@ set tabstop=4                " insert 4 spaces for a tab
 "http://vi.stackexchange.com/questions/4244/what-is-softtabstop-used-for
 set softtabstop=4
 set shiftwidth=4             " the number of space characters inserted for
+
 syntax enable                " enable syntax highlighting
-if has('gui_running')
-	    set background=light
-	else
-		set background=dark
-	endif
-"colorscheme solarized
-"let g:solarized_termcolors=256
+
 
 set listchars=tab:>-,trail:~ 
 set list                     " show invisible characters
@@ -111,6 +110,17 @@ nnoremap <C-L> <C-W><C-L>
 "move to the split to the left
 nnoremap <C-J> <C-W><C-H>
 
+if has('gui_running')
+    "colorscheme solarized
+    let g:solarized_termcolors=256
+    set background=light
+else
+    set background=dark
+endif
+" determine operating system
+let os = substitute(system('uname'), "\n", "", "")
+
+
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " autoloading functionality for Ctags
 " http://stackoverflow.com/questions/563616/vim-and-ctags-tips-and-tricks
@@ -120,13 +130,12 @@ set tags=./tags;/
 "map <C-\> :tab split<CR>:exec("tag ".expand("<cword>"))<CR>
 "map <A-]> :vsp <CR>:exec("tag ".expand("<cword>"))<CR>
 
-
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Taglist options
 " http://vim-taglist.sourceforge.net/manual.html
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-let Tlist_Auto_Highligh_Tag = 1 "Automatically highlight the current tag in
-								"the taglist
+"Automatically highlight the current tag in the taglist
+let Tlist_Auto_Highligh_Tag = 1 
 "Open the taglist window when Vim starts.
 "let Tlist_Auto_Open = 1
 "Close Vim if the taglist is the only window
@@ -151,14 +160,14 @@ let g:NERDTreeDirArrowExpandable = '▸'
 let g:NERDTreeDirArrowCollapsible = '▾'
 
 let NERDTreeIgnore = 
-		\[ '\.pyc$', '\.pyo$', '\.obj$', '\.o$', '\.so$', '\.egg$', '^\.git$']
+\[ '\.pyc$', '\.pyo$', '\.obj$', '\.o$', '\.so$', '\.egg$', '^\.git$']
 
 "Open the NERDTree window when Vim starts.
 "autocmd StdinReadPre * let s:std_in=1
 "autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
 "Close Vim if the NETDTree is the only window
 autocmd bufenter * if (winnr("$") == 1 
-			\&& exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
+\&& exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Syntastic setting
 " https://github.com/scrooloose/syntastic
@@ -172,31 +181,35 @@ let g:syntastic_auto_loc_list = 1
 let g:syntastic_check_on_open = 1
 let g:syntastic_check_on_wq = 0
 
+"use python3
+if os == "Darwin"
+    let g:syntastic_python_python_exec = '/usr/local/bin/python3'
+elseif os == "Linux"
+    let g:syntastic_python_python_exec = '/usr/bin/python3'
+endif
+
 "Checker options
 " use ':SyntasticInfo' to show which checkers are enabled.
 " https://github.com/scrooloose/syntastic/wiki to get more info
 "
 "C family languages
 "
-	"check header file
-	let g:syntastic_c_check_header = 1
-	let g:syntastic_cpp_check_header = 1
+"check header file
+"let g:syntastic_c_check_header = 1
+"let g:syntastic_cpp_check_header = 1
 
-	"add cflag
-	let b:syntastic_cpp_include_dirs_cflags = '-I../lib -I./lib'
-	let b:syntastic_cpp_cflags = '-I../lib -I./lib'
+"add cflag
+let b:syntastic_c_cflags = '-I../lib -I./lib '
+let b:syntastic_cpp_cflags = '-I../lib -I./lib '
 
-	"customer include directory
-	let g:syntastic_c_include_dirs = ['../lib/', './lib']
-	let g:syntastic_cpp_include_dirs = [ '../lib/', './lib' ]
-	"
-	"compiler option
-	let g:syntastic_c_compiler = 'gcc'
-	let g:syntastic_cpp_compiler_options = '-std=c++0x'
+"customer include directory
+let g:syntastic_c_include_dirs = ['./lib/', '../lib/', '../Data_Structure' ]
+let g:syntastic_cpp_include_dirs = [ './lib','../lib/', '../Data_Structure' ]
+
+"compiler option
+let g:syntastic_c_compiler = 'gcc'
+let g:syntastic_cpp_compiler_options = '-std=c++0x'
 "
-"Python
-	"use python3
-	let g:syntastic_python_python_exec = '/usr/bin/python3'
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " YouCompleteMe  setting
@@ -206,25 +219,38 @@ let g:syntastic_check_on_wq = 0
 let g:ycm_autoclose_preview_window_after_completion = 1
 let g:ycm_autoclose_preview_window_after_insertion = 1
 
-"syntastic setting (use Syntastic instad)
-	let g:ycm_show_diagnostics_ui = 0
+"When set, this option turns on YCM's diagnostic display features
+"This option also makes YCM remove all Syntastic checkers set for
+"the c, cpp, objc and objcpp filetypes since this would conflict with YCM's
+"own diagnostics UI.
+let g:ycm_show_diagnostics_ui = 0
+let g:ycm_error_symbol = '>>'
+let g:ycm_warning_symbol = '>>'
 
 "When this option is set to 1 YCM will ask once per .ycm_extra_conf.py file if
 "it is safe to be loaded. This is to prevent execution of malicious code from 
 "a .ycm_extra_conf.py file you didn't write.
 let g:ycm_confirm_extra_conf = 1
 
-	"Python
-	"By default YCM runs jedi with the same Python interpreter used by the
-	"ycmd server, so if you would like to use a different interpreter, use the
-	"following option specifying the Python binary to use. For example, to
-	"provide Python 3 completion in your project, set:
-	let g:ycm_python_binary_path = '/usr/bin/python3'
-
-"let g:ycm_collect_identifiers_from_tag_files = 1 
 "default map leader is '\'
 "let mapleader = ","
 "
+"Python
+if os == "Darwin"
+    "By default YCM runs jedi with the same Python interpreter used by the
+    "ycmd server, so if you would like to use a different interpreter, use the
+    "following option specifying the Python binary to use. For example, to
+    "provide Python 3 completion in your project, set:
+    let g:ycm_python_binary_path = '/usr/local/bin/python3'
+    "Restarts the semantic-engine-as-localhost-server for those semantic engines 
+    "that work as separate servers that YCM talks to.
+    nnoremap <leader>restart :YcmCompleter RestartServer /usr/local/bin/python3.5 <CR>
+elseif os == "Linux"
+    let g:ycm_python_binary_path = '/usr/bin/python3'
+    nnoremap <leader>restart :YcmCompleter RestartServer /usr/bin/python3.5 <CR>
+endif
+
+"let g:ycm_collect_identifiers_from_tag_files = 1 
 "This command tries to perform the "most sensible" GoTo operation it can.
 nnoremap <leader>jd :YcmCompleter GoTo<CR>
 
@@ -240,16 +266,65 @@ nnoremap <leader>gr :YcmCompleter GoToReferences<CR>
 "differs, the derived type.
 nnoremap <leader>gt :YcmCompleter GetType<CR>
 
-"Restarts the semantic-engine-as-localhost-server for those semantic engines 
-"that work as separate servers that YCM talks to.
-nnoremap <leader>restart :YcmCompleter RestartServer /usr/bin/python3.5 <CR>
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" vim-bookmarks  setting
+" https://github.com/MattesGroeger/vim-bookmarks
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" disable default key mapping
+" basic usage:
+" 1.Add/remove bookmark at current line	mm	:BookmarkToggle
+" 2.Add/edit/remove annotation at current line" mi	:BookmarkAnnotate <TEXT>
+"
+" 3.Jump to next bookmark in buffer	mn	:BookmarkNext
+" 4.Jump to previous bookmark in buffer	mp	:BookmarkPrev
+"
+" 5.Show all bookmarks (toggle)	ma	:BookmarkShowAll
+" 
+" 6.Clear bookmarks in current buffer only	mc	:BookmarkClear
+" 7.Clear bookmarks in all buffers	mx	:BookmarkClearAll
+" 8.Move up bookmark at current line	mkk	:BookmarkMoveUp
+" 9.Move down bookmark at current line	mjj	:BookmarkMoveDown
+"
+" 10.Save all bookmarks to a file		:BookmarkSave <FILE_PATH>
+" 11.Load bookmarks from a file		:BookmarkLoad <FILE_PATH>
+"
+
+" let g:bookmark_no_default_key_mappings = 1
+" nnoremap <Leader><Leader> <Plug>BookmarkToggle
+" nnoremap <Leader>i <Plug>BookmarkAnnotate
+" nnoremap <Leader>a <Plug>BookmarkShowAll
+" nnoremap <Leader>j <Plug>BookmarkNext
+" nnoremap <Leader>k <Plug>BookmarkPrev
+" nnoremap <Leader>c <Plug>BookmarkClear
+" nnoremap <Leader>x <Plug>BookmarkClearAll
+" nnoremap <Leader>kk <Plug>BookmarkMoveUp
+" nnoremap <Leader>jj <Plug>BookmarkMoveDown
+"
+" default ⚑
+let g:bookmark_sign = '♥♥'
+
+" default ☰
+let g:bookmark_annotation_sign = '⚑⚑'
+
+" Automatically close bookmarks split when jumping to a bookmark
+let g:bookmark_auto_close = 1
+
+" This feature allows the grouping of bookmarks per root directory. This way
+" bookmarks from other projects are not interfering. This is done by saving a
+" file called .vim-bookmarks into the current working directory (the folder
+" you opened vim from).
+" You should add the filename .vim-bookmarks to your (global) .gitignore 
+" file so it doesn't get checked into version control.
+"
+let g:bookmark_save_per_working_dir = 1
+let g:bookmark_auto_save = 1
+
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " python.vim setting
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " enable all Python syntax highlighting features
 let python_highlight_all = 1
-
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Cscope setting

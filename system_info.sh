@@ -12,8 +12,8 @@ WORK_DIR=$(dirname $SCRIPT_DIR)
 BK_DIR=${WORK_DIR}/conf_bk
 SRC_DIR=${WORK_DIR}/conf
 
-#dotfile list
-FILE_LIST=( ".bashrc"\
+#dot files list
+DOT_FILE_LIST=( ".bashrc"\
 			".vimrc"\
 			".gitconfig"\
 			".git-prompt.sh"\
@@ -25,6 +25,8 @@ print_var() {
 	echo "OS=${OS}"
 	echo "ARCH=${VER}"
 	echo "VER=${VER}"
+	echo "Script_Name=${0}"
+	echo "Script_Dir=${SCRIPT_DIR}"
 	echo "Working_Dir=${WORK_DIR}"
 	echo "Backup_Dir=${BK_DIR}"
 	echo "Source_Dir=${SRC_DIR}"
@@ -64,3 +66,8 @@ function Check_Link_and_Delete(){
     fi
 }
 
+main() {
+	print_var
+}
+
+main
