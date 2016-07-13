@@ -48,8 +48,13 @@ go_pro_setting() {
 	#export PATH=$PATH:$GOPATH/bin
 }
 
-linux_alias() {
+
+common_alist() {
 	alias vi='vim'
+	alias tree='tree -C'
+}
+
+linux_alias() {
 	alias grep='grep --color=auto'
 	alias fgrep='fgrep --color=auto'
 	alias egrep='egrep --color=auto'
@@ -62,7 +67,6 @@ linux_alias() {
 darwin_alias() {
 	export CLICOLOR='true'
 	export LSCOLORS="gxfxcxdxcxegedabagacad"
-	alias vi='vim'
 	alias grep='grep'
 	alias fgrep='fgrep'
 	alias egrep='egrep'
@@ -83,8 +87,8 @@ alias_setting() {
 			;;
 		*)
 		echo "Do not support ${OS} now"
-esac
-
+	esac
+	common_alist
 }
 
 main() {
