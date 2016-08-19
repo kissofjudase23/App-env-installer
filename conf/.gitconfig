@@ -11,5 +11,11 @@
 	ci = commit
 	st = status
 	br = branch
+	d = difftool
+[diff]
+	tool = vimdiff
+[difftool]
+	prompt = false
 [branch  "master"]
 	mergeoptions = --no-ff
+
