@@ -67,11 +67,12 @@ filetype plugin indent on    " required
 filetype plugin indent on    " enable filetype-specific plugins
 set number                   " enable line numbers
 set autoindent               " enable autoindent
-"set expandtab                " use space instead of tab
+set expandtab                " use space instead of tab
 set tabstop=4                " insert 4 spaces for a tab
-"http://vi.stackexchange.com/questions/4244/what-is-softtabstop-used-for
-set softtabstop=4
 set shiftwidth=4             " the number of space characters inserted for
+"map <F2> :retab <CR> :wq! <CR>
+"http://vi.stackexchange.com/questions/4244/what-is-softtabstop-used-for
+"set softtabstop=4
 
 syntax enable                " enable syntax highlighting
 
