@@ -1,4 +1,5 @@
 #Temp swap Files.
 *.swp
+*.vim-bookmarks
 tags
 conf_bk/*
