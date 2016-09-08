@@ -51,7 +51,7 @@ install_dotfiles() {
 	do
 		if [ -f ${file} ]; then
 			echo "install ${file}"
-			ln -s ${SRC_DIR}/${file} ~/${file}
+			ln -f -s ${SRC_DIR}/${file} ~/${file}
 		else
 			echo "no ${file} detected in ${SRC_DIR}"
 		fi
