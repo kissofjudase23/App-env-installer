@@ -1,21 +1,21 @@
 [user]
-	name = e23
-	email = kissofjudase23@gmail.com
+    name = e23
+    email = kissofjudase23@gmail.com
 [core]
-	editor = vim
+    editor = vim
 [color]
-	ui = true
+    ui = true
 [alias]
-	df = diff
-	co = checkout
-	ci = commit
-	st = status
-	br = branch
-	d = difftool
+    df = diff
+    co = checkout
+    ci = commit
+    st = status
+    br = branch
+    d = difftool
 [diff]
-	tool = vimdiff
+    tool = vimdiff
 [difftool]
-	prompt = false
+    prompt = false
 [branch  "master"]
-	mergeoptions = --no-ff
+    mergeoptions = --no-ff
 

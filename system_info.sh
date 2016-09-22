@@ -14,22 +14,22 @@ SRC_DIR=${WORK_DIR}/conf
 
 #dot files list
 DOT_FILE_LIST=( ".bashrc"\
-			".vimrc"\
-			".gitconfig"\
-			".git-prompt.sh"\
-			".screenrc"\
-			".gdbinit"\
-			".bash_profile")
+            ".vimrc"\
+            ".gitconfig"\
+            ".git-prompt.sh"\
+            ".screenrc"\
+            ".gdbinit"\
+            ".bash_profile")
 
 print_var() {
-	echo "OS=${OS}"
-	echo "ARCH=${VER}"
-	echo "VER=${VER}"
-	echo "Script_Name=${0}"
-	echo "Script_Dir=${SCRIPT_DIR}"
-	echo "Working_Dir=${WORK_DIR}"
-	echo "Backup_Dir=${BK_DIR}"
-	echo "Source_Dir=${SRC_DIR}"
+    echo "OS=${OS}"
+    echo "ARCH=${VER}"
+    echo "VER=${VER}"
+    echo "Script_Name=${0}"
+    echo "Script_Dir=${SCRIPT_DIR}"
+    echo "Working_Dir=${WORK_DIR}"
+    echo "Backup_Dir=${BK_DIR}"
+    echo "Source_Dir=${SRC_DIR}"
 }
 
 function Check_File_and_Create(){
@@ -67,7 +67,7 @@ function Check_Link_and_Delete(){
 }
 
 main() {
-	print_var
+    print_var
 }
 
 main

@@ -179,7 +179,7 @@ set statusline+=%{SyntasticStatuslineFlag()}
 set statusline+=%*
 let g:syntastic_error_symbol ='>>'
 let g:syntastic_warning_symbol = '>>'
-let g:syntastic_always_populate_loc_list = 1
+let g:syntastic_always_populate_loc_list = 0
 let g:syntastic_auto_loc_list = 1
 let g:syntastic_check_on_open = 0
 let g:syntastic_check_on_wq = 1
@@ -196,6 +196,8 @@ nnoremap <C-w>E :SyntasticCheck<CR> :SyntasticToggleMode<CR>
 " https://github.com/scrooloose/syntastic/wiki to get more info
 "
 " Python 
+
+"g:syntastic_python_<checker>_exec
 if os == "Darwin"
     let g:syntastic_python_python_exec = '/usr/local/bin/python3'
 elseif os == "Linux"
