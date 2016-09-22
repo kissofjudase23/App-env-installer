@@ -9,6 +9,11 @@ altscreen on
 shelltitle '$ |bash'
 vbell off
 
+# First press CTRL-A , next press [ to scroll down/up
+# scroll up  : CTRL-b
+# scroll down: CTRL-f
+defscrollback 10000
+
 # bind F8 to create a new screen
 # (default:Ctrl+a c)
 bindkey -k k8 screen
