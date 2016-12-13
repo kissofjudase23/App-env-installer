@@ -3,6 +3,10 @@
     email = kissofjudase23@gmail.com
 [core]
     editor = vim
+    # checkout as-is, commit unix style format
+    autocrlf = input
+    # checkou as-is, commit as-is 
+    #autocrlf = false
 [color]
     ui = true
 [alias]
@@ -17,5 +21,7 @@
 [difftool]
     prompt = false
 [branch  "master"]
+    mergeoptions = --no-ff
+[branch  "develop"]
     mergeoptions = --no-ff
 

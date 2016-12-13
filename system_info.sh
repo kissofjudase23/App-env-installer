@@ -1,5 +1,9 @@
 #!/bin/bash
 
+function my_realpath(){
+    [[ $1 = /* ]] && echo "$1" || echo "$PWD/${1#./}"
+}
+
 #get basic system info
 OS=$(uname -s)
 ARCH=$(uname -m)
@@ -7,7 +11,7 @@ VER=$(uname -r)
 
 #get absolute working directory
 SCRIPT_NAME=${0}
-SCRIPT_DIR=$(realpath ${0})
+SCRIPT_DIR=$(my_realpath ${0})
 WORK_DIR=$(dirname $SCRIPT_DIR)
 BK_DIR=${WORK_DIR}/conf_bk
 SRC_DIR=${WORK_DIR}/conf
@@ -31,6 +35,8 @@ print_var() {
     echo "Backup_Dir=${BK_DIR}"
     echo "Source_Dir=${SRC_DIR}"
 }
+
+
 
 function Check_File_and_Create(){
     checkFile=$1
