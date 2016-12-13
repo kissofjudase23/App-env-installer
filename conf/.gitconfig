@@ -3,7 +3,10 @@
     email = kissofjudase23@gmail.com
 [core]
     editor = vim
-    autocrlf = false
+    # checkout as-is, commit unix style format
+    autocrlf = input
+    # checkou as-is, commit as-is 
+    #autocrlf = false
 [color]
     ui = true
 [alias]

@@ -93,6 +93,7 @@ set cc=80
 set splitbelow
 set splitright
 set encoding=utf-8
+set fileformats=unix
 
 " Enable folding with indent
 set foldmethod=indent 
