@@ -1,31 +1,27 @@
 #!/bin/bash
 
+
 function my_realpath(){
     [[ $1 = /* ]] && echo "$1" || echo "$PWD/${1#./}"
 }
 
-#get basic system info
-OS=$(uname -s)
-ARCH=$(uname -m)
-VER=$(uname -r)
+function get_install_var(){
+    #get basic system info
+    OS=$(uname -s)
+    ARCH=$(uname -m)
+    VER=$(uname -r)
 
-#get absolute working directory
-SCRIPT_NAME=${0}
-SCRIPT_DIR=$(my_realpath ${0})
-WORK_DIR=$(dirname $SCRIPT_DIR)
-BK_DIR=${WORK_DIR}/conf_bk
-SRC_DIR=${WORK_DIR}/conf
+    #get absolute working directory
+    SCRIPT_NAME=${0}
+    SCRIPT_DIR=$(my_realpath ${0})
+    WORK_DIR=$(dirname $SCRIPT_DIR)
+    BK_DIR=${WORK_DIR}/conf_bk
+    SRC_DIR=${WORK_DIR}/conf
+}
 
-#dot files list
-DOT_FILE_LIST=( ".bashrc"\
-            ".vimrc"\
-            ".gitconfig"\
-            ".git-prompt.sh"\
-            ".screenrc"\
-            ".gdbinit"\
-            ".bash_profile")
-
-print_var() {
+function print_var() {
+    echo "========================="
+    echo "Basic Info:"
     echo "OS=${OS}"
     echo "ARCH=${VER}"
     echo "VER=${VER}"
@@ -34,11 +30,10 @@ print_var() {
     echo "Working_Dir=${WORK_DIR}"
     echo "Backup_Dir=${BK_DIR}"
     echo "Source_Dir=${SRC_DIR}"
+    echo "========================="
 }
 
-
-
-function Check_File_and_Create(){
+function check_file_and_create(){
     checkFile=$1
     echo $checkFile
     if [[ ! -f "$checkFile" ]];then
@@ -47,7 +42,7 @@ function Check_File_and_Create(){
     chmod +x "$checkFile"
 }
 
-function Check_Link_and_Create(){
+function check_link_and_create(){
     checkFile=$1
     echo $checkFile
     if [[ ! -L "$checkFile" ]];then
@@ -56,7 +51,7 @@ function Check_Link_and_Create(){
     chmod +x "$checkFile"
 }
 
-function Check_File_and_Delete(){
+function check_file_and_remove(){
     checkFile=$1
     echo $checkFile
     if [[ -f "$checkFile" ]];then
@@ -64,7 +59,7 @@ function Check_File_and_Delete(){
     fi
 }
 
-function Check_Link_and_Delete(){
+function check_Link_and_remove(){
     checkFile=$1
     echo $checkFile
     if [[ -L "$checkFile" ]];then
@@ -73,6 +68,7 @@ function Check_Link_and_Delete(){
 }
 
 main() {
+    get_install_var
     print_var
 }
 
