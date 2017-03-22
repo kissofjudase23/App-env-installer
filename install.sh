@@ -1,35 +1,17 @@
 #!/bin/bash
-# author: Tom_Lin
-# date:   2015/12/2
-
-#include common functions
 source ./system_info.sh
 
-#this function is dupracted now.
-depracted_code() {
-    chmod +x "e23_config.sh"
-    ln -s $(pwd)/e23_config.sh ~/e23_config_symbolic
-    LINE='source ~/e23_config_symbolic'
-    FILE=.bashrc
-    cd ~
-    # check .bashrc and create if necessary.
-    Check_File_and_Create $FILE
-
-    # add a entry porint to user-defined script in .bashrc.
-    # add LINE to FILE only if this LINE dose not exists.
-    grep -q "$LINE" "$FILE" || echo "$LINE" >> "$FILE"
-
-    # For .vimrc
-    # check .bashrc and delete if necessary.
-    FILE=.vimrc
-    Check_File_and_Delete $FILE
-
-    cd - 
-    # create a symbolic for user-defined .vimrc
-    ln -s $(pwd)/$FILE ~/$FILE
-}
+DOT_FILE_LIST=( ".bashrc"\
+            ".vimrc"\
+            ".gitconfig"\
+            ".git-prompt.sh"\
+            ".screenrc"\
+            ".gdbinit"\
+            ".bash_profile")
 
 backup_dotfiles() {
+    echo "========================="
+    echo "Start to Backup dotfiles:"
     rm -rf ${BK_DIR}/*
     mkdir -p ${BK_DIR}/
 
@@ -43,9 +25,13 @@ backup_dotfiles() {
             echo "no ${file} detected in ${HOME}"
         fi
     done
+    echo "Backup has been done!"
+    echo "========================="
 }
 
 install_dotfiles() {
+    echo "========================="
+    echo "Start to Install dotfiles:"
     cd ${SRC_DIR}
     for file in "${DOT_FILE_LIST[@]}"
     do
@@ -56,6 +42,8 @@ install_dotfiles() {
             echo "no ${file} detected in ${SRC_DIR}"
         fi
     done
+    echo "Installation has been done!"
+    echo "========================="
 }
 
 backup_and_install() {
@@ -69,12 +57,11 @@ install_bundle() {
     if [[ ! -d ${bundleDir} ]]; then
         mkdir -p ~/.vim/bundle
         git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
-    fi  
+    fi
 }
 
-
 install_ubuntu_package() {
-    echo "install for Ubuntu"
+    echo "install for Ubuntu:"
     apt-get -v >/dev/null 2>&1 || { echo "no apt-get found. exit 1" >&2; exit 1; }
     sudo apt-get update
     for package in "${install_list[@]}"
@@ -105,7 +92,7 @@ install_linux_package() {
             "cscope"\
             "realpath"\
     )
-    dist=`grep DISTRIB_ID /etc/*-release | awk -F '=' '{print $2}'`
+    dist=$(grep DISTRIB_ID /etc/*-release | awk -F '=' '{print $2}')
     if [ "$dist" == "Ubuntu" ]; then
         install_ubuntu_package
     else
@@ -122,8 +109,9 @@ install_darwin_package() {
         echo "install homebrew";\
         /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)";\
     }
-    #install realpath
-    realpath > /dev/null 2>&1 || {\
+
+    # install realpath
+    realpath . > /dev/null 2>&1 || {\
         echo "install realpath";\
         brew tap iveney/mocha;\
         brew install realpath;\
@@ -148,7 +136,6 @@ install_for_darwin() {
 }
 
 main() {
-     #print_var
      case ${OS} in
         "Linux")
         install_for_Linux
@@ -161,6 +148,5 @@ main() {
         ;;
     esac
 }
-
 
 main
