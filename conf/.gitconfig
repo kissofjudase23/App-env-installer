@@ -21,7 +21,7 @@
 [difftool]
     prompt = false
 [branch  "master"]
-    mergeoptions = --no-ff
+    # mergeoptions = --no-ff
 [branch  "develop"]
-    mergeoptions = --no-ff
+    # mergeoptions = --no-ff
 
