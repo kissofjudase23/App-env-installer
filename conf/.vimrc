@@ -42,6 +42,7 @@ Plugin 'https://github.com/vim-scripts/taglist.vim.git'
 Plugin 'https://github.com/fatih/vim-go.git'
 Plugin 'https://github.com/vim-scripts/python.vim.git'
 Plugin 'https://github.com/scrooloose/nerdtree.git'
+Plugin 'scrooloose/nerdcommenter'
 Plugin 'https://github.com/scrooloose/syntastic.git'
 Plugin 'https://github.com/Valloric/YouCompleteMe.git'
 Plugin 'https://github.com/altercation/vim-colors-solarized.git'
@@ -161,15 +162,54 @@ nnoremap <silent> <F5> :NERDTreeToggle<CR>
 let g:NERDTreeDirArrowExpandable = '▸'
 let g:NERDTreeDirArrowCollapsible = '▾'
 
-let NERDTreeIgnore = 
-\[ '\.pyc$', '\.pyo$', '\.obj$', '\.o$', '\.so$', '\.egg$', '^\.git$']
+let NERDTreeIgnore =
+\[ '\.pyc$', '\.pyo$', '\.obj$', '\.o$', '\.so$', '\.egg$', '^\.git$',
+\'.*\.so', '.*\.a']
 
 "Open the NERDTree window when Vim starts.
 "autocmd StdinReadPre * let s:std_in=1
 "autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
 "Close Vim if the NETDTree is the only window
-autocmd bufenter * if (winnr("$") == 1 
+autocmd bufenter * if (winnr("$") == 1
 \&& exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" NETDCommenter
+" use ':help nerdcommenter' to get more info
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Default mapping
+"
+" [count]<leader>cc |NERDComComment|
+" Comment out the current line or text selected in visual mode.
+"
+" [count]<leader>cn |NERDComNestedComment|
+" Same as cc but forces nesting.
+"
+" [count]<leader>cu |NERDComUncommentLine|
+" Uncomments the selected line(s).
+
+" Add spaces after comment delimiters by default
+let g:NERDSpaceDelims = 1
+
+" Use compact syntax for prettified multi-line comments
+let g:NERDCompactSexyComs = 1
+
+" Allow commenting and inverting empty lines (useful when commenting a region)
+let g:NERDCommentEmptyLines = 1
+
+" Enable trimming of trailing whitespace when uncommenting
+let g:NERDTrimTrailingWhitespace = 1
+
+" Align line-wise comment delimiters flush left instead of following code
+" indentation
+"let g:NERDDefaultAlign = 'left'
+
+" Set a language to use its alternate delimiters by default
+"let g:NERDAltDelims_java = 1
+
+" Add your own custom formats or override the defaults
+"let g:NERDCustomDelimiters = { 'c': { 'left': '/**','right': '*/' } }
+
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Syntastic setting
