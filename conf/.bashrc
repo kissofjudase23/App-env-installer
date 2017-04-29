@@ -1,5 +1,4 @@
-source ~/.git-prompt.sh
-#source ../system_info.sh
+source ~/.utility/git_prompt.sh
 
 function exitstatus {
     EXITSTATUS="$?"
@@ -29,8 +28,7 @@ function exitstatus {
 }
 
 envir_var_setting() {
-    #set vim as default editor
-    export VISUAL=vim
+    export VISUAL=vim #set vim as default editor
     export EDITOR="$VISUAL"
     # don't put duplicate lines or lines starting with space in the history.
     # See bash(1) for more options
@@ -38,9 +36,7 @@ envir_var_setting() {
     PROMPT_COMMAND=exitstatus
 }
 
-go_pro_setting() {
-    # go language environment
-    # go bin position.
+go_env_setting(){
     go_src=/usr/local
     export PATH=$PATH:${go_src}/go/bin
     # your go project.
@@ -48,8 +44,7 @@ go_pro_setting() {
     #export PATH=$PATH:$GOPATH/bin
 }
 
-
-common_alist() {
+common_alias(){
     alias vi='vim'
     alias tree='tree -C'
 }
@@ -77,6 +72,8 @@ darwin_alias() {
 }
 
 alias_setting() {
+    common_alias
+
     OS=$(uname -s)
     case ${OS} in
         "Linux")
@@ -88,13 +85,11 @@ alias_setting() {
         *)
         echo "Do not support ${OS} now"
     esac
-    common_alist
 }
 
 main() {
     alias_setting
     envir_var_setting
-    go_pro_setting
 }
 
 main

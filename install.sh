@@ -1,15 +1,38 @@
 #!/bin/bash
-source ./system_info.sh
+source ./common_utility.sh
+source ./get_osinfo.sh
 
-DOT_FILE_LIST=( ".bashrc"\
-            ".vimrc"\
-            ".gitconfig"\
-            ".git-prompt.sh"\
-            ".screenrc"\
-            ".gdbinit"\
-            ".bash_profile")
+function print_install_var() {
+    echo "========================="
+    echo "Install info"
+    echo "Script_Name=${0}"
+    echo "Script_Dir=${SCRIPT_DIR}"
+    echo "Working_Dir=${WORK_DIR}"
+    echo "Backup_Dir=${BK_DIR}"
+    echo "Source_Dir=${SRC_DIR}"
+    echo "========================"
+}
 
-backup_dotfiles() {
+function set_install_var() {
+    SCRIPT_NAME=${0}
+    SCRIPT_DIR=$(my_realpath ${0})
+    WORK_DIR=$(dirname $SCRIPT_DIR)
+    BK_DIR=${WORK_DIR}/conf_bk
+    SRC_DIR=${WORK_DIR}/conf
+
+    DOT_FILE_LIST=( ".bashrc"\
+                ".vimrc"\
+                ".gitconfig"\
+                ".screenrc"\
+                ".gdbinit"\
+                ".bash_profile"\
+                ".utility"
+                )
+
+}
+
+
+function backup_dotfiles() {
     echo "========================="
     echo "Start to Backup dotfiles:"
     rm -rf ${BK_DIR}/*
@@ -29,13 +52,13 @@ backup_dotfiles() {
     echo "========================="
 }
 
-install_dotfiles() {
+function install_dotfiles() {
     echo "========================="
     echo "Start to Install dotfiles:"
     cd ${SRC_DIR}
     for file in "${DOT_FILE_LIST[@]}"
     do
-        if [ -f ${file} ]; then
+        if [ -f ${file} ] || [ -d ${file} ]; then
             echo "install ${file}"
             ln -f -s ${SRC_DIR}/${file} ~/${file}
         else
@@ -46,21 +69,21 @@ install_dotfiles() {
     echo "========================="
 }
 
-backup_and_install() {
+function backup_and_install() {
     backup_dotfiles
     install_dotfiles
 }
 
-install_bundle() {
+function install_bundle() {
     echo "install bundle"
     bundleDir=~/.vim/bundle/Vundle.vim/
     if [[ ! -d ${bundleDir} ]]; then
         mkdir -p ~/.vim/bundle
         git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
-    fi
+     fi
 }
 
-install_ubuntu_package() {
+function install_ubuntu_package() {
     echo "install for Ubuntu:"
     apt-get -v >/dev/null 2>&1 || { echo "no apt-get found. exit 1" >&2; exit 1; }
     sudo apt-get update
@@ -73,7 +96,7 @@ install_ubuntu_package() {
     done
 }
 
-install_centos_package() {
+function install_centos_package() {
     echo "install for CentOS"
     sudo yum update
     for package in "${install_list[@]}"
@@ -85,15 +108,14 @@ install_centos_package() {
     done
 }
 
-install_linux_package() {
+function install_linux_package() {
     install_list=( "git"\
             "screen"\
             "ctags"\
             "cscope"\
             "realpath"\
     )
-    dist=$(grep DISTRIB_ID /etc/*-release | awk -F '=' '{print $2}')
-    if [ "$dist" == "Ubuntu" ]; then
+    if [ "${DISTRUBUTION}" == "Ubuntu" ]; then
         install_ubuntu_package
     else
         install_centos_package
@@ -101,7 +123,7 @@ install_linux_package() {
     install_bundle
 }
 
-install_darwin_package() {
+function install_darwin_package() {
     echo "install for Darwin"
 
     #install homebrew
@@ -125,18 +147,24 @@ install_darwin_package() {
     install_bundle
 }
 
-install_for_Linux() {
+function install_for_Linux() {
     install_linux_package
     backup_and_install
 }
 
-install_for_darwin() {
+function install_for_darwin() {
     install_darwin_package
     backup_and_install
 }
 
-main() {
-     case ${OS} in
+function main() {
+    get_os_var
+    print_os_var
+
+    set_install_var
+    print_install_var
+
+    case ${OS} in
         "Linux")
         install_for_Linux
         ;;
