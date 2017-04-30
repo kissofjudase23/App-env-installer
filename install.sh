@@ -31,7 +31,6 @@ function set_install_var() {
 
 }
 
-
 function backup_dotfiles() {
     echo "========================="
     echo "Start to Backup dotfiles:"
@@ -67,11 +66,6 @@ function install_dotfiles() {
     done
     echo "Installation has been done!"
     echo "========================="
-}
-
-function backup_and_install() {
-    backup_dotfiles
-    install_dotfiles
 }
 
 function install_bundle() {
@@ -143,18 +137,26 @@ function install_darwin_package() {
         echo "install git";\
         brew install git;\
     }
-    #install bundle
+
+    #install 256-color support screen
+    brew tap homebrew/dupes
+    brew install homebrew/dupes/screen
+
+}
+
+function install_package() {
     install_bundle
-}
-
-function install_for_Linux() {
-    install_linux_package
-    backup_and_install
-}
-
-function install_for_darwin() {
-    install_darwin_package
-    backup_and_install
+    case ${OS} in
+        "Linux")
+        install_linux_package
+        ;;
+        "Darwin")
+        install_darwin_package
+        ;;
+        *)
+        echo "Do not support ${OS} now"
+        ;;
+    esac
 }
 
 function main() {
@@ -164,17 +166,11 @@ function main() {
     set_install_var
     print_install_var
 
-    case ${OS} in
-        "Linux")
-        install_for_Linux
-        ;;
-        "Darwin")
-        install_for_darwin
-        ;;
-        *)
-        echo "Do not support ${OS} now"
-        ;;
-    esac
+    install_package
+
+    backup_dotfiles
+    install_dotfiles
+
 }
 
 main
