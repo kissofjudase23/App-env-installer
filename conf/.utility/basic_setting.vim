@@ -46,15 +46,36 @@ nnoremap <C-L> <C-W><C-L>
 "move to the split to the left
 nnoremap <C-J> <C-W><C-H>
 
+" tell vim the background color
+" if has('gui_running')
+    " set background=light
+" else
+    " set background=dark
 " enable syntax highlighting
+"
 syntax on
 set t_Co=256
-if has('gui_running')
-    set background=light
-else
-    set background=dark
-endif
+"wombat/molokai
+colorscheme molokai
 
-
+"set t_Co=16
+" let g:solarized_termcolors= 16
+" let g:solarized_termtrans = 1
+" let g:solarized_visibility = "high"
+" let g:solarized_contrast = "high"
+" tell vim the background color
+" call togglebg#map("<F7>")
+" colorscheme solarized
+"Set these in your vimrc file prior to calling the colorscheme. " option name
+"default optional ------------------------------------------------
+"g:solarized_termcolors= 16 | 256
+"g:solarized_termtrans = 0 | 1
+"g:solarized_degrade = 0 | 1 
+"g:solarized_bold = 1 | 0 
+"g:solarized_underline =1 | 0 
+"g:solarized_italic = 1 | 0 
+"g:solarized_contrast = "normal"| "high" or "low"
+"g:solarized_visibility= "normal"| "high" or "low"-----------------------------------------------
+"
 
 

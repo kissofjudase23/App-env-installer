@@ -27,7 +27,7 @@ function exitstatus {
     PS2="${BOLD}>${RCol} "
 }
 
-envir_var_setting() {
+function envir_var_setting() {
     export VISUAL=vim #set vim as default editor
     export EDITOR="$VISUAL"
     # don't put duplicate lines or lines starting with space in the history.
@@ -36,7 +36,7 @@ envir_var_setting() {
     PROMPT_COMMAND=exitstatus
 }
 
-go_env_setting(){
+function go_env_setting(){
     go_src=/usr/local
     export PATH=$PATH:${go_src}/go/bin
     # your go project.
@@ -44,12 +44,12 @@ go_env_setting(){
     #export PATH=$PATH:$GOPATH/bin
 }
 
-common_alias(){
+function common_alias(){
     alias vi='vim'
     alias tree='tree -C'
 }
 
-linux_alias() {
+function linux_alias() {
     alias grep='grep --color=auto'
     alias fgrep='fgrep --color=auto'
     alias egrep='egrep --color=auto'
@@ -59,7 +59,7 @@ linux_alias() {
     alias l='ls -CF --color=auto'
 }
 
-darwin_alias() {
+function darwin_alias() {
     export CLICOLOR='true'
     export LSCOLORS="gxfxcxdxcxegedabagacad"
     alias grep='grep'
@@ -71,10 +71,30 @@ darwin_alias() {
     alias l='ls -CF'
 }
 
-alias_setting() {
-    common_alias
+function color_tuning() {
+    case "$TERM" in
+    *-256color)
+        alias ssh='TERM=${TERM%-256color} ssh'
+        ;;
+    *)
+        POTENTIAL_TERM=${TERM}-256color
+        POTENTIAL_TERMINFO=${TERM:0:1}/$POTENTIAL_TERM
 
-    OS=$(uname -s)
+        # better to check $(toe -a | awk '{print $1}') maybe?
+        BOX_TERMINFO_DIR=/usr/share/terminfo
+        [[ -f $BOX_TERMINFO_DIR/$POTENTIAL_TERMINFO ]] && \
+            export TERM=$POTENTIAL_TERM
+
+        HOME_TERMINFO_DIR=$HOME/.terminfo
+        [[ -f $HOME_TERMINFO_DIR/$POTENTIAL_TERMINFO ]] && \
+            export TERM=$POTENTIAL_TERM
+        ;;
+    esac
+}
+
+function alias_setting() {
+    common_alias
+    OS=$(uname)
     case ${OS} in
         "Linux")
             linux_alias
@@ -87,8 +107,9 @@ alias_setting() {
     esac
 }
 
-main() {
+function main() {
     alias_setting
+    color_tuning
     envir_var_setting
 }
 
