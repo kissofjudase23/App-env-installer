@@ -132,15 +132,21 @@ function install_darwin_package() {
         brew tap iveney/mocha;\
         brew install realpath;\
     }
-    #install git
+
+    # install git
     git --version > /dev/null 2>&1 || {\
         echo "install git";\
         brew install git;\
     }
 
-    #install 256-color support screen
-    brew tap homebrew/dupes
-    brew install homebrew/dupes/screen
+    # installm macvim
+    mvim -h > /dev/null 2>&1 || {\
+        echo "install macvim";\
+        brew install macvim;\
+    }
+
+    # install 256-color support screen
+    brew install screen
 
 }
 

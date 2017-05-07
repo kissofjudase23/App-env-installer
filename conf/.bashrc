@@ -45,11 +45,11 @@ function go_env_setting(){
 }
 
 function common_alias(){
-    alias vi='vim'
     alias tree='tree -C'
 }
 
 function linux_alias() {
+    alias vi='vim'
     alias grep='grep --color=auto'
     alias fgrep='fgrep --color=auto'
     alias egrep='egrep --color=auto'
@@ -62,6 +62,7 @@ function linux_alias() {
 function darwin_alias() {
     export CLICOLOR='true'
     export LSCOLORS="gxfxcxdxcxegedabagacad"
+    alias vi='mvim -v'
     alias grep='grep'
     alias fgrep='fgrep'
     alias egrep='egrep'
