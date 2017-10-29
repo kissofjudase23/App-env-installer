@@ -2,7 +2,9 @@
     name = e23
     email = kissofjudase23@gmail.com
 [core]
-    editor = vim
+    # let git uses the editor set by $EDITOR or $VISUAL
+    # editor = vim
+
     # checkout as-is, commit unix style format
     autocrlf = input
     # checkou as-is, commit as-is 
@@ -20,6 +22,8 @@
     tool = vimdiff
 [difftool]
     prompt = false
+[merge]
+    tool = vimdiff
 [branch  "master"]
     # mergeoptions = --no-ff
 [branch  "develop"]
