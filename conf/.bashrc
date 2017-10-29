@@ -1,5 +1,4 @@
-source ~/.git-prompt.sh
-#source ../system_info.sh
+source ~/.utility/git_prompt.sh
 
 function exitstatus {
     EXITSTATUS="$?"
@@ -28,19 +27,45 @@ function exitstatus {
     PS2="${BOLD}>${RCol} "
 }
 
-envir_var_setting() {
-    #set vim as default editor
-    export VISUAL=vim
-    export EDITOR="$VISUAL"
+function common_env_setting() {
     # don't put duplicate lines or lines starting with space in the history.
     # See bash(1) for more options
     HISTCONTROL=ignoreboth
     PROMPT_COMMAND=exitstatus
 }
 
-go_pro_setting() {
-    # go language environment
-    # go bin position.
+
+function linux_env_setting() {
+    export VISUAL=vim       # set vim as default editor
+    export EDITOR="$VISUAL"
+}
+
+function darwin_env_setting() {
+    export CLICOLOR='true'
+    export LSCOLORS="gxfxcxdxcxegedabagacad"
+
+    export VISUAL='mvim -v'  # set vim as default editor
+    export EDITOR="$VISUAL"
+}
+
+function envir_var_setting() {
+    common_env_setting
+
+    OS=$(uname)
+    case ${OS} in
+        "Linux")
+            linux_env_setting
+            ;;
+        "Darwin")
+            darwin_env_setting
+            ;;
+        *)
+        echo "Do not support ${OS} now"
+    esac
+
+}
+
+function go_env_setting(){
     go_src=/usr/local
     export PATH=$PATH:${go_src}/go/bin
     # your go project.
@@ -48,13 +73,12 @@ go_pro_setting() {
     #export PATH=$PATH:$GOPATH/bin
 }
 
-
-common_alist() {
-    alias vi='vim'
+function common_alias(){
     alias tree='tree -C'
 }
 
-linux_alias() {
+function linux_alias() {
+    alias vi='vim'
     alias grep='grep --color=auto'
     alias fgrep='fgrep --color=auto'
     alias egrep='egrep --color=auto'
@@ -64,9 +88,9 @@ linux_alias() {
     alias l='ls -CF --color=auto'
 }
 
-darwin_alias() {
-    export CLICOLOR='true'
-    export LSCOLORS="gxfxcxdxcxegedabagacad"
+function darwin_alias() {
+    alias vi='mvim -v'
+    alias vimdiff='mvimdiff -v'
     alias grep='grep'
     alias fgrep='fgrep'
     alias egrep='egrep'
@@ -76,8 +100,30 @@ darwin_alias() {
     alias l='ls -CF'
 }
 
-alias_setting() {
-    OS=$(uname -s)
+function color_tuning() {
+    case "$TERM" in
+    *-256color)
+        alias ssh='TERM=${TERM%-256color} ssh'
+        ;;
+    *)
+        POTENTIAL_TERM=${TERM}-256color
+        POTENTIAL_TERMINFO=${TERM:0:1}/$POTENTIAL_TERM
+
+        # better to check $(toe -a | awk '{print $1}') maybe?
+        BOX_TERMINFO_DIR=/usr/share/terminfo
+        [[ -f $BOX_TERMINFO_DIR/$POTENTIAL_TERMINFO ]] && \
+            export TERM=$POTENTIAL_TERM
+
+        HOME_TERMINFO_DIR=$HOME/.terminfo
+        [[ -f $HOME_TERMINFO_DIR/$POTENTIAL_TERMINFO ]] && \
+            export TERM=$POTENTIAL_TERM
+        ;;
+    esac
+}
+
+function alias_setting() {
+    common_alias
+    OS=$(uname)
     case ${OS} in
         "Linux")
             linux_alias
@@ -87,14 +133,13 @@ alias_setting() {
             ;;
         *)
         echo "Do not support ${OS} now"
-    esac
-    common_alist
+    esac 
 }
 
-main() {
-    alias_setting
+function main() {
     envir_var_setting
-    go_pro_setting
+    color_tuning
+    alias_setting
 }
 
 main

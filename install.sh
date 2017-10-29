@@ -1,35 +1,39 @@
 #!/bin/bash
-# author: Tom_Lin
-# date:   2015/12/2
+source ./common_utility.sh
+source ./get_osinfo.sh
 
-#include common functions
-source ./system_info.sh
-
-#this function is dupracted now.
-depracted_code() {
-    chmod +x "e23_config.sh"
-    ln -s $(pwd)/e23_config.sh ~/e23_config_symbolic
-    LINE='source ~/e23_config_symbolic'
-    FILE=.bashrc
-    cd ~
-    # check .bashrc and create if necessary.
-    Check_File_and_Create $FILE
-
-    # add a entry porint to user-defined script in .bashrc.
-    # add LINE to FILE only if this LINE dose not exists.
-    grep -q "$LINE" "$FILE" || echo "$LINE" >> "$FILE"
-
-    # For .vimrc
-    # check .bashrc and delete if necessary.
-    FILE=.vimrc
-    Check_File_and_Delete $FILE
-
-    cd - 
-    # create a symbolic for user-defined .vimrc
-    ln -s $(pwd)/$FILE ~/$FILE
+function print_install_var() {
+    echo "========================="
+    echo "Install info"
+    echo "Script_Name=${0}"
+    echo "Script_Dir=${SCRIPT_DIR}"
+    echo "Working_Dir=${WORK_DIR}"
+    echo "Backup_Dir=${BK_DIR}"
+    echo "Source_Dir=${SRC_DIR}"
+    echo "========================"
 }
 
-backup_dotfiles() {
+function set_install_var() {
+    SCRIPT_NAME=${0}
+    SCRIPT_DIR=$(my_realpath ${0})
+    WORK_DIR=$(dirname $SCRIPT_DIR)
+    BK_DIR=${WORK_DIR}/conf_bk
+    SRC_DIR=${WORK_DIR}/conf
+
+    DOT_FILE_LIST=( ".bashrc"\
+                ".vimrc"\
+                ".gitconfig"\
+                ".screenrc"\
+                ".gdbinit"\
+                ".bash_profile"\
+                ".utility"
+                )
+
+}
+
+function backup_dotfiles() {
+    echo "========================="
+    echo "Start to Backup dotfiles:"
     rm -rf ${BK_DIR}/*
     mkdir -p ${BK_DIR}/
 
@@ -43,38 +47,38 @@ backup_dotfiles() {
             echo "no ${file} detected in ${HOME}"
         fi
     done
+    echo "Backup has been done!"
+    echo "========================="
 }
 
-install_dotfiles() {
+function install_dotfiles() {
+    echo "========================="
+    echo "Start to Install dotfiles:"
     cd ${SRC_DIR}
     for file in "${DOT_FILE_LIST[@]}"
     do
-        if [ -f ${file} ]; then
+        if [ -f ${file} ] || [ -d ${file} ]; then
             echo "install ${file}"
             ln -f -s ${SRC_DIR}/${file} ~/${file}
         else
             echo "no ${file} detected in ${SRC_DIR}"
         fi
     done
+    echo "Installation has been done!"
+    echo "========================="
 }
 
-backup_and_install() {
-    backup_dotfiles
-    install_dotfiles
-}
-
-install_bundle() {
+function install_bundle() {
     echo "install bundle"
     bundleDir=~/.vim/bundle/Vundle.vim/
     if [[ ! -d ${bundleDir} ]]; then
         mkdir -p ~/.vim/bundle
         git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
-    fi  
+     fi
 }
 
-
-install_ubuntu_package() {
-    echo "install for Ubuntu"
+function install_ubuntu_package() {
+    echo "install for Ubuntu:"
     apt-get -v >/dev/null 2>&1 || { echo "no apt-get found. exit 1" >&2; exit 1; }
     sudo apt-get update
     for package in "${install_list[@]}"
@@ -86,7 +90,7 @@ install_ubuntu_package() {
     done
 }
 
-install_centos_package() {
+function install_centos_package() {
     echo "install for CentOS"
     sudo yum update
     for package in "${install_list[@]}"
@@ -98,15 +102,14 @@ install_centos_package() {
     done
 }
 
-install_linux_package() {
+function install_linux_package() {
     install_list=( "git"\
             "screen"\
             "ctags"\
             "cscope"\
             "realpath"\
     )
-    dist=`grep DISTRIB_ID /etc/*-release | awk -F '=' '{print $2}'`
-    if [ "$dist" == "Ubuntu" ]; then
+    if [ "${DISTRUBUTION}" == "Ubuntu" ]; then
         install_ubuntu_package
     else
         install_centos_package
@@ -114,7 +117,7 @@ install_linux_package() {
     install_bundle
 }
 
-install_darwin_package() {
+function install_darwin_package() {
     echo "install for Darwin"
 
     #install homebrew
@@ -122,39 +125,39 @@ install_darwin_package() {
         echo "install homebrew";\
         /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)";\
     }
-    #install realpath
-    realpath > /dev/null 2>&1 || {\
+
+    # install realpath
+    realpath . > /dev/null 2>&1 || {\
         echo "install realpath";\
         brew tap iveney/mocha;\
         brew install realpath;\
     }
-    #install git
+
+    # install git
     git --version > /dev/null 2>&1 || {\
         echo "install git";\
         brew install git;\
     }
-    #install bundle
+
+    # installm macvim
+    mvim -h > /dev/null 2>&1 || {\
+        echo "install macvim";\
+        brew install macvim;\
+    }
+
+    # install 256-color support screen
+    brew install screen
+
+}
+
+function install_package() {
     install_bundle
-}
-
-install_for_Linux() {
-    install_linux_package
-    backup_and_install
-}
-
-install_for_darwin() {
-    install_darwin_package
-    backup_and_install
-}
-
-main() {
-     #print_var
-     case ${OS} in
+    case ${OS} in
         "Linux")
-        install_for_Linux
+        install_linux_package
         ;;
         "Darwin")
-        install_for_darwin
+        install_darwin_package
         ;;
         *)
         echo "Do not support ${OS} now"
@@ -162,5 +165,18 @@ main() {
     esac
 }
 
+function main() {
+    get_os_var
+    print_os_var
+
+    set_install_var
+    print_install_var
+
+    install_package
+
+    backup_dotfiles
+    install_dotfiles
+
+}
 
 main

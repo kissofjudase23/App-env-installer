@@ -1,5 +1,19 @@
 startup_message off
 
+# reference:
+# https://askubuntu.com/questions/87169/using-gnu-screen-with-256-colors
+# http://stackoverflow.com/questions/6787734/strange-behavior-of-vim-color-inside-screen-with-256-colors
+# allow bold colors - necessary for some reason
+attrcolor b ".I"
+
+# tell screen how to set colors. AB = background, AF=foreground
+termcapinfo xterm 'Co#256:AB=\E[48;5;%dm:AF=\E[38;5;%dm'
+
+# use current bg color for erased chars
+defbce on
+term screen-256color
+
+
 caption always "%{=u .r} %-w%<%{=ub .Y}%n %t%{=u .r}%+w "
 hardstatus alwaysignore
 hardstatus alwayslastline "%{= .K} [%l]%<%=%{= .Y}$USER%{= .R}@%H %=%{= .m} %Y/%m/%d%{= .M} %0c "
@@ -8,6 +22,7 @@ defutf8 on
 altscreen on
 shelltitle '$ |bash'
 vbell off
+
 
 # First press CTRL-A , next press [ to scroll down/up
 # scroll up  : CTRL-b
