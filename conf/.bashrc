@@ -27,13 +27,42 @@ function exitstatus {
     PS2="${BOLD}>${RCol} "
 }
 
-function envir_var_setting() {
-    export VISUAL=vim #set vim as default editor
-    export EDITOR="$VISUAL"
+function common_env_setting() {
     # don't put duplicate lines or lines starting with space in the history.
     # See bash(1) for more options
     HISTCONTROL=ignoreboth
     PROMPT_COMMAND=exitstatus
+}
+
+
+function linux_env_setting() {
+    export VISUAL=vim       # set vim as default editor
+    export EDITOR="$VISUAL"
+}
+
+function darwin_env_setting() {
+    export CLICOLOR='true'
+    export LSCOLORS="gxfxcxdxcxegedabagacad"
+
+    export VISUAL='mvim -v'  # set vim as default editor
+    export EDITOR="$VISUAL"
+}
+
+function envir_var_setting() {
+    common_env_setting
+
+    OS=$(uname)
+    case ${OS} in
+        "Linux")
+            linux_env_setting
+            ;;
+        "Darwin")
+            darwin_env_setting
+            ;;
+        *)
+        echo "Do not support ${OS} now"
+    esac
+
 }
 
 function go_env_setting(){
@@ -60,9 +89,8 @@ function linux_alias() {
 }
 
 function darwin_alias() {
-    export CLICOLOR='true'
-    export LSCOLORS="gxfxcxdxcxegedabagacad"
     alias vi='mvim -v'
+    alias vimdiff='mvimdiff -v'
     alias grep='grep'
     alias fgrep='fgrep'
     alias egrep='egrep'
@@ -105,13 +133,13 @@ function alias_setting() {
             ;;
         *)
         echo "Do not support ${OS} now"
-    esac
+    esac 
 }
 
 function main() {
-    alias_setting
-    color_tuning
     envir_var_setting
+    color_tuning
+    alias_setting
 }
 
 main
