@@ -58,6 +58,12 @@ set t_Co=256
 "wombat/molokai
 colorscheme molokai
 
+"Remove all trailing whitespace by pressing F4
+nnoremap <F4> :let _s=@/<Bar>:%s/\s\+$//e<Bar>:let @/=_s<Bar><CR>
+" F3 is resevered for TagList
+" F5 is reservered for NERDTree
+" F8~F10 are resevered for screen
+
 "set t_Co=16
 " let g:solarized_termcolors= 16
 " let g:solarized_termtrans = 1
