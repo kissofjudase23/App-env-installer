@@ -1,5 +1,3 @@
-runtime ./.utility/basic_setting.vim
-
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " autoloading functionality for Ctags
 " http://stackoverflow.com/questions/563616/vim-and-ctags-tips-and-tricks
