@@ -1,7 +1,5 @@
 #!/bin/bash
-source ./common_utility.sh
-source ./get_osinfo.sh
-
+source ./common_utility.sh 
 function print_install_var() {
     echo "========================="
     echo "Install info"
@@ -19,6 +17,7 @@ function set_install_var() {
     WORK_DIR=$(dirname $SCRIPT_DIR)
     BK_DIR=${WORK_DIR}/conf_bk
     SRC_DIR=${WORK_DIR}/conf
+    UTILITY_DIR=${SRC_DIR}/.utility
 
     DOT_FILE_LIST=( ".bashrc"\
                 ".vimrc"\
@@ -123,7 +122,9 @@ function install_darwin_package() {
     #install homebrew
     brew -v > /dev/null 2>&1 || {\
         echo "install homebrew";\
-        /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)";\
+        /usr/bin/ruby -e \
+        "$(curl -fsSL \
+        https://raw.githubusercontent.com/Homebrew/install/master/install)";\
     }
 
     # install realpath
@@ -152,6 +153,7 @@ function install_darwin_package() {
 
 function install_package() {
     install_bundle
+    update_git_script
     case ${OS} in
         "Linux")
         install_linux_package
@@ -163,6 +165,16 @@ function install_package() {
         echo "Do not support ${OS} now"
         ;;
     esac
+}
+
+function update_git_script() {
+    local git_src_url="https://raw.githubusercontent.com/git/git/master/contrib/completion/"
+    curl ${git_src_url}/git-prompt.sh -o ${UTILITY_DIR}/git-prompt.sh
+    curl ${git_src_url}/git-completion.bash -o ${UTILITY_DIR}/git-completion.bash
+}
+
+function run_dotfiles() {
+    source ~/.bashrc
 }
 
 function main() {
@@ -177,6 +189,7 @@ function main() {
     backup_dotfiles
     install_dotfiles
 
+    run_dotfiles
 }
 
 main
