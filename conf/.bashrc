@@ -1,4 +1,5 @@
-source ~/.utility/git_prompt.sh
+source ~/.utility/git-prompt.sh
+source ~/.utility/git-completion.bash
 
 function exitstatus {
     EXITSTATUS="$?"
