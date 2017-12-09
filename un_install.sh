@@ -35,16 +35,19 @@ un_install_dotfiles() {
 
 uninstall_for_linux() {
     un_install_dotfiles
-    #restore_dotfiles
 }
 
 uninstall_for_darwin() {
     un_install_dotfiles
-    #restore_dotfiles
 }
 
 main() {
-     print_var
+    get_os_info
+    print_os_inf
+
+    set_install_info
+    print_install_info
+
      case ${OS} in
         "Linux")
         uninstall_for_linux

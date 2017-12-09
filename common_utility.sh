@@ -4,6 +4,52 @@ function my_realpath(){
     [[ $1 = /* ]] && echo "$1" || echo "$PWD/${1#./}"
 }
 
+function get_os_info(){
+    # get basic system info
+    OS=$(uname -s)
+    ARCH=$(uname -m)
+    VER=$(uname -r)
+    DISTRIBUTION=$(grep DISTRIB_ID /etc/*-release | awk -F '=' '{print $2}')
+}
+
+function print_os_info() {
+    echo "========================="
+    echo "OS Info:"
+    echo "OS=${OS}"
+    echo "ARCH=${VER}"
+    echo "VER=${VER}"
+    echo "========================="
+}
+
+function set_install_info() {
+    SCRIPT_NAME=${0}
+    SCRIPT_DIR=$(my_realpath ${0})
+    WORK_DIR=$(dirname $SCRIPT_DIR)
+    BK_DIR=${WORK_DIR}/conf_bk
+    SRC_DIR=${WORK_DIR}/conf
+    UTILITY_DIR=${SRC_DIR}/.utility
+
+    DOT_FILE_LIST=( ".bashrc"\
+                ".vimrc"\
+                ".gitconfig"\
+                ".screenrc"\
+                ".gdbinit"\
+                ".bash_profile"\
+                ".utility"
+                )
+}
+
+function print_install_info() {
+    echo "========================="
+    echo "Install info"
+    echo "Script_Name=${0}"
+    echo "Script_Dir=${SCRIPT_DIR}"
+    echo "Working_Dir=${WORK_DIR}"
+    echo "Backup_Dir=${BK_DIR}"
+    echo "Source_Dir=${SRC_DIR}"
+    echo "========================"
+}
+
 function check_file_and_create(){
     checkFile=$1
     echo $checkFile
@@ -38,22 +84,6 @@ function check_Link_and_remove(){
     fi
 }
 
-function get_os_var(){
-    # get basic system info
-    OS=$(uname -s)
-    ARCH=$(uname -m)
-    VER=$(uname -r)
-    DISTRIBUTION=$(grep DISTRIB_ID /etc/*-release | awk -F '=' '{print $2}')
-}
-
-function print_os_var() {
-    echo "========================="
-    echo "OS Info:"
-    echo "OS=${OS}"
-    echo "ARCH=${VER}"
-    echo "VER=${VER}"
-    echo "========================="
-}
 
 
 

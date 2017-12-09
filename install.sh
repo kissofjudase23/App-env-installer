@@ -1,34 +1,5 @@
 #!/bin/bash
-source ./common_utility.sh 
-function print_install_var() {
-    echo "========================="
-    echo "Install info"
-    echo "Script_Name=${0}"
-    echo "Script_Dir=${SCRIPT_DIR}"
-    echo "Working_Dir=${WORK_DIR}"
-    echo "Backup_Dir=${BK_DIR}"
-    echo "Source_Dir=${SRC_DIR}"
-    echo "========================"
-}
-
-function set_install_var() {
-    SCRIPT_NAME=${0}
-    SCRIPT_DIR=$(my_realpath ${0})
-    WORK_DIR=$(dirname $SCRIPT_DIR)
-    BK_DIR=${WORK_DIR}/conf_bk
-    SRC_DIR=${WORK_DIR}/conf
-    UTILITY_DIR=${SRC_DIR}/.utility
-
-    DOT_FILE_LIST=( ".bashrc"\
-                ".vimrc"\
-                ".gitconfig"\
-                ".screenrc"\
-                ".gdbinit"\
-                ".bash_profile"\
-                ".utility"
-                )
-
-}
+source ./common_utility.sh
 
 function backup_dotfiles() {
     echo "========================="
@@ -178,11 +149,11 @@ function run_dotfiles() {
 }
 
 function main() {
-    get_os_var
-    print_os_var
+    get_os_info
+    print_os_info
 
-    set_install_var
-    print_install_var
+    set_install_info
+    print_install_info
 
     install_package
 
