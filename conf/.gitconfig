@@ -11,6 +11,11 @@
     #autocrlf = false
 [color]
     ui = true
+    diff = auto
+    status = auto
+    branch = auto
+    interactive = auto
+    pager = true
 [alias]
     df = diff
     co = checkout
