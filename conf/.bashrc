@@ -45,7 +45,7 @@ function darwin_env_setting() {
     export CLICOLOR='true'
     export LSCOLORS="gxfxcxdxcxegedabagacad"
 
-    export VISUAL='mvim -v'  # set vim as default editor
+    export VISUAL='mvim -v'  # set mvim as default editor
     export EDITOR="$VISUAL"
 }
 
