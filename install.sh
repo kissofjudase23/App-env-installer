@@ -139,13 +139,19 @@ function install_package() {
 }
 
 function update_git_script() {
+    echo "========================="
+    echo "try to get latest git-prompt.sh and git-completion.bash"
     local git_src_url="https://raw.githubusercontent.com/git/git/master/contrib/completion/"
     curl ${git_src_url}/git-prompt.sh -o ${UTILITY_DIR}/git-prompt.sh
     curl ${git_src_url}/git-completion.bash -o ${UTILITY_DIR}/git-completion.bash
+    echo "========================="
 }
 
 function run_dotfiles() {
+    echo "========================="
+    echo "Run source ~/.bashrc"
     source ~/.bashrc
+    echo "========================="
 }
 
 function main() {
