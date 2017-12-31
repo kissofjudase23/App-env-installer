@@ -23,6 +23,24 @@ nnoremap <silent> <F3> :TlistToggle<CR>
 " map TlistClose to <F4>
 " nnoremap <silent> <F4> :TlistClose<CR>
 
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Easy Align setting
+" https://github.com/junegunn/vim-easy-align
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Start interactive EasyAlign in visual mode (e.g. vipga)
+xmap ga <Plug>(EasyAlign)
+
+" Start interactive EasyAlign for a motion/text object (e.g. gaip)
+nmap ga <Plug>(EasyAlign)
+
+" vipga=
+" visual-select inner paragraph
+" Start EasyAlign command (ga)
+" Align around =
+"
+" gaip=
+" Start EasyAlign command (ga) for inner paragraph
+" Align around =
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " NETDTree setting
