@@ -112,41 +112,48 @@ function install_darwin_package() {
     echo "install for Darwin"
 
     #install homebrew
-    brew -v > /dev/null 2>&1 || {\
-        echo "install homebrew";\
+    if ! command -v brew > /dev/null 2>&1 ; then
+        echo "install homebrew"
         /usr/bin/ruby -e \
         "$(curl -fsSL \
-        https://raw.githubusercontent.com/Homebrew/install/master/install)";\
-    }
+        https://raw.githubusercontent.com/Homebrew/install/master/install)"
+    else
+        echo "homebrew has been installed"
+    fi
 
     # install realpath
-    realpath . > /dev/null 2>&1 || {\
-        echo "install realpath";\
-        brew tap iveney/mocha;\
-        brew install realpath;\
-    }
+    if ! command -v realpath > /dev/null 2>&1 ; then
+        echo "install realpath"
+        brew tap iveney/mocha
+        brew install realpath
+    else
+        echo "realpath has been installed"
+    fi
 
-    # install git
-    git --version > /dev/null 2>&1 || {\
-        echo "install git";\
-        brew install git;\
-    }
+    local Darwin_package_list=( "git"\
+                                "python"\
+                                "screen"\
+                              )
 
-    # installm python
-    python --version > /dev/null 2>&1 || {\
-        echo "install python";\
-        brew install python;\
-    }
+    for package in "${Darwin_package_list[@]}"
+    do
+        if ! command -v ${package} > /dev/null 2>&1 ; then
+            echo "install ${package}";\
+            brew install ${package}
+        else
+            echo "${package} has been installed"
+        fi
+    done
 
     # installm neovim
-    nvim -h > /dev/null 2>&1 || {\
-        echo "install neovim";\
-        brew install neovim;\
-        pip install --user --upgrade neovim;\
-    }
+    if ! command -v nvim > /dev/null 2>&1 ; then
+        echo "install neovim"
+        brew install neovim
+        pip install --user --upgrade neovim
+    else
+        echo "neovim has been installed"
+    fi
 
-    # install 256-color support screen
-    brew install screen
 
 }
 
