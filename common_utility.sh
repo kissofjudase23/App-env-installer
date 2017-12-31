@@ -30,13 +30,14 @@ function set_install_info() {
     UTILITY_DIR=${SRC_DIR}/.utility
 
     DOT_FILE_LIST=( ".bashrc"\
-                ".vimrc"\
-                ".gitconfig"\
-                ".screenrc"\
-                ".gdbinit"\
-                ".bash_profile"\
-                ".utility"
-                )
+                    ".vimrc"\
+                    ".gitconfig"\
+                    ".screenrc"\
+                    ".gdbinit"\
+                    ".bash_profile"\
+                    ".utility"
+                  )
+
 }
 
 function print_install_info() {

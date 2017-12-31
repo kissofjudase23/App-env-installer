@@ -54,37 +54,52 @@ function install_bundle() {
 }
 
 function install_ubuntu_package() {
-    echo "install for Ubuntu:"
-    apt-get -v >/dev/null 2>&1 || { echo "no apt-get found. exit 1" >&2; exit 1; }
-    sudo apt-get update
-    for package in "${install_list[@]}"
+    echo "install for Ubuntu"
+    if ! command -v apt-get > /dev/null 2>&1 ; then
+        echo "no apt-get found. exit 1"
+        exit 1
+    else
+        sudo apt-get update
+    fi
+
+    for package in "${Linux_package_list[@]}"
     do
-        ${package} --version > /dev/null 2>&1 || {\
+        if ! command -v ${package} > /dev/null 2>&1 ; then
             echo "install ${package}";\
             sudo apt-get install ${package}
-        }
+        else
+            echo "${package} has been installed"
+        fi
     done
 }
 
 function install_centos_package() {
     echo "install for CentOS"
-    sudo yum update
-    for package in "${install_list[@]}"
+    if ! command -v yum > /dev/null 2>&1 ; then
+        echo "no yum found. exit 1"
+        exit 1
+    else
+       sudo yum update
+    fi
+
+    for package in "${Linux_package_list[@]}"
     do
-        ${package} --version > /dev/null 2>&1 || {\
+        if ! command -v ${package} > /dev/null 2>&1 ; then
             echo "install ${package}";\
-            sudo yum install ${package}
-        }
+            sudo yum -y install ${package}
+        else
+            echo "${package} has been installed"
+        fi
     done
 }
 
 function install_linux_package() {
-    install_list=( "git"\
-            "screen"\
-            "ctags"\
-            "cscope"\
-            "realpath"\
-    )
+    Linux_package_list=( "git"\
+                         "screen"\
+                         "ctags"\
+                         "cscope"\
+                         "realpath"\
+                       )
     if [ "${DISTRUBUTION}" == "Ubuntu" ]; then
         install_ubuntu_package
     else

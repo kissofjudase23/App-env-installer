@@ -33,20 +33,24 @@ function common_env_setting() {
     # See bash(1) for more options
     HISTCONTROL=ignoreboth
     PROMPT_COMMAND=exitstatus
+
+    if command -v nvim > /dev/null 2>&1 ; then
+        export VISUAL=nvim       # set nvim as default editor
+        export EDITOR="$VISUAL"
+    else
+        export VISUAL=vim       # set vim as default editor
+        export EDITOR="$VISUAL"
+    fi
 }
 
 
 function linux_env_setting() {
-    export VISUAL=vim       # set vim as default editor
-    export EDITOR="$VISUAL"
+    echo "do nothing for lix env"
 }
 
 function darwin_env_setting() {
     export CLICOLOR='true'
     export LSCOLORS="gxfxcxdxcxegedabagacad"
-
-    export VISUAL='nvim'  # set neovim as default editor
-    export EDITOR="$VISUAL"
 
     # Setting PATH for Python 2.7
     # The original version is saved in .bash_profile.pysave
@@ -86,10 +90,17 @@ function go_env_setting(){
 
 function common_alias(){
     alias tree='tree -C'
+
+    if command -v nvim > /dev/null 2>&1 ; then
+        alias vi='nvim'
+        alias vim='nvim'
+        alias vimdiff='nvim -d'
+    else
+        alias vi='vim'
+    fi
 }
 
 function linux_alias() {
-    alias vi='vim'
     alias grep='grep --color=auto'
     alias fgrep='fgrep --color=auto'
     alias egrep='egrep --color=auto'
@@ -100,9 +111,6 @@ function linux_alias() {
 }
 
 function darwin_alias() {
-    alias vi='nvim'
-    alias vim='nvim'
-    alias vimdiff='nvim -d'
     alias grep='grep'
     alias fgrep='fgrep'
     alias egrep='egrep'
