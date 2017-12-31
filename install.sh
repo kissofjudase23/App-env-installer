@@ -34,13 +34,19 @@ function install_dotfiles() {
             echo "no ${file} detected in ${SRC_DIR}"
         fi
     done
+
+    echo "install init.vim for nvim"
+    local nvim_config_dir="${HOME}/.config/nvim"
+    mkdir -p ${nvim_config_dir}
+    ln -f -s ${SRC_DIR}/.vimrc ${nvim_config_dir}/init.vim
+
     echo "Installation has been done!"
     echo "========================="
 }
 
 function install_bundle() {
     echo "install bundle"
-    bundleDir=~/.vim/bundle/Vundle.vim/
+    local bundleDir=~/.vim/bundle/Vundle.vim/
     if [[ ! -d ${bundleDir} ]]; then
         mkdir -p ~/.vim/bundle
         git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
@@ -111,10 +117,17 @@ function install_darwin_package() {
         brew install git;\
     }
 
-    # installm macvim
-    mvim -h > /dev/null 2>&1 || {\
-        echo "install macvim";\
-        brew install macvim;\
+    # installm python
+    python --version > /dev/null 2>&1 || {\
+        echo "install python";\
+        brew install python;\
+    }
+
+    # installm neovim
+    nvim -h > /dev/null 2>&1 || {\
+        echo "install neovim";\
+        brew install neovim;\
+        pip install --user --upgrade neovim;\
     }
 
     # install 256-color support screen

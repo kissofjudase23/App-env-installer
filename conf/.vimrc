@@ -59,3 +59,10 @@ set rtp+=~/.utility/
 runtime ./basic_setting.vim
 runtime ./plugin_setting.vim
 
+if has('nvim')
+    runtime ./nvim_setting.vim
+endif
+
+
+
+

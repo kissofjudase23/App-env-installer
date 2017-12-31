@@ -45,7 +45,7 @@ function darwin_env_setting() {
     export CLICOLOR='true'
     export LSCOLORS="gxfxcxdxcxegedabagacad"
 
-    export VISUAL='mvim -v'  # set mvim as default editor
+    export VISUAL='nvim'  # set neovim as default editor
     export EDITOR="$VISUAL"
 
     # Setting PATH for Python 2.7
@@ -100,8 +100,9 @@ function linux_alias() {
 }
 
 function darwin_alias() {
-    alias vi='mvim -v'
-    alias vimdiff='mvimdiff -v'
+    alias vi='nvim'
+    alias vim='nvim'
+    alias vimdiff='nvim -d'
     alias grep='grep'
     alias fgrep='fgrep'
     alias egrep='egrep'
