@@ -1,31 +1,42 @@
-# Description
- This project is used to provide basic development setting.
- 1. bash shell setting (.bashrc)
- 2. vim editor with several plugins (.vimrc), use <a href="https://github.com/VundleVim/Vundle.vim"> vundle <a> to configure them<br>
-    a.<a href="https://github.com/tpope/vim-fugitive"> vim-fugitive </a> (git plugin) <br>
-    b.<a href="https://github.com/scrooloose/nerdtree"> nerdtree </a> (display files and directories) <br>
-    c.<a href="https://github.com/scrooloose/syntastic"> syntastic (syntax checking) </a> <br>
-    d.<a href="https://github.com/Valloric/YouCompleteMe"> YouCompleteMe </a> (code-completion engine)<br>
-    e.<a href="https://github.com/scrooloose/nerdcommenter/"> nerdcommenter </a> (code-commenter) <br>
- 3. screen setting (.screenrc)
- 4. git config (.gitconfig) 
- 5. gdb config (.gdbinit)
-
-# Support Distribution
+# Supported Distributions
  1. Ubuntu
  2. CentOS
  3. Darwin
 
-# Install dotfiles
-<pre><code>$ ./install.sh
-$ vim
-$ :PluginInstall  (install all vimplugin)
-</code></pre>
+# Description
+ This project is used to provide basic development setting.
+ 1. bash shell setting (.bashrc)
+ 2. vim and plugins (.vimrc)
+ 3. screen setting (.screenrc)
+ 4. git config (.gitconfig) 
+ 5. gdb config (.gdbinit)
 
-# Prerequisite for <a href="https://github.com/Valloric/YouCompleteMe"> YouCompleteMe </a>
-1. <a href="https://github.com/Valloric/YouCompleteMe#installation"> Installation </a> <br>
-2. <a href="https://github.com/Valloric/YouCompleteMe#user-guide"> User Guide </a> <br>
+# Auto complete for git 
+ 1. [git prompt](https://github.com/git/git/tree/master/contrib/completion)  
+ 2. [git completion](https://github.com/git/git/tree/master/contrib/completion)  
+
+# Vim plugins  
+ 1. Use [vundle](https://github.com/VundleVim/Vundle.vim) to manage vim plugins  
+ 2. Git Wrapper [vim-fugitive](https://github.com/tpope/vim-fugitive)  
+ 3. A file system explorer for the Vim editor [nerdtree](https://github.com/scrooloose/nerdtree)  
+ 4. Comment tools [nerdcommenter](https://github.com/scrooloose/nerdcommenter)   
+ 5. Auto complete engine [YouCompleteMe](https://github.com/Valloric/YouCompleteMe)  
+ 6. [Color Scheme](https://github.com/flazz/vim-colorschemes)  
+ 7. [Syntax Check](https://github.com/scrooloose/syntastic)
+
+
+# Install dotfiles
+```bash 
+$./install.sh
+$ vim
+$ :PluginInstall  (install vimplugins)
+```
+
+# Prerequisite for [YouCompleteMe](https://github.com/Valloric/YouCompleteMe) 
+1. [Installation](https://github.com/Valloric/YouCompleteMe#installation)
+2. [User Guide]()<a href="https://github.com/Valloric/YouCompleteMe#user-guide"> User Guide
 
 # Uninstall dotfiles
-<pre><code>$ ./un_install.sh
-</code></pre>
+```bash 
+$ ./uninstall.sh
+```

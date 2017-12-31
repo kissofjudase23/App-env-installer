@@ -35,12 +35,11 @@ Plugin 'https://github.com/flazz/vim-colorschemes.git'
 Plugin 'https://github.com/MattesGroeger/vim-bookmarks.git'
 Plugin 'https://github.com/tpope/vim-fugitive.git'
 Plugin 'https://github.com/vim-scripts/taglist.vim.git'
-Plugin 'https://github.com/fatih/vim-go.git'
-Plugin 'https://github.com/vim-scripts/python.vim.git'
 Plugin 'https://github.com/scrooloose/nerdtree.git'
-Plugin 'scrooloose/nerdcommenter'
+Plugin 'https://github.com/scrooloose/nerdcommenter.git'
 Plugin 'https://github.com/scrooloose/syntastic.git'
 Plugin 'https://github.com/Valloric/YouCompleteMe.git'
+Plugin 'https://github.com/junegunn/vim-easy-align.git'
 " All of your Plugins must be added before the following line
 call vundle#end()            " required
 filetype plugin indent on    " required
