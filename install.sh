@@ -54,37 +54,52 @@ function install_bundle() {
 }
 
 function install_ubuntu_package() {
-    echo "install for Ubuntu:"
-    apt-get -v >/dev/null 2>&1 || { echo "no apt-get found. exit 1" >&2; exit 1; }
-    sudo apt-get update
-    for package in "${install_list[@]}"
+    echo "install for Ubuntu"
+    if ! command -v apt-get > /dev/null 2>&1 ; then
+        echo "no apt-get found. exit 1"
+        exit 1
+    else
+        sudo apt-get update
+    fi
+
+    for package in "${Linux_package_list[@]}"
     do
-        ${package} --version > /dev/null 2>&1 || {\
+        if ! command -v ${package} > /dev/null 2>&1 ; then
             echo "install ${package}";\
             sudo apt-get install ${package}
-        }
+        else
+            echo "${package} has been installed"
+        fi
     done
 }
 
 function install_centos_package() {
     echo "install for CentOS"
-    sudo yum update
-    for package in "${install_list[@]}"
+    if ! command -v yum > /dev/null 2>&1 ; then
+        echo "no yum found. exit 1"
+        exit 1
+    else
+       sudo yum update
+    fi
+
+    for package in "${Linux_package_list[@]}"
     do
-        ${package} --version > /dev/null 2>&1 || {\
+        if ! command -v ${package} > /dev/null 2>&1 ; then
             echo "install ${package}";\
-            sudo yum install ${package}
-        }
+            sudo yum -y install ${package}
+        else
+            echo "${package} has been installed"
+        fi
     done
 }
 
 function install_linux_package() {
-    install_list=( "git"\
-            "screen"\
-            "ctags"\
-            "cscope"\
-            "realpath"\
-    )
+    Linux_package_list=( "git"\
+                         "screen"\
+                         "ctags"\
+                         "cscope"\
+                         "realpath"\
+                       )
     if [ "${DISTRUBUTION}" == "Ubuntu" ]; then
         install_ubuntu_package
     else
@@ -97,41 +112,48 @@ function install_darwin_package() {
     echo "install for Darwin"
 
     #install homebrew
-    brew -v > /dev/null 2>&1 || {\
-        echo "install homebrew";\
+    if ! command -v brew > /dev/null 2>&1 ; then
+        echo "install homebrew"
         /usr/bin/ruby -e \
         "$(curl -fsSL \
-        https://raw.githubusercontent.com/Homebrew/install/master/install)";\
-    }
+        https://raw.githubusercontent.com/Homebrew/install/master/install)"
+    else
+        echo "homebrew has been installed"
+    fi
 
     # install realpath
-    realpath . > /dev/null 2>&1 || {\
-        echo "install realpath";\
-        brew tap iveney/mocha;\
-        brew install realpath;\
-    }
+    if ! command -v realpath > /dev/null 2>&1 ; then
+        echo "install realpath"
+        brew tap iveney/mocha
+        brew install realpath
+    else
+        echo "realpath has been installed"
+    fi
 
-    # install git
-    git --version > /dev/null 2>&1 || {\
-        echo "install git";\
-        brew install git;\
-    }
+    local Darwin_package_list=( "git"\
+                                "python"\
+                                "screen"\
+                              )
 
-    # installm python
-    python --version > /dev/null 2>&1 || {\
-        echo "install python";\
-        brew install python;\
-    }
+    for package in "${Darwin_package_list[@]}"
+    do
+        if ! command -v ${package} > /dev/null 2>&1 ; then
+            echo "install ${package}";\
+            brew install ${package}
+        else
+            echo "${package} has been installed"
+        fi
+    done
 
     # installm neovim
-    nvim -h > /dev/null 2>&1 || {\
-        echo "install neovim";\
-        brew install neovim;\
-        pip install --user --upgrade neovim;\
-    }
+    if ! command -v nvim > /dev/null 2>&1 ; then
+        echo "install neovim"
+        brew install neovim
+        pip install --user --upgrade neovim
+    else
+        echo "neovim has been installed"
+    fi
 
-    # install 256-color support screen
-    brew install screen
 
 }
 
