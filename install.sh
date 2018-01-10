@@ -99,6 +99,7 @@ function install_linux_package() {
                          "ctags"\
                          "cscope"\
                          "realpath"\
+                         "tree"
                        )
     if [ "${DISTRUBUTION}" == "Ubuntu" ]; then
         install_ubuntu_package
@@ -133,6 +134,7 @@ function install_darwin_package() {
     local Darwin_package_list=( "git"\
                                 "python"\
                                 "screen"\
+                                "tree"\
                               )
 
     for package in "${Darwin_package_list[@]}"
