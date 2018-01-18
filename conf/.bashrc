@@ -41,11 +41,16 @@ function common_env_setting() {
         export VISUAL=vim       # set vim as default editor
         export EDITOR="$VISUAL"
     fi
+
+    if command -v nvim > /dev/null 2>&1 ; then
+        local aws_completer_path=$(command -v aws_completer)
+        complete -C ${aws_completer_path} aws
+    fi
 }
 
 
 function linux_env_setting() {
-    echo "do nothing for lix env"
+    echo "do nothing for linux here"
 }
 
 function darwin_env_setting() {
