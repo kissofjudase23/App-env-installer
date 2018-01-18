@@ -168,11 +168,12 @@ function install_darwin_package() {
     # install ag
     check_and_brew_install "ag" "the_silver_searcher"
 
+	brew install bash-completion
+
 }
 
 function install_package() {
     install_bundle
-    update_git_script
     case ${OS} in
         "Linux")
         install_linux_package
@@ -184,6 +185,30 @@ function install_package() {
         echo "Do not support ${OS} now"
         ;;
     esac
+
+    update_git_script
+    update_docker_script
+}
+
+function update_docker_script() {
+    echo "========================="
+    echo "try to get docker compose and docker machine autocomplete"
+    local machine_url="https://raw.githubusercontent.com/docker/machine/v0.13.0/contrib/completion/bash/docker-machine.bash"
+    local compose_url="https://raw.githubusercontent.com/docker/compose/1.18.0/contrib/completion/bash/docker-compose"
+    case ${OS} in
+        "Linux")
+         local auto_complete_dir="/etc/bash_completion.d"
+        ;;
+        "Darwin")
+         local auto_complete_dir="/usr/local/etc/bash_completion.d"
+        ;;
+        *)
+        echo "Do not support ${OS} now"
+        ;;
+    esac
+    curl -L ${machine_url} -o ${auto_complete_dir}/docker-machine
+    curl -L ${compose_url} -o ${auto_complete_dir}/docker-compose
+    echo "========================="
 }
 
 function update_git_script() {
