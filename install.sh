@@ -103,7 +103,16 @@ function install_linux_package() {
     else
         install_centos_package
     fi
+
     install_bundle
+
+    # install awscli
+    if ! command -v aws > /dev/null 2>&1 ; then
+        echo "install aws CLI"
+        pip install awscli --user --upgrade
+    else
+        echo "aws CLI  has been installed"
+    fi
 }
 
 function install_darwin_package() {
@@ -139,11 +148,19 @@ function install_darwin_package() {
         check_and_brew_install ${package} ${package}
     done
 
+    # install awscli
+    if ! command -v aws > /dev/null 2>&1 ; then
+        echo "install aws CLI"
+        pip install awscli --user --upgrade
+    else
+        echo "aws CLI  has been installed"
+    fi
+
     # install neovim
     if ! command -v nvim > /dev/null 2>&1 ; then
         echo "install neovim"
         brew install neovim
-        pip install --user --upgrade neovim
+        pip install neovim --user --upgrade
     else
         echo "neovim has been installed"
     fi
