@@ -85,6 +85,42 @@ function check_Link_and_remove(){
     fi
 }
 
+function check_and_yum_install(){
+    local cmd=${1}
+    local package_name=${2}
+    if ! command -v ${cmd} > /dev/null 2>&1 ; then
+        echo "install ${package_name} for ${cmd}"
+        sudo yum install ${package_name}
+    else
+        echo "${package_name} for ${cmd} has been installed"
+    fi
+}
+
+function check_and_apt_install(){
+    local cmd=${1}
+    local package_name=${2}
+    if ! command -v ${cmd} > /dev/null 2>&1 ; then
+        echo "install ${package_name} for ${cmd}"
+        sudo apt-get install ${package_name}
+    else
+        echo "${package_name} for ${cmd} has been installed"
+    fi
+
+}
+
+function check_and_brew_install(){
+    local cmd=${1}
+    local package_name=${2}
+    if ! command -v ${cmd} > /dev/null 2>&1 ; then
+        echo "install ${package_name} for ${cmd}"
+        brew install ${package_name}
+    else
+        echo "${package_name} for ${cmd} has been installed"
+    fi
+}
+
+
+
 
 
 

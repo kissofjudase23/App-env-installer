@@ -64,13 +64,11 @@ function install_ubuntu_package() {
 
     for package in "${Linux_package_list[@]}"
     do
-        if ! command -v ${package} > /dev/null 2>&1 ; then
-            echo "install ${package}";\
-            sudo apt-get install ${package}
-        else
-            echo "${package} has been installed"
-        fi
+        check_and_apt_install ${package} ${package}
     done
+
+    # install ag
+    check_and_apt_install "ag" "silversearcher-ag"
 }
 
 function install_centos_package() {
@@ -84,13 +82,12 @@ function install_centos_package() {
 
     for package in "${Linux_package_list[@]}"
     do
-        if ! command -v ${package} > /dev/null 2>&1 ; then
-            echo "install ${package}";\
-            sudo yum -y install ${package}
-        else
-            echo "${package} has been installed"
-        fi
+        check_and_yum_install ${package} ${package}
     done
+
+    # install ag
+    check_and_yum_install "ag" "the_silver_searcher"
+
 }
 
 function install_linux_package() {
@@ -139,15 +136,10 @@ function install_darwin_package() {
 
     for package in "${Darwin_package_list[@]}"
     do
-        if ! command -v ${package} > /dev/null 2>&1 ; then
-            echo "install ${package}";\
-            brew install ${package}
-        else
-            echo "${package} has been installed"
-        fi
+        check_and_brew_install ${package} ${package}
     done
 
-    # installm neovim
+    # install neovim
     if ! command -v nvim > /dev/null 2>&1 ; then
         echo "install neovim"
         brew install neovim
@@ -156,6 +148,8 @@ function install_darwin_package() {
         echo "neovim has been installed"
     fi
 
+    # install ag
+    check_and_brew_install "ag" "the_silver_searcher"
 
 }
 
