@@ -41,11 +41,16 @@ function common_env_setting() {
         export VISUAL=vim       # set vim as default editor
         export EDITOR="$VISUAL"
     fi
+
+    if command -v nvim > /dev/null 2>&1 ; then
+        local aws_completer_path=$(command -v aws_completer)
+        complete -C ${aws_completer_path} aws
+    fi
 }
 
 
 function linux_env_setting() {
-    echo "do nothing for lix env"
+    echo "do nothing for linux here"
 }
 
 function darwin_env_setting() {
@@ -61,6 +66,17 @@ function darwin_env_setting() {
     # The original version is saved in .bash_profile.pysave
     PATH="/Library/Frameworks/Python.framework/Versions/3.6/bin:${PATH}"
     export PATH
+
+    # install docker-engine completer
+    if command -v docker > /dev/null 2>&1 ; then
+        local docker_engine_completer="/Applications/Docker.app/Contents/Resources/etc/docker.bash-completion"
+        ln -s -f ${docker_engine_completer} /usr/local/etc/bash_completion.d/docker.bash-completion
+    fi
+
+    if [ -f $(brew --prefix)/etc/bash_completion ]; then
+        . $(brew --prefix)/etc/bash_completion
+    fi
+
 }
 
 function envir_var_setting() {

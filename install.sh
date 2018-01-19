@@ -103,7 +103,16 @@ function install_linux_package() {
     else
         install_centos_package
     fi
+
     install_bundle
+
+    # install awscli
+    if ! command -v aws > /dev/null 2>&1 ; then
+        echo "install aws CLI"
+        pip install awscli --user --upgrade
+    else
+        echo "aws CLI  has been installed"
+    fi
 }
 
 function install_darwin_package() {
@@ -139,11 +148,19 @@ function install_darwin_package() {
         check_and_brew_install ${package} ${package}
     done
 
+    # install awscli
+    if ! command -v aws > /dev/null 2>&1 ; then
+        echo "install aws CLI"
+        pip install awscli --user --upgrade
+    else
+        echo "aws CLI  has been installed"
+    fi
+
     # install neovim
     if ! command -v nvim > /dev/null 2>&1 ; then
         echo "install neovim"
         brew install neovim
-        pip install --user --upgrade neovim
+        pip install neovim --user --upgrade
     else
         echo "neovim has been installed"
     fi
@@ -151,11 +168,12 @@ function install_darwin_package() {
     # install ag
     check_and_brew_install "ag" "the_silver_searcher"
 
+	brew install bash-completion
+
 }
 
 function install_package() {
     install_bundle
-    update_git_script
     case ${OS} in
         "Linux")
         install_linux_package
@@ -167,6 +185,30 @@ function install_package() {
         echo "Do not support ${OS} now"
         ;;
     esac
+
+    update_git_script
+    update_docker_script
+}
+
+function update_docker_script() {
+    echo "========================="
+    echo "try to get docker compose and docker machine autocomplete"
+    local machine_url="https://raw.githubusercontent.com/docker/machine/v0.13.0/contrib/completion/bash/docker-machine.bash"
+    local compose_url="https://raw.githubusercontent.com/docker/compose/1.18.0/contrib/completion/bash/docker-compose"
+    case ${OS} in
+        "Linux")
+         local auto_complete_dir="/etc/bash_completion.d"
+        ;;
+        "Darwin")
+         local auto_complete_dir="/usr/local/etc/bash_completion.d"
+        ;;
+        *)
+        echo "Do not support ${OS} now"
+        ;;
+    esac
+    curl -L ${machine_url} -o ${auto_complete_dir}/docker-machine
+    curl -L ${compose_url} -o ${auto_complete_dir}/docker-compose
+    echo "========================="
 }
 
 function update_git_script() {
