@@ -40,6 +40,7 @@ Plugin 'https://github.com/scrooloose/nerdcommenter.git'
 Plugin 'https://github.com/scrooloose/syntastic.git'
 Plugin 'https://github.com/Valloric/YouCompleteMe.git'
 Plugin 'https://github.com/junegunn/vim-easy-align.git'
+Plugin 'https://github.com/mileszs/ack.vim.git'
 " All of your Plugins must be added before the following line
 call vundle#end()            " required
 filetype plugin indent on    " required
@@ -55,8 +56,8 @@ filetype plugin indent on    " required
 
 " set the runtime path to include self defined vim setting
 set rtp+=~/.utility/
-runtime ./basic_setting.vim
-runtime ./plugin_setting.vim
+runtime ./vim_basic_setting.vim
+runtime ./vim_plugin_setting.vim
 
 if has('nvim')
     runtime ./nvim_setting.vim
