@@ -56,8 +56,8 @@ filetype plugin indent on    " required
 
 " set the runtime path to include self defined vim setting
 set rtp+=~/.utility/
-runtime ./basic_setting.vim
-runtime ./plugin_setting.vim
+runtime ./vim_basic_setting.vim
+runtime ./vim_plugin_setting.vim
 
 if has('nvim')
     runtime ./nvim_setting.vim
