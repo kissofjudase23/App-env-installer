@@ -40,6 +40,7 @@ Plugin 'https://github.com/scrooloose/nerdcommenter.git'
 Plugin 'https://github.com/scrooloose/syntastic.git'
 Plugin 'https://github.com/Valloric/YouCompleteMe.git'
 Plugin 'https://github.com/junegunn/vim-easy-align.git'
+Plugin 'https://github.com/mileszs/ack.vim.git'
 " All of your Plugins must be added before the following line
 call vundle#end()            " required
 filetype plugin indent on    " required

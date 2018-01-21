@@ -23,6 +23,35 @@ nnoremap <silent> <F3> :TlistToggle<CR>
 " map TlistClose to <F4>
 " nnoremap <silent> <F4> :TlistClose<CR>
 
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Ack.vim
+" https://github.com/mileszs/ack.vim
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+if executable('ag')
+  let g:ackprg = 'ag --vimgrep '
+endif
+
+" ctrl + f to auto insert Ack
+map <c-f> :Ack<space>
+
+" Use :Ack! if you don't want to jump to the first result automatically.
+
+
+" Keyboard Shortcuts
+" ?    a quick summary of these keys, repeat to close
+" o    to open (same as Enter)
+" O    to open and close the quickfix window
+" go   to preview file, open but maintain focus on ack.vim results
+" t    to open in new tab
+" T    to open in new tab without moving to it
+" h    to open in horizontal split
+" H    to open in horizontal split, keeping focus on the results
+" v    to open in vertical split
+" gv   to open in vertical split, keeping focus on the results
+" q    to close the quickfix window
+
+
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Easy Align setting
 " https://github.com/junegunn/vim-easy-align
