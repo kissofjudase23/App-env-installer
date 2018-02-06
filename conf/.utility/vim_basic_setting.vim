@@ -38,13 +38,13 @@ nnoremap <space> za
 
 "split navigations
 "move to the split below
-nnoremap <C-K> <C-W><C-J>
+nnoremap <C-J> <C-W><C-J>
 "move to the split above
-nnoremap <C-I> <C-W><C-K>
+nnoremap <C-K> <C-W><C-K>
 "move to the split to the right
 nnoremap <C-L> <C-W><C-L>
 "move to the split to the left
-nnoremap <C-J> <C-W><C-H>
+nnoremap <C-H> <C-W><C-H>
 
 " tell vim the background color
 " if has('gui_running')
