@@ -96,7 +96,8 @@ function install_linux_package() {
                          "ctags"\
                          "cscope"\
                          "realpath"\
-                         "tree"
+                         "tree"\
+                         "autojump"\
                        )
     if [ "${DISTRUBUTION}" == "Ubuntu" ]; then
         install_ubuntu_package
