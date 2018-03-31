@@ -140,7 +140,8 @@ function install_darwin_package() {
     local Darwin_package_list=( "git"\
                                 "python"\
                                 "screen"\
-                                "tree"\
+                                "tree"\ 
+                                "autojump"\ 
                               )
 
     for package in "${Darwin_package_list[@]}"

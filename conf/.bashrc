@@ -77,6 +77,8 @@ function darwin_env_setting() {
         . $(brew --prefix)/etc/bash_completion
     fi
 
+   # auto jump script
+   [ -f /usr/local/etc/profile.d/autojump.sh ] && . /usr/local/etc/profile.d/autojump.sh
 }
 
 function envir_var_setting() {
