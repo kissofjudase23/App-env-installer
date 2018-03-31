@@ -51,6 +51,11 @@ function common_env_setting() {
 
 function linux_env_setting() {
     echo "do nothing for linux here"
+
+   # auto jump script
+    if [ -f /etc/profile.d/autojump.bash ]; then
+       . /etc/profile.d/autojump.bash
+    fi
 }
 
 function darwin_env_setting() {
@@ -77,6 +82,10 @@ function darwin_env_setting() {
         . $(brew --prefix)/etc/bash_completion
     fi
 
+   # auto jump script
+    if [ -f /usr/local/etc/profile.d/autojump.sh ]; then
+       . /usr/local/etc/profile.d/autojump.sh
+    fi
 }
 
 function envir_var_setting() {
