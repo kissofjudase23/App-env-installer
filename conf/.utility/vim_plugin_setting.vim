@@ -136,21 +136,21 @@ let g:NERDTrimTrailingWhitespace = 1
 " Syntastic setting
 " https://github.com/scrooloose/syntastic
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-set statusline+=%#warningmsg#
-set statusline+=%{SyntasticStatuslineFlag()}
-set statusline+=%*
-let g:syntastic_error_symbol ='>>'
-let g:syntastic_warning_symbol = '>>'
-let g:syntastic_always_populate_loc_list = 0
-let g:syntastic_auto_loc_list = 1
-let g:syntastic_check_on_open = 0
-let g:syntastic_check_on_wq = 1
-let g:syntastic_enable_highlighting= 1
-highlight SyntasticErrorSign guifg=white guibg=black
+" set statusline+=%#warningmsg#
+" set statusline+=%{SyntasticStatuslineFlag()}
+" set statusline+=%*
+" let g:syntastic_error_symbol ='>>'
+" let g:syntastic_warning_symbol = '>>'
+" let g:syntastic_always_populate_loc_list = 1
+" let g:syntastic_auto_loc_list = 1
+" let g:syntastic_check_on_open = 1
+" let g:syntastic_check_on_wq = 0
+" let g:syntastic_enable_highlighting= 1
+" highlight SyntasticErrorSign guifg=white guibg=black
 
 "" use ctrl+w+E to enable/disable 
-let g:syntastic_mode_map = { 'mode': 'passive', 'active_filetypes': [],'passive_filetypes': [] }
-nnoremap <C-w>E :SyntasticCheck<CR> :SyntasticToggleMode<CR>
+" let g:syntastic_mode_map = { 'mode': 'passive', 'active_filetypes': [],'passive_filetypes': [] }
+" nnoremap <C-w>E :SyntasticCheck<CR> :SyntasticToggleMode<CR>
 
 " Checker options
 " :help syntastic-checkers to read the menual
@@ -160,29 +160,41 @@ nnoremap <C-w>E :SyntasticCheck<CR> :SyntasticToggleMode<CR>
 " Python
 "
 " determine operating system
-let os = substitute(system('uname'), "\n", "", "")
-"g:syntastic_python_<checker>_exec
-if os == "Darwin"
-    let g:syntastic_python_python_exec = '/usr/local/bin/python3'
-elseif os == "Linux"
-    let g:syntastic_python_python_exec = '/usr/bin/python3'
-endif
-"python requires either flake8 or pylint to be installed and in your $PATH
-"let g:syntastic_python_checkers = ['flake8']
+" let os = substitute(system('uname'), "\n", "", "")
+" "g:syntastic_python_<checker>_exec
+" if os == "Darwin"
+    " let g:syntastic_python_python_exec = '/usr/local/bin/python3'
+" elseif os == "Linux"
+    " let g:syntastic_python_python_exec = '/usr/bin/python3'
+" endif
+" "python requires either flake8 or pylint to be installed and in your $PATH
+" let g:syntastic_python_checkers = ['prospector']
 
 " C family languages
 "C
-let g:syntastic_c_check_header = 1
-let b:syntastic_c_cflags = '-I../lib -I./lib '
-let g:syntastic_c_include_dirs = ['./lib/', '../lib/', '../Data_Structure' ]
-let g:syntastic_c_compiler = 'gcc'
+" let g:syntastic_c_check_header = 1
+" let b:syntastic_c_cflags = '-I../lib -I./lib '
+" let g:syntastic_c_include_dirs = ['./lib/', '../lib/', '../Data_Structure' ]
+" let g:syntastic_c_compiler = 'gcc'
+"
+" "C++
+" let g:syntastic_cpp_check_header = 1
+" let b:syntastic_cpp_cflags = '-I../lib -I./lib '
+" let g:syntastic_cpp_include_dirs = [ './lib','../lib/', '../Data_Structure' ]
+" let g:syntastic_cpp_compiler_options = '-std=c++0x'
 
-"C++
-let g:syntastic_cpp_check_header = 1
-let b:syntastic_cpp_cflags = '-I../lib -I./lib '
-let g:syntastic_cpp_include_dirs = [ './lib','../lib/', '../Data_Structure' ]
-let g:syntastic_cpp_compiler_options = '-std=c++0x'
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" ale  setting (Asychronous Lint Engine)
+" https://github.com/Valloric/YouCompleteMe
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+let g:ale_sign_warning = '--'
+let g:ale_sign_error = '>>'
+let g:ale_echo_msg_error_str = 'E'
+let g:ale_echo_msg_warning_str = 'W'
+let g:ale_echo_msg_format = '[%linter%] %s [%severity%]'
 
+nmap <silent> <C-k> <Plug>(ale_previous_wrap)
+nmap <silent> <C-j> <Plug>(ale_next_wrap)
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " YouCompleteMe  setting
