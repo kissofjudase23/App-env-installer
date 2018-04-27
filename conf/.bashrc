@@ -116,6 +116,10 @@ function go_env_setting(){
 function common_alias(){
     alias tree='tree -C'
 
+    # python virtual env
+    alias vpy27="source ${HOME}/WorkSpace/virtualenv/python2.7/bin/activate"
+    alias vpy36="source ${HOME}/WorkSpace/venv/python3.6/bin/activate"
+
     if command -v nvim > /dev/null 2>&1 ; then
         alias vi='nvim'
         alias vim='nvim'
