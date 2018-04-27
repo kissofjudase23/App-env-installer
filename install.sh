@@ -98,6 +98,8 @@ function install_linux_package() {
                          "realpath"\
                          "tree"\
                          "autojump"\
+                         "python27"\
+                         "python36"\
                        )
     if [ "${DISTRUBUTION}" == "Ubuntu" ]; then
         install_ubuntu_package
@@ -139,10 +141,11 @@ function install_darwin_package() {
     fi
 
     local Darwin_package_list=( "git"\
-                                "python"\
+                                "python2"\
+                                "python3"\
                                 "screen"\
-                                "tree"\ 
-                                "autojump"\ 
+                                "tree"\
+                                "autojump"\
                               )
 
     for package in "${Darwin_package_list[@]}"
