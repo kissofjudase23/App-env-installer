@@ -1,5 +1,4 @@
-source ~/.utility/git-prompt.sh
-source ~/.utility/git-completion.bash
+source ~/.utility/shell/bzsh_common.sh
 
 function exitstatus {
     EXITSTATUS="$?"
@@ -34,6 +33,9 @@ function common_env_setting() {
     HISTCONTROL=ignoreboth
     PROMPT_COMMAND=exitstatus
 
+    source ~/.utility/git/git-prompt.sh
+    source ~/.utility/git/git-completion.bash
+
     if command -v nvim > /dev/null 2>&1 ; then
         export VISUAL=nvim       # set nvim as default editor
         export EDITOR="$VISUAL"
@@ -42,16 +44,14 @@ function common_env_setting() {
         export EDITOR="$VISUAL"
     fi
 
-    if command -v nvim > /dev/null 2>&1 ; then
+    if command -v aws > /dev/null 2>&1 ; then
         local aws_completer_path=$(command -v aws_completer)
         complete -C ${aws_completer_path} aws
     fi
 }
 
-
 function linux_env_setting() {
-    echo "do nothing for linux here"
-
+    
    # auto jump script
     if [ -f /etc/profile.d/autojump.bash ]; then
        . /etc/profile.d/autojump.bash
@@ -59,24 +59,6 @@ function linux_env_setting() {
 }
 
 function darwin_env_setting() {
-    export CLICOLOR='true'
-    export LSCOLORS="gxfxcxdxcxegedabagacad"
-
-    # Setting PATH for Python 2.7
-    # The original version is saved in .bash_profile.pysave
-    PATH="/Library/Frameworks/Python.framework/Versions/2.7/bin:${PATH}"
-    export PATH
-
-    # Setting PATH for Python 3.6
-    # The original version is saved in .bash_profile.pysave
-    PATH="/Library/Frameworks/Python.framework/Versions/3.6/bin:${PATH}"
-    export PATH
-
-    # install docker-engine completer
-    if command -v docker > /dev/null 2>&1 ; then
-        local docker_engine_completer="/Applications/Docker.app/Contents/Resources/etc/docker.bash-completion"
-        ln -s -f ${docker_engine_completer} /usr/local/etc/bash_completion.d/docker.bash-completion
-    fi
 
     if [ -f $(brew --prefix)/etc/bash_completion ]; then
         . $(brew --prefix)/etc/bash_completion
@@ -88,7 +70,7 @@ function darwin_env_setting() {
     fi
 }
 
-function envir_var_setting() {
+function envir_setting() {
     common_env_setting
 
     OS=$(uname)
@@ -105,90 +87,9 @@ function envir_var_setting() {
 
 }
 
-function go_env_setting(){
-    go_src=/usr/local
-    export PATH=$PATH:${go_src}/go/bin
-    # your go project.
-    #export GOPATH=${HOME}/e23-Git-Dev/Go_Practice
-    #export PATH=$PATH:$GOPATH/bin
-}
-
-function common_alias(){
-    alias tree='tree -C'
-
-    # python virtual env
-    alias vpy27="source ${HOME}/WorkSpace/virtualenv/python2.7/bin/activate"
-    alias vpy36="source ${HOME}/WorkSpace/venv/python3.6/bin/activate"
-
-    if command -v nvim > /dev/null 2>&1 ; then
-        alias vi='nvim'
-        alias vim='nvim'
-        alias vimdiff='nvim -d'
-    else
-        alias vi='vim'
-    fi
-}
-
-function linux_alias() {
-    alias grep='grep --color=auto'
-    alias fgrep='fgrep --color=auto'
-    alias egrep='egrep --color=auto'
-    alias ls='ls --colo=auto'
-    alias ll='ls -alF --color=auto'
-    alias la='ls -A --color=auto'
-    alias l='ls -CF --color=auto'
-}
-
-function darwin_alias() {
-    alias grep='grep'
-    alias fgrep='fgrep'
-    alias egrep='egrep'
-    alias ls='ls'
-    alias ll='ls -alF'
-    alias la='ls -A'
-    alias l='ls -CF'
-}
-
-function color_tuning() {
-    case "$TERM" in
-    *-256color)
-        alias ssh='TERM=${TERM%-256color} ssh'
-        ;;
-    *)
-        POTENTIAL_TERM=${TERM}-256color
-        POTENTIAL_TERMINFO=${TERM:0:1}/$POTENTIAL_TERM
-
-        # better to check $(toe -a | awk '{print $1}') maybe?
-        BOX_TERMINFO_DIR=/usr/share/terminfo
-        [[ -f $BOX_TERMINFO_DIR/$POTENTIAL_TERMINFO ]] && \
-            export TERM=$POTENTIAL_TERM
-
-        HOME_TERMINFO_DIR=$HOME/.terminfo
-        [[ -f $HOME_TERMINFO_DIR/$POTENTIAL_TERMINFO ]] && \
-            export TERM=$POTENTIAL_TERM
-        ;;
-    esac
-}
-
-function alias_setting() {
-    common_alias
-    OS=$(uname)
-    case ${OS} in
-        "Linux")
-            linux_alias
-            ;;
-        "Darwin")
-            darwin_alias
-            ;;
-        *)
-        echo "Do not support ${OS} now"
-    esac 
-}
-
 function main() {
-    envir_var_setting
-    color_tuning
-    alias_setting
+    envir_setting
+
 }
 
 main

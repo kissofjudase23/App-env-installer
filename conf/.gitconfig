@@ -25,6 +25,7 @@
     d = difftool
     mg = merge --no-ff
     lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'
+    cibr = !export cur_br=$1 && echo $1 || git push origin --delete ${cur_br} && git branch ${cur_br} && git push origin ${cur_br} && git push origin --delete ${cur_br} && git branch -d ${cur_br} && echo "done"
 [diff]
     tool = vimdiff
 [difftool]

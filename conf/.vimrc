@@ -57,7 +57,7 @@ filetype plugin indent on    " required
 " see :h vundle for more details or wiki for FAQ
 
 " set the runtime path to include self defined vim setting
-set rtp+=~/.utility/
+set rtp+=~/.utility/vim/
 runtime ./vim_basic_setting.vim
 runtime ./vim_plugin_setting.vim
 

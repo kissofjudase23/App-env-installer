@@ -36,6 +36,7 @@ function set_install_info() {
                     ".gdbinit"\
                     ".bash_profile"\
                     ".utility"
+                    ".zshrc"
                   )
 
 }

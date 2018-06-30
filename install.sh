@@ -44,13 +44,24 @@ function install_dotfiles() {
     echo "========================="
 }
 
-function install_bundle() {
-    echo "install bundle"
+function install_vundle() {
+    echo "install vundle"
     local bundleDir=~/.vim/bundle/Vundle.vim/
     if [[ ! -d ${bundleDir} ]]; then
         mkdir -p ~/.vim/bundle
         git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
      fi
+}
+
+function install_oh_my_zsh() {
+    # install oh-my-zsh
+    if [ ! -d "${HOME}/.oh-my-zsh" ]; then
+        git clone git://github.com/robbyrussell/oh-my-zsh.git ~/.oh-my-zsh
+
+        # install custom theme
+        git clone https://github.com/bhilburn/powerlevel9k.git ~/.oh-my-zsh/custom/themes/powerlevel9k
+    fi
+
 }
 
 function install_ubuntu_package() {
@@ -100,14 +111,13 @@ function install_linux_package() {
                          "autojump"\
                          "python27"\
                          "python36"\
+                         "zsh"\
                        )
     if [ "${DISTRUBUTION}" == "Ubuntu" ]; then
         install_ubuntu_package
     else
         install_centos_package
     fi
-
-    install_bundle
 
     # install awscli
     if ! command -v aws > /dev/null 2>&1 ; then
@@ -116,6 +126,8 @@ function install_linux_package() {
     else
         echo "aws CLI  has been installed"
     fi
+
+    install_oh_my_zsh
 }
 
 function install_darwin_package() {
@@ -141,8 +153,6 @@ function install_darwin_package() {
     fi
 
     local Darwin_package_list=( "git"\
-                                "python2"\
-                                "python3"\
                                 "screen"\
                                 "tree"\
                                 "autojump"\
@@ -175,10 +185,21 @@ function install_darwin_package() {
 
 	brew install bash-completion
 
+    brew install zsh
+    brew install zsh-syntax-highlighting
+
+    install_oh_my_zsh
+
+    # special font for item2
+    brew tap caskroom/fonts
+    brew cask install font-sourcecodepro-nerd-font
+
 }
 
 function install_package() {
-    install_bundle
+
+    install_vundle
+
     case ${OS} in
         "Linux")
         install_linux_package
@@ -191,8 +212,8 @@ function install_package() {
         ;;
     esac
 
-    update_git_script
-    update_docker_script
+    #update_git_script
+    #update_docker_script
 }
 
 function update_docker_script() {
@@ -220,8 +241,8 @@ function update_git_script() {
     echo "========================="
     echo "try to get latest git-prompt.sh and git-completion.bash"
     local git_src_url="https://raw.githubusercontent.com/git/git/master/contrib/completion/"
-    curl ${git_src_url}/git-prompt.sh -o ${UTILITY_DIR}/git-prompt.sh
-    curl ${git_src_url}/git-completion.bash -o ${UTILITY_DIR}/git-completion.bash
+    curl ${git_src_url}/git-prompt.sh -o ${UTILITY_DIR}/git/git-prompt.sh
+    curl ${git_src_url}/git-completion.bash -o ${UTILITY_DIR}/git/git-completion.bash
     echo "========================="
 }
 
