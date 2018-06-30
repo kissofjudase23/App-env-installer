@@ -1,19 +1,21 @@
-# Supported Distributions
+# Supported Unix Distributions
  1. Ubuntu
  2. CentOS
  3. Darwin
 
 # Description
- This project is used to provide basic development setting.
+ This project is used to provide basic dotfiles setting.
  1. bash shell setting (.bashrc)
- 2. vim and plugins (.vimrc)
- 3. screen setting (.screenrc)
- 4. git config (.gitconfig) 
- 5. gdb config (.gdbinit)
+ 2. oh-my-zsh setting (.zshrc)
+ 3. vim and plugins (.vimrc)
+ 4. screen setting (.screenrc)
+ 5. git config (.gitconfig) 
+ 6. gdb config (.gdbinit)
 
-# Auto complete for git 
- 1. [git prompt](https://github.com/git/git/tree/master/contrib/completion)  
- 2. [git completion](https://github.com/git/git/tree/master/contrib/completion)  
+# Auto complete
+ 1. aws
+ 2. git
+ 3. docker 
 
 # Vim plugins  
  1. Use [vundle](https://github.com/VundleVim/Vundle.vim) to manage vim plugins  
@@ -22,8 +24,7 @@
  4. Comment tools [nerdcommenter](https://github.com/scrooloose/nerdcommenter)   
  5. Auto complete engine [YouCompleteMe](https://github.com/Valloric/YouCompleteMe)  
  6. [Color Scheme](https://github.com/flazz/vim-colorschemes)  
- 7. [Syntax Check](https://github.com/scrooloose/syntastic)
-
+ 
 
 # Install dotfiles
 ```bash 
