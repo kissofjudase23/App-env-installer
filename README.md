@@ -4,15 +4,15 @@
  3. Darwin
 
 # Description
- This project is used to provide basic dotfiles setting.
- 1. bash shell setting (.bashrc)
- 2. oh-my-zsh setting (.zshrc)
- 3. vim and plugins (.vimrc)
- 4. screen setting (.screenrc)
- 5. git config (.gitconfig) 
- 6. gdb config (.gdbinit)
+ This project is used to provide dev env setting.
+ 1. bash (.bashrc)
+ 2. oh-my-zsh (.zshrc)
+ 3. vim and nvim (.vimrc)
+ 4. screen (.screenrc)
+ 5. git (.gitconfig) 
+ 6. gdb (.gdbinit)
 
-# Auto complete
+# Auto completion
  1. aws
  2. git
  3. docker 
@@ -28,7 +28,7 @@
 
 # Install dotfiles
 ```bash 
-$./install.sh
+$ bash ./install.sh
 $ vim
 $ :PluginInstall  (install vimplugins)
 ```
@@ -39,5 +39,5 @@ $ :PluginInstall  (install vimplugins)
 
 # Uninstall dotfiles
 ```bash 
-$ ./uninstall.sh
+$ bash ./uninstall.sh
 ```

@@ -45,7 +45,9 @@ function install_dotfiles() {
 }
 
 function install_vundle() {
+
     echo "install vundle"
+
     local bundleDir=~/.vim/bundle/Vundle.vim/
     if [[ ! -d ${bundleDir} ]]; then
         mkdir -p ~/.vim/bundle
@@ -54,7 +56,9 @@ function install_vundle() {
 }
 
 function install_oh_my_zsh() {
-    # install oh-my-zsh
+
+    echo "install oh-my-zsh"
+
     if [ ! -d "${HOME}/.oh-my-zsh" ]; then
         git clone git://github.com/robbyrussell/oh-my-zsh.git ~/.oh-my-zsh
 
@@ -124,7 +128,7 @@ function install_linux_package() {
         echo "install aws CLI"
         pip install awscli --user --upgrade
     else
-        echo "aws CLI  has been installed"
+        echo "aws CLI has been installed"
     fi
 
     install_oh_my_zsh
@@ -190,7 +194,7 @@ function install_darwin_package() {
 
     install_oh_my_zsh
 
-    # special font for item2
+    # special font item2
     brew tap caskroom/fonts
     brew cask install font-sourcecodepro-nerd-font
 
