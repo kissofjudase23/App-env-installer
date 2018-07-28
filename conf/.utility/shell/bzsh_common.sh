@@ -23,7 +23,7 @@ function darwin_env_setting() {
 function envir_setting() {
 
     common_env_setting
-    OS=$(uname)
+    OS=${uname}
     case ${OS} in
         "Linux")
             linux_env_setting
@@ -43,6 +43,8 @@ function common_alias(){
     # python virtual env
     alias vpy27="source ${HOME}/WorkSpace/virtualenv/python2.7/bin/activate"
     alias vpy36="source ${HOME}/WorkSpace/venv/python3.6/bin/activate"
+    alias vpy37="source ${HOME}/WorkSpace/venv/python3.7/bin/activate"
+    alias vpy38="source ${HOME}/WorkSpace/venv/python3.8/bin/activate"
 
     if command -v nvim > /dev/null 2>&1 ; then
         alias vi='nvim'
@@ -96,7 +98,7 @@ function screen_color_setting() {
 
 function alias_setting() {
     common_alias
-    OS=$(uname)
+    OS=${uname}
     case ${OS} in
         "Linux")
             linux_alias
