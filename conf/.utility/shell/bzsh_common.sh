@@ -23,7 +23,7 @@ function darwin_env_setting() {
 function envir_setting() {
 
     common_env_setting
-    OS=${uname}
+    OS=$(uname)
     case ${OS} in
         "Linux")
             linux_env_setting
@@ -98,7 +98,7 @@ function screen_color_setting() {
 
 function alias_setting() {
     common_alias
-    OS=${uname}
+    OS=$(uname)
     case ${OS} in
         "Linux")
             linux_alias
