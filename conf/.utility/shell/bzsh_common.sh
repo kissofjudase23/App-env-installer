@@ -40,9 +40,9 @@ function envir_setting() {
 function common_alias(){
     alias tree='tree -C'
 
-    local vpy27_path="${HOME}/WorkSpace/virtualenv/python2.7/bin/activate"
-    local vpy36_path="${HOME}/WorkSpace/venv/python3.6/bin/activate"
-    local vpy37_path="${HOME}/WorkSpace/venv/python3.7/bin/activate"
+    local vpy27_path="${HOME}/WorkSpace/virtualenv/python2.7/bin/python2.7"
+    local vpy36_path="${HOME}/WorkSpace/venv/python3.6/bin/python3.6"
+    local vpy37_path="${HOME}/WorkSpace/venv/python3.7/bin/python3.7"
 
     alias vpy27="source ${vpy27_path}"
     alias vpy36="source ${vpy36_path}"
