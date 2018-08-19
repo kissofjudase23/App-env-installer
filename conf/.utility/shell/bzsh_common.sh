@@ -40,17 +40,17 @@ function envir_setting() {
 function common_alias(){
     alias tree='tree -C'
 
-    local vpy27_path="${HOME}/WorkSpace/virtualenv/python2.7/bin/python2.7"
-    local vpy36_path="${HOME}/WorkSpace/venv/python3.6/bin/python3.6"
-    local vpy37_path="${HOME}/WorkSpace/venv/python3.7/bin/python3.7"
+    local vpy27_path="${HOME}/WorkSpace/virtualenv/python2.7/bin"
+    local vpy36_path="${HOME}/WorkSpace/venv/python3.6/bin"
+    local vpy37_path="${HOME}/WorkSpace/venv/python3.7/bin"
 
-    alias vpy27="source ${vpy27_path}"
-    alias vpy36="source ${vpy36_path}"
-    alias vpy37="source ${vpy37_path}"
+    alias vpy27="source ${vpy27_path}/activate"
+    alias vpy36="source ${vpy36_path}/activate"
+    alias vpy37="source ${vpy37_path}/activate"
 
-    export VPY27=${vpy27_path}
-    export VPY36=${vpy36_path}
-    export VPY37=${vpy37_path}
+    export VPY27="${vpy27_path}/python"
+    export VPY36="${vpy36_path}/python"
+    export VPY37="${vpy37_path}/python"
 
     if command -v nvim > /dev/null 2>&1 ; then
         alias vi='nvim'
