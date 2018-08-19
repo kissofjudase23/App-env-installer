@@ -40,11 +40,17 @@ function envir_setting() {
 function common_alias(){
     alias tree='tree -C'
 
-    # python virtual env
-    alias vpy27="source ${HOME}/WorkSpace/virtualenv/python2.7/bin/activate"
-    alias vpy36="source ${HOME}/WorkSpace/venv/python3.6/bin/activate"
-    alias vpy37="source ${HOME}/WorkSpace/venv/python3.7/bin/activate"
-    alias vpy38="source ${HOME}/WorkSpace/venv/python3.8/bin/activate"
+    local vpy27_path="${HOME}/WorkSpace/virtualenv/python2.7/bin/activate"
+    local vpy36_path="${HOME}/WorkSpace/venv/python3.6/bin/activate"
+    local vpy37_path="${HOME}/WorkSpace/venv/python3.7/bin/activate"
+
+    alias vpy27="source ${vpy27_path}"
+    alias vpy36="source ${vpy36_path}"
+    alias vpy37="source ${vpy37_path}"
+
+    export VPY27=${vpy27_path}
+    export VPY36=${vpy36_path}
+    export VPY37=${vpy37_path}
 
     if command -v nvim > /dev/null 2>&1 ; then
         alias vi='nvim'
@@ -82,7 +88,7 @@ function screen_color_setting() {
         ;;
     *)
         POTENTIAL_TERM=${TERM}-256color
-        POTENTIAL_TERMINFO=${TERM:0:1}/$POTENTIAL_TERM
+        gOTENTIAL_TERMINFO=${TERM:0:1}/$POTENTIAL_TERM
 
         # better to check $(toe -a | awk '{print $1}') maybe?
         BOX_TERMINFO_DIR=/usr/share/terminfo
@@ -108,7 +114,7 @@ function alias_setting() {
             ;;
         *)
         echo "Do not support ${OS} now"
-    esac 
+    esac
 }
 
 function main() {
