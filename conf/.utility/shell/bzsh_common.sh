@@ -18,6 +18,14 @@ function linux_env_setting() {
 function darwin_env_setting() {
     export CLICOLOR='true'
     export LSCOLORS="gxfxcxdxcxegedabagacad"
+
+    export PATH=$PATH:/usr/local/go/bin
+
+    export PATH="/Library/Frameworks/Python.framework/Versions/2.7/bin:${PATH}"
+
+    export PATH="/Library/Frameworks/Python.framework/Versions/3.6/bin:${PATH}"
+
+    export PATH="/Library/Frameworks/Python.framework/Versions/3.7/bin:${PATH}"
 }
 
 function envir_setting() {
@@ -124,5 +132,4 @@ function main() {
 }
 
 main
-
 
