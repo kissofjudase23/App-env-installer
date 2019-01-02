@@ -9,6 +9,14 @@ function common_env_setting() {
         export EDITOR="$VISUAL"
     fi
 
+    # create the work space
+    work_dir="${HOME}/WorkSpace"
+    if [ ! -d "${work_dir}" ]; then
+        mkdir work_dir
+    fi
+
+    export GOPATH="${work_dir}/go"
+
 }
 
 function linux_env_setting() {
@@ -19,7 +27,8 @@ function darwin_env_setting() {
     export CLICOLOR='true'
     export LSCOLORS="gxfxcxdxcxegedabagacad"
 
-    export PATH=$PATH:/usr/local/go/bin
+    # golang path
+    export PATH="${PATH}:/usr/local/go/bin"
 
     export PATH="/Library/Frameworks/Python.framework/Versions/2.7/bin:${PATH}"
 
