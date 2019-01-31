@@ -116,6 +116,7 @@ function install_linux_package() {
                          "python27"\
                          "python36"\
                          "zsh"\
+                         "jq"\
                        )
     if [ "${DISTRUBUTION}" == "Ubuntu" ]; then
         install_ubuntu_package
@@ -160,6 +161,7 @@ function install_darwin_package() {
                                 "screen"\
                                 "tree"\
                                 "autojump"\
+                                "jq"\
                               )
 
     for package in "${Darwin_package_list[@]}"
@@ -187,7 +189,7 @@ function install_darwin_package() {
     # install ag
     check_and_brew_install "ag" "the_silver_searcher"
 
-	brew install bash-completion
+    brew install bash-completion
 
     brew install zsh
     brew install zsh-syntax-highlighting
