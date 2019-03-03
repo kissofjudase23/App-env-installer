@@ -12,12 +12,20 @@ function common_env_setting() {
     # create the work space
     work_dir="${HOME}/WorkSpace"
     if [ ! -d "${work_dir}" ]; then
-        mkdir work_dir
+        mkdir ${work_dir}
     fi
 
-    export GOPATH="${work_dir}/go"
+    # go path for mod 
+    go_path="${work_dir}/go"
+    if [ ! -d "${go_path}" ]; then
+        mkdir ${go_path}
+    fi
 
+    export GOPATH=${go_path}
+    export GO111MODULE=auto
+    
 }
+
 
 function linux_env_setting() {
     echo "do nothing for linux here"
