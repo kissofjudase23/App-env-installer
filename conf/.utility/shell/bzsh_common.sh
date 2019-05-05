@@ -15,7 +15,7 @@ function common_env_setting() {
         mkdir ${work_dir}
     fi
 
-    # go path for mod 
+    # go path for mod
     go_path="${work_dir}/go"
     if [ ! -d "${go_path}" ]; then
         mkdir ${go_path}
@@ -23,7 +23,7 @@ function common_env_setting() {
 
     export GOPATH=${go_path}
     export GO111MODULE=auto
-    
+
 }
 
 
