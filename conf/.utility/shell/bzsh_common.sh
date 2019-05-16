@@ -1,7 +1,7 @@
 
 function common_env_setting() {
 
-    if command -v nvim > /dev/null 2>&1 ; then
+    if ! command -v nvim > /dev/null 2>&1 ; then
         export VISUAL=nvim       # set nvim as default editor
         export EDITOR="$VISUAL"
     else
@@ -77,7 +77,7 @@ function common_alias(){
     export VPY36="${vpy36_path}/python"
     export VPY37="${vpy37_path}/python"
 
-    if command -v nvim > /dev/null 2>&1 ; then
+    if ! command -v nvim > /dev/null 2>&1 ; then
         alias vi='nvim'
         alias vim='nvim'
         alias vimdiff='nvim -d'
@@ -147,6 +147,7 @@ function main() {
     screen_color_setting
     alias_setting
 }
+
 
 main
 
