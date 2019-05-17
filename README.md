@@ -1,43 +1,41 @@
-# Supported Unix Distributions
- 1. Ubuntu
- 2. CentOS
- 3. Darwin
-
 # Description
  This project is used to provide dev env setting.
- 1. bash (.bashrc)
- 2. oh-my-zsh (.zshrc)
- 3. vim and nvim (.vimrc)
- 4. screen (.screenrc)
- 5. git (.gitconfig) 
- 6. gdb (.gdbinit)
 
-# Auto completion
- 1. aws
- 2. git
- 3. docker 
 
-# Vim plugins  
- 1. Use [vundle](https://github.com/VundleVim/Vundle.vim) to manage vim plugins  
- 2. Git Wrapper [vim-fugitive](https://github.com/tpope/vim-fugitive)  
- 3. A file system explorer for the Vim editor [nerdtree](https://github.com/scrooloose/nerdtree)  
- 4. Comment tools [nerdcommenter](https://github.com/scrooloose/nerdcommenter)   
- 5. Auto complete engine [YouCompleteMe](https://github.com/Valloric/YouCompleteMe)  
- 6. [Color Scheme](https://github.com/flazz/vim-colorschemes)  
+## Table of Contents
+* [Dotfiles](#Dotfiles)
+* [Vim Plugins](#VimPlugins)
+* [Installation](#installation)
+* [Uninstallation](#uninstallation)
+
+
+## DotFiles
+ * bash ([.bashrc](https://github.com/kissofjudase23/Data-dotfiles/blob/master/conf/.bashrc))
+ * zsh using oh-my-zsh ([.zshrc](https://github.com/kissofjudase23/Data-dotfiles/blob/master/conf/.zshrc))
+ * vim ([.vimrc](https://github.com/kissofjudase23/Data-dotfiles/blob/master/conf/.vimrc))
+ * nvim (link ~/.config/nvim/init.vim to [.vimrc](https://github.com/kissofjudase23/Data-dotfiles/blob/master/conf/.vimrc))
+ * screen ([.screenrc](https://github.com/kissofjudase23/Data-dotfiles/blob/master/conf/.screenrc))
+ * tmux ([.tmux.conf](https://github.com/kissofjudase23/Data-dotfiles/blob/master/conf/.tmux.conf))
+ * git ([.gitconfig](https://github.com/kissofjudase23/Data-dotfiles/blob/master/conf/.gitconfig)) 
+
+
+## [VimPlugins](https://github.com/kissofjudase23/Data-dotfiles/blob/master/conf/.vimrc#L26-L50)
+ * [vundle](https://github.com/VundleVim/Vundle.vim): manage plugins
+ * [vim-fugitive](https://github.com/tpope/vim-fugitive): git plugins
+ * [nerdtree](https://github.com/scrooloose/nerdtree): file system explorer 
+ * [nerdcommenter](https://github.com/scrooloose/nerdcommenter): comment tools   
+ * [YouCompleteMe](https://github.com/Valloric/YouCompleteMe): Auto complete engine 
+ * [ale](https://github.com/w0rp/ale) Asychronous Lint Engine
  
 
-# Install dotfiles
+## Installation
 ```bash 
 $ bash ./install.sh
 $ vim
 $ :PluginInstall  (install vimplugins)
 ```
 
-# Prerequisite for [YouCompleteMe](https://github.com/Valloric/YouCompleteMe) 
-1. [Installation](https://github.com/Valloric/YouCompleteMe#installation)
-2. [User Guide]()<a href="https://github.com/Valloric/YouCompleteMe#user-guide"> User Guide
-
-# Uninstall dotfiles
+## Uninstallation
 ```bash 
 $ bash ./uninstall.sh
 ```
