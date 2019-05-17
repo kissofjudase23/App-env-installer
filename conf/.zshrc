@@ -91,7 +91,7 @@ export DEFAULT_USER="$USER"
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(
-  aws autojump docker docker-compose docker-machine golang
+  aws autojump docker docker-compose docker-machine golang tmux
 )
 
 source $ZSH/oh-my-zsh.sh
