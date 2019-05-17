@@ -3,7 +3,7 @@ source ./common_utility.sh
 
 function backup_dotfiles() {
     echo "========================="
-    echo "Start to Backup dotfiles:"
+    echo "Start to Backup dotfiles, BK_DIR ${BK_DIR}"
     rm -rf ${BK_DIR}/*
     mkdir -p ${BK_DIR}/
 
@@ -108,6 +108,7 @@ function install_centos_package() {
 function install_linux_package() {
     Linux_package_list=( "git"\
                          "screen"\
+                         "tmux"\
                          "ctags"\
                          "cscope"\
                          "realpath"\
@@ -147,6 +148,8 @@ function install_darwin_package() {
     else
         echo "homebrew has been installed"
     fi
+
+    brew update --force --verbose
 
     # install realpath
     if ! command -v realpath > /dev/null 2>&1 ; then
@@ -200,6 +203,8 @@ function install_darwin_package() {
     brew tap caskroom/fonts
     brew cask install font-sourcecodepro-nerd-font
 
+    brew install tmux
+
 }
 
 function install_package() {
@@ -252,12 +257,6 @@ function update_git_script() {
     echo "========================="
 }
 
-function run_dotfiles() {
-    echo "========================="
-    echo "Run source ~/.bashrc"
-    source ~/.bashrc
-    echo "========================="
-}
 
 function main() {
     get_os_info
@@ -267,11 +266,9 @@ function main() {
     print_install_info
 
     install_package
-
     backup_dotfiles
     install_dotfiles
 
-    run_dotfiles
 }
 
 main

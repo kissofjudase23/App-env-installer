@@ -33,6 +33,7 @@ function set_install_info() {
                     ".vimrc"\
                     ".gitconfig"\
                     ".screenrc"\
+                    ".tmux.conf"\
                     ".gdbinit"\
                     ".bash_profile"\
                     ".utility"

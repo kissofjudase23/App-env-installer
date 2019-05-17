@@ -106,7 +106,9 @@ function darwin_alias() {
     alias l='ls -CF'
 }
 
-function screen_color_setting() {
+function screen_color_setting() 
+{
+    export TERM="xterm-256color"
     case "$TERM" in
     *-256color)
         alias ssh='TERM=${TERM%-256color} ssh'
