@@ -259,9 +259,6 @@ function update_git_script() {
 
 
 function main() {
-    get_os_info
-    print_os_info
-
     set_install_info
     print_install_info
 
@@ -271,4 +268,6 @@ function main() {
 
 }
 
+get_os_info
+print_os_info
 main

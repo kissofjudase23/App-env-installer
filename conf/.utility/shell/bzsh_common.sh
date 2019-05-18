@@ -1,73 +1,45 @@
 
-function common_env_setting() {
 
-    if ! command -v nvim > /dev/null 2>&1 ; then
-        export VISUAL=nvim       # set nvim as default editor
-        export EDITOR="$VISUAL"
-    else
-        export VISUAL=vim       # set vim as default editor
-        export EDITOR="$VISUAL"
-    fi
-
-    # create the work space
-    work_dir="${HOME}/WorkSpace"
-    if [ ! -d "${work_dir}" ]; then
-        mkdir ${work_dir}
-    fi
-
-    # go path for mod
-    go_path="${work_dir}/go"
-    if [ ! -d "${go_path}" ]; then
-        mkdir ${go_path}
-    fi
-
-    export GOPATH=${go_path}
-    export GO111MODULE=auto
-
-}
+WORK_DIR="${HOME}/WorkSpace" 
+OS=$(uname)
 
 
-function linux_env_setting() {
+function linux_env {
     echo "do nothing for linux here"
 }
 
-function darwin_env_setting() {
+
+function darwin_env {
     export CLICOLOR='true'
     export LSCOLORS="gxfxcxdxcxegedabagacad"
-
-    # golang path
-    export PATH="${PATH}:/usr/local/go/bin"
-
-    export PATH="/Library/Frameworks/Python.framework/Versions/2.7/bin:${PATH}"
-
-    export PATH="/Library/Frameworks/Python.framework/Versions/3.6/bin:${PATH}"
-
-    export PATH="/Library/Frameworks/Python.framework/Versions/3.7/bin:${PATH}"
 }
 
-function envir_setting() {
 
-    common_env_setting
-    OS=$(uname)
+function go_env() {
+    # go path for mod
+    go_path="${WORK_DIR}/go"
+    if [ ! -d "${go_path}" ]; then
+        mkdir ${go_path}
+    fi
+    export GOPATH=${go_path}
+    export GO111MODULE=auto
+
     case ${OS} in
         "Linux")
-            linux_env_setting
+            echo "Set go path here if necessary"
             ;;
         "Darwin")
-            darwin_env_setting
+            export PATH="${PATH}:/usr/local/go/bin"
             ;;
         *)
         echo "Do not support ${OS} now"
     esac
-
 }
 
-function common_alias(){
-    alias tree='tree -C'
-
-    local vpy27_path="${HOME}/WorkSpace/virtualenv/python2.7/bin"
-    local vpy36_path="${HOME}/WorkSpace/venv/python3.6/bin"
-    local vpy37_path="${HOME}/WorkSpace/venv/python3.7/bin"
+function python_env() {
+    local vpy27_path="${WORK_DIR}/virtualenv/python2.7/bin"
+    local vpy36_path="${WORK_DIR}/venv/python3.6/bin"
+    local vpy37_path="${WORK_DIR}/venv/python3.7/bin"
 
     alias vpy27="source ${vpy27_path}/activate"
     alias vpy36="source ${vpy36_path}/activate"
@@ -77,14 +49,70 @@ function common_alias(){
     export VPY36="${vpy36_path}/python"
     export VPY37="${vpy37_path}/python"
 
-    if ! command -v nvim > /dev/null 2>&1 ; then
+    case ${OS} in
+        "Linux")
+            echo "Set python path here if necessary"
+            ;;
+        "Darwin")
+            local python_framework_path="/Library/Frameworks/Python.framework/Versions" 
+            export PATH="${python_framework_path}/2.7/bin:${PATH}"
+            export PATH="${python_framework_path}/Versions/3.6/bin:${PATH}"
+            export PATH="${python_framework_path}/Versions/3.7/bin:${PATH}"
+            ;;
+        *)
+        echo "Do not support ${OS} now"
+    esac
+
+}
+
+function editor_env() {
+    if command -v nvim > /dev/null 2>&1 ; then
+        # set nvim as default editor
+        export VISUAL=nvim      
+        export EDITOR="$VISUAL"
         alias vi='nvim'
         alias vim='nvim'
         alias vimdiff='nvim -d'
     else
+        # set vim as default editor
+        export VISUAL=vim       
+        export EDITOR="$VISUAL"
         alias vi='vim'
     fi
 }
+
+function common_env() {
+    # If you come from bash you might have to change your $PATH.
+    export PATH=$HOME/bin:/usr/local/bin:$PATH
+    export PATH
+    
+    # create the work space
+    if [ ! -d "${WORK_DIR}" ]; then
+        mkdir ${WORK_DIR}
+    fi
+
+    editor_env
+
+    python_env
+
+    go_env
+}
+
+
+function env_setting() {
+    common_env
+    case ${OS} in
+        "Linux")
+            linux_env
+            ;;
+        "Darwin")
+            darwin_env
+            ;;
+        *)
+        echo "Do not support ${OS} now"
+    esac
+}
+
 
 function linux_alias() {
     alias grep='grep --color=auto'
@@ -96,6 +124,7 @@ function linux_alias() {
     alias l='ls -CF --color=auto'
 }
 
+
 function darwin_alias() {
     alias grep='grep'
     alias fgrep='fgrep'
@@ -106,9 +135,31 @@ function darwin_alias() {
     alias l='ls -CF'
 }
 
+function common_alias(){
+    
+    alias tree='tree -C'
+}
+
+function alias_setting() {
+
+    common_alias
+
+    case ${OS} in
+        "Linux")
+            linux_alias
+            ;;
+        "Darwin")
+            darwin_alias
+            ;;
+        *)
+        echo "Do not support ${OS} now"
+    esac
+}
+
 function screen_color_setting() 
 {
     export TERM="xterm-256color"
+
     case "$TERM" in
     *-256color)
         alias ssh='TERM=${TERM%-256color} ssh'
@@ -129,25 +180,10 @@ function screen_color_setting()
     esac
 }
 
-function alias_setting() {
-    common_alias
-    OS=$(uname)
-    case ${OS} in
-        "Linux")
-            linux_alias
-            ;;
-        "Darwin")
-            darwin_alias
-            ;;
-        *)
-        echo "Do not support ${OS} now"
-    esac
-}
-
 function main() {
-    envir_setting
-    screen_color_setting
+    env_setting
     alias_setting
+    screen_color_setting
 }
 
 

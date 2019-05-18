@@ -120,9 +120,3 @@ function check_and_brew_install(){
         echo "${package_name} for ${cmd} has been installed"
     fi
 }
-
-
-
-
-
-

@@ -1,8 +1,6 @@
+
 source ~/.utility/shell/bzsh_common.sh
 
-# If you come from bash you might have to change your $PATH.
-export PATH=$HOME/bin:/usr/local/bin:$PATH
-export PATH
 # Path to your oh-my-zsh installation
 # git clone git://github.com/robbyrussell/oh-my-zsh.git ~/.oh-my-zsh
 export ZSH=$HOME/.oh-my-zsh
