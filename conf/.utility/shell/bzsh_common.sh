@@ -37,9 +37,11 @@ function go_env() {
 }
 
 function python_env() {
-    local vpy27_path="${WORK_DIR}/virtualenv/python2.7/bin"
-    local vpy36_path="${WORK_DIR}/venv/python3.6/bin"
-    local vpy37_path="${WORK_DIR}/venv/python3.7/bin"
+
+    local py_venv="${WORK_DIR}/pyvenv"
+    local vpy27_path="${py_venv}/python2.7/bin"
+    local vpy36_path="${py_venv}/python3.6/bin"
+    local vpy37_path="${py_venv}/python3.7/bin"
 
     alias vpy27="source ${vpy27_path}/activate"
     alias vpy36="source ${vpy36_path}/activate"
