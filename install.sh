@@ -259,15 +259,13 @@ function update_git_script() {
 
 
 function main() {
-    set_install_info
-    print_install_info
-
     install_package
     backup_dotfiles
     install_dotfiles
-
 }
 
 get_os_info
 print_os_info
+set_install_info
+print_install_info
 main
