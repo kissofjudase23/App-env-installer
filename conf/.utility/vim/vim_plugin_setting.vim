@@ -229,13 +229,13 @@ if os == "Darwin"
     "ycmd server, so if you would like to use a different interpreter, use the
     "following option specifying the Python binary to use. For example, to
     "provide Python 3 completion in your project, set:
-    let g:ycm_python_binary_path = '/usr/local/bin/python3'
+    " let g:ycm_python_binary_path = 'python'
     "Restarts the semantic-engine-as-localhost-server for those semantic engines 
     "that work as separate servers that YCM talks to.
-    nnoremap <leader>restart :YcmCompleter RestartServer /usr/local/bin/python3.5 <CR>
+    " nnoremap <leader>restart :YcmCompleter RestartServer /usr/local/bin/python3.5 <CR>
 elseif os == "Linux"
-    let g:ycm_python_binary_path = '/usr/bin/python3'
-    nnoremap <leader>restart :YcmCompleter RestartServer /usr/bin/python3.5 <CR>
+    " let g:ycm_python_binary_path = 'python'
+    " nnoremap <leader>restart :YcmCompleter RestartServer /usr/bin/python3.5 <CR>
 endif
 
 "let g:ycm_collect_identifiers_from_tag_files = 1 
