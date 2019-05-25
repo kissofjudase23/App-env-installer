@@ -70,15 +70,17 @@ function python_env() {
 function editor_env() {
     if command -v nvim > /dev/null 2>&1 ; then
         # set nvim as default editor
-        export VISUAL=nvim      
+        export VISUAL='nvim'
         export EDITOR="$VISUAL"
+        export GIT_EDITOR='nvim'
         alias vi='nvim'
         alias vim='nvim'
         alias vimdiff='nvim -d'
     else
         # set vim as default editor
-        export VISUAL=vim       
+        export VISUAL='vim'
         export EDITOR="$VISUAL"
+        export GIT_EDITOR='vim'
         alias vi='vim'
     fi
 }
