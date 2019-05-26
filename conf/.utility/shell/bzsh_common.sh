@@ -87,7 +87,7 @@ function editor_env() {
 
 function common_env() {
     # If you come from bash you might have to change your $PATH.
-    export PATH=$HOME/bin:/usr/local/bin:$PATH
+    export PATH=$HOME/bin:/usr/local/bin:/usr/local/opt/:/usr/local/opt/mysql-client/bin/:$PATH
     export PATH
     
     # create the work space
