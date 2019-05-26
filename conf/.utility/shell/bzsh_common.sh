@@ -85,10 +85,35 @@ function editor_env() {
     fi
 }
 
+function mysql_env() {
+    case ${OS} in
+        "Linux")
+            ;;
+        "Darwin")
+            local mysql_path='/usr/local/opt/mysql-client/bin/'
+            export PATH=${mysql_path}:${PATH}
+            ;;
+        *)
+        echo "Do not support ${OS} now"
+    esac
+}
+
+function redis_env() {
+    case ${OS} in
+        "Linux")
+            ;;
+        "Darwin")
+            local redis_path='/usr/local/Cellar/redis/5.0.5/bin/'
+            export PATH=${redis_path}:${PATH}
+            ;;
+        *)
+        echo "Do not support ${OS} now"
+    esac
+}
+
 function common_env() {
     # If you come from bash you might have to change your $PATH.
-    export PATH=$HOME/bin:/usr/local/bin:/usr/local/opt/:/usr/local/opt/mysql-client/bin/:$PATH
-    export PATH
+    export PATH=$HOME/bin:/usr/local/bin:/usr/local/opt/:${PATH}
     
     # create the work space
     if [ ! -d "${WORK_DIR}" ]; then
@@ -100,6 +125,11 @@ function common_env() {
     python_env
 
     go_env
+
+    mysql_env
+
+    redis_env
+
 }
 
 
