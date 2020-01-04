@@ -1,6 +1,6 @@
 
 
-WORK_DIR="${HOME}/WorkSpace" 
+WORK_DIR="${HOME}/WorkSpace"
 OS=$(uname)
 
 
@@ -16,13 +16,16 @@ function darwin_env {
 
 
 function go_env() {
-    # go path for mod
-    go_path="${WORK_DIR}/go"
+
+    local go_path="${WORK_DIR}/go"
+
     if [ ! -d "${go_path}" ]; then
         mkdir ${go_path}
     fi
+
     export GOPATH=${go_path}
     export GO111MODULE=auto
+    export PATH="${PATH}:${GOPATH}/bin"
 
     case ${OS} in
         "Linux")
@@ -56,7 +59,7 @@ function python_env() {
             echo "Set python path here if necessary"
             ;;
         "Darwin")
-            local python_framework_path="/Library/Frameworks/Python.framework/Versions" 
+            local python_framework_path="/Library/Frameworks/Python.framework/Versions"
             export PATH="${python_framework_path}/2.7/bin:${PATH}"
             export PATH="${python_framework_path}/Versions/3.6/bin:${PATH}"
             export PATH="${python_framework_path}/Versions/3.7/bin:${PATH}"
@@ -114,7 +117,7 @@ function redis_env() {
 function common_env() {
     # If you come from bash you might have to change your $PATH.
     export PATH=$HOME/bin:/usr/local/bin:/usr/local/opt/:${PATH}
-    
+
     # create the work space
     if [ ! -d "${WORK_DIR}" ]; then
         mkdir ${WORK_DIR}
@@ -170,7 +173,7 @@ function darwin_alias() {
 }
 
 function common_alias(){
-    
+
     alias tree='tree -C'
 }
 
@@ -190,7 +193,7 @@ function alias_setting() {
     esac
 }
 
-function screen_color_setting() 
+function screen_color_setting()
 {
     export TERM="xterm-256color"
 
