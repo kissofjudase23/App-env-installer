@@ -57,15 +57,26 @@ function install_vundle() {
 
 function install_oh_my_zsh() {
 
-    echo "install oh-my-zsh"
-
     if [ ! -d "${HOME}/.oh-my-zsh" ]; then
+        echo "install oh-my-zsh"
         git clone git://github.com/robbyrussell/oh-my-zsh.git ~/.oh-my-zsh
 
-        # install custom theme
+        echo "install powerlevel9k"
         git clone https://github.com/bhilburn/powerlevel9k.git ~/.oh-my-zsh/custom/themes/powerlevel9k
+    else
+        echo "oh-my-zsh has been installed before"
     fi
 
+}
+
+function install_aws_cli() {
+    # install awscli
+    if ! command -v aws > /dev/null 2>&1 ; then
+        echo "install aws CLI"
+        pip install awscli --user --upgrade
+    else
+        echo "aws CLI  has been installed"
+    fi
 }
 
 function install_ubuntu_package() {
@@ -77,9 +88,9 @@ function install_ubuntu_package() {
         sudo apt-get update
     fi
 
-    for package in "${Linux_package_list[@]}"
+    for pkg in "${LINUX_PKGS[@]}"
     do
-        check_and_apt_install ${package} ${package}
+        check_and_apt_install ${pkg} ${pkg}
     done
 
     # install ag
@@ -95,9 +106,9 @@ function install_centos_package() {
        sudo yum update
     fi
 
-    for package in "${Linux_package_list[@]}"
+    for pkg in "${LINUX_PKGS[@]}"
     do
-        check_and_yum_install ${package} ${package}
+        check_and_yum_install ${pkg} ${pkg}
     done
 
     # install ag
@@ -106,32 +117,26 @@ function install_centos_package() {
 }
 
 function install_linux_package() {
-    Linux_package_list=( "git"\
-                         "screen"\
-                         "tmux"\
-                         "ctags"\
-                         "cscope"\
-                         "realpath"\
-                         "tree"\
-                         "autojump"\
-                         "python36"\
-                         "zsh"\
-                         "jq"\
+    LINUX_PKGS=( "git"\
+                 "screen"\
+                 "tmux"\
+                 "ctags"\
+                 "cscope"\
+                 "realpath"\
+                 "tree"\
+                 "autojump"\
+                 "python36"\
+                 "zsh"\
+                 "jq"\
                        )
-    echo ${DISTRIBUTION}
+
     if [ "${DISTRIBUTION}" = "Ubuntu" ]; then
         install_ubuntu_package
     else
         install_centos_package
     fi
 
-    # install awscli
-    if ! command -v aws > /dev/null 2>&1 ; then
-        echo "install aws CLI"
-        pip install awscli --user --upgrade
-    else
-        echo "aws CLI has been installed"
-    fi
+    install_aws_cli
 
     install_oh_my_zsh
 }
@@ -160,25 +165,21 @@ function install_darwin_package() {
         echo "realpath has been installed"
     fi
 
-    local Darwin_package_list=( "git"\
-                                "screen"\
-                                "tree"\
-                                "autojump"\
-                                "jq"\
-                              )
+    local DARWIN_PKGS=( "git"\
+                        "screen"\
+                        "tmux"\
+                        "tree"\
+                        "autojump"\
+                        "jq"\
+                        "zsh"\
+                      )
 
-    for package in "${Darwin_package_list[@]}"
+    for pkg in "${DARWIN_PKGS[@]}"
     do
-        check_and_brew_install ${package} ${package}
+        check_and_brew_install ${pkg} ${pkg}
     done
 
-    # install awscli
-    if ! command -v aws > /dev/null 2>&1 ; then
-        echo "install aws CLI"
-        pip install awscli --user --upgrade
-    else
-        echo "aws CLI  has been installed"
-    fi
+    install_aws_cli
 
     # install neovim
     if ! command -v nvim > /dev/null 2>&1 ; then
@@ -194,16 +195,13 @@ function install_darwin_package() {
 
     brew install bash-completion
 
-    brew install zsh
-    brew install zsh-syntax-highlighting
 
+    brew install zsh-syntax-highlighting
     install_oh_my_zsh
 
     # special font item2
     brew tap caskroom/fonts
     brew cask install font-sourcecodepro-nerd-font
-
-    brew install tmux
 
 }
 
