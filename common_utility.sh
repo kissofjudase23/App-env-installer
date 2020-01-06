@@ -12,14 +12,17 @@ function get_os_info(){
     DISTRIBUTION=$(grep DISTRIB_ID /etc/*-release | awk -F '=' '{print $2}')
 }
 
+
 function print_os_info() {
     echo "========================="
     echo "OS Info:"
     echo "OS=${OS}"
     echo "ARCH=${VER}"
     echo "VER=${VER}"
+    echo "DISTRIBUTION=${DISTRIBUTION}"
     echo "========================="
 }
+
 
 function set_install_info() {
     SCRIPT_NAME=${0}

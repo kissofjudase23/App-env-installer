@@ -114,12 +114,12 @@ function install_linux_package() {
                          "realpath"\
                          "tree"\
                          "autojump"\
-                         "python27"\
                          "python36"\
                          "zsh"\
                          "jq"\
                        )
-    if [ "${DISTRUBUTION}" == "Ubuntu" ]; then
+    echo ${DISTRIBUTION}
+    if [ "${DISTRIBUTION}" = "Ubuntu" ]; then
         install_ubuntu_package
     else
         install_centos_package
