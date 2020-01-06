@@ -14,6 +14,7 @@ function get_os_info(){
 
 
 function print_os_info() {
+    get_os_info
     echo "========================="
     echo "OS Info:"
     echo "OS=${OS}"
@@ -24,7 +25,7 @@ function print_os_info() {
 }
 
 
-function set_install_info() {
+function get_install_info() {
     SCRIPT_NAME=${0}
     SCRIPT_DIR=$(my_realpath ${0})
     WORK_DIR=$(dirname $SCRIPT_DIR)
@@ -46,8 +47,9 @@ function set_install_info() {
 }
 
 function print_install_info() {
+    get_install_info
     echo "========================="
-    echo "Install info"
+    echo "Install info:"
     echo "Script_Name=${0}"
     echo "Script_Dir=${SCRIPT_DIR}"
     echo "Working_Dir=${WORK_DIR}"

@@ -1,5 +1,5 @@
 #!/bin/bash
-source ./common_utility.sh
+source ./common_utils.sh
 
 function backup_dotfiles() {
     echo "========================="
@@ -200,7 +200,7 @@ function install_darwin_package() {
     install_oh_my_zsh
 
     # special font item2
-    brew tap caskroom/fonts
+    brew tap homebrew/cask-fonts
     brew cask install font-sourcecodepro-nerd-font
 
 }
@@ -262,8 +262,8 @@ function main() {
     install_dotfiles
 }
 
-get_os_info
 print_os_info
-set_install_info
+sleep 3
 print_install_info
+sleep 3
 main
