@@ -1,4 +1,7 @@
 #!/bin/bash
+
+set -e
+
 source ./common_utils.sh
 
 function backup_dotfiles() {
@@ -55,6 +58,7 @@ function install_vundle() {
      fi
 }
 
+
 function install_oh_my_zsh() {
 
     if [ ! -d "${HOME}/.oh-my-zsh" ]; then
@@ -73,7 +77,7 @@ function install_aws_cli() {
     # install awscli
     if ! command -v aws > /dev/null 2>&1 ; then
         echo "install aws CLI"
-        pip install awscli --user --upgrade
+        pip3 install awscli --user --upgrade
     else
         echo "aws CLI  has been installed"
     fi
@@ -125,9 +129,11 @@ function install_linux_package() {
                  "realpath"\
                  "tree"\
                  "autojump"\
-                 "python36"\
+                 "python3"\
+                 "python3-pip"\
                  "zsh"\
                  "jq"\
+                 "neovim"\
                        )
 
     if [ "${DISTRIBUTION}" = "Ubuntu" ]; then
@@ -135,6 +141,9 @@ function install_linux_package() {
     else
         install_centos_package
     fi
+
+    # install python plugin for neovim
+    pip3 install neovim --user --upgrade
 
     install_aws_cli
 
@@ -185,7 +194,7 @@ function install_darwin_package() {
     if ! command -v nvim > /dev/null 2>&1 ; then
         echo "install neovim"
         brew install neovim
-        pip install neovim --user --upgrade
+        pip3 install neovim --user --upgrade
     else
         echo "neovim has been installed"
     fi
