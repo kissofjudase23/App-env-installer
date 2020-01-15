@@ -59,19 +59,19 @@ function install_vundle() {
 }
 
 
-function install_oh_my_zsh() {
-
+function install_oh_my_zsh_powerlevel9k() {
     if [ ! -d "${HOME}/.oh-my-zsh" ]; then
         echo "install oh-my-zsh"
         git clone git://github.com/robbyrussell/oh-my-zsh.git ~/.oh-my-zsh
 
         echo "install powerlevel9k"
         git clone https://github.com/bhilburn/powerlevel9k.git ~/.oh-my-zsh/custom/themes/powerlevel9k
+
     else
         echo "oh-my-zsh has been installed before"
     fi
-
 }
+
 
 function install_aws_cli() {
     # install awscli
@@ -147,7 +147,27 @@ function install_linux_package() {
 
     install_aws_cli
 
-    install_oh_my_zsh
+    install_oh_my_zsh_powerlevel9k
+
+    # Install fonts
+    # Ref: https://powerline.readthedocs.io/en/latest/installation/linux.html
+
+    local font_d = "${HOME}/.local/share/fonts"
+    local font_config_d = "${HOME}/.config/fontconfig/conf.d"
+
+    if [ ! -d  "${font_d}"]
+    then
+        mkdir -p "${font_d}"
+        wget https://github.com/powerline/powerline/raw/develop/font/PowerlineSymbols.otf -O "${font_d}/PowerlineSymbols.otf"
+        fc-cache -vf "${font_d}"
+    fi
+
+    if [ ! -d "${font_config_d}" ]
+    then
+        mkdir -p "${font_config_d}"
+        wget https://github.com/powerline/powerline/raw/develop/font/10-powerline-symbols.conf "${font_config_d}/10-powerline-symbols.conf"
+    fi
+
 }
 
 function install_darwin_package() {
@@ -204,12 +224,11 @@ function install_darwin_package() {
 
     brew install bash-completion
 
-
     brew install zsh-syntax-highlighting
-    install_oh_my_zsh
+    install_oh_my_zsh_powerlevel9k
 
     # special font item2
-    brew tap homebrew/cask-fonts
+    # brew tap homebrew/cask-fonts
     brew cask install font-sourcecodepro-nerd-font
 
 }

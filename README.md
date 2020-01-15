@@ -70,4 +70,5 @@ $ bash ./uninstall.sh
   * [zsh env for mac](https://medium.com/statementdog-engineering/prettify-your-zsh-command-line-prompt-3ca2acc967f)
   * [zsh themem, powerlevel9k](https://github.com/bhilburn/powerlevel9k)
 
-
+## font
+  * [powerline-font](https://github.com/Powerlevel9k/powerlevel9k/wiki/Install-Instructions#step-2-install-a-powerline-font)
