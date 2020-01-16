@@ -6,7 +6,7 @@ OS=$(uname)
 
 function check_folder_and_create(){
     local check_folder=$1
-    echo ${check_folder}
+    # echo ${check_folder}
     if [[ ! -d "${check_folder}" ]];then
         mkdir -p ${check_folder}
     fi
