@@ -143,7 +143,12 @@ function install_linux_package() {
     fi
 
     # install python plugin for neovim
+    # http://vra.github.io/2019/03/13/ubuntu-install-neovim/
+    # https://github.com/fsharp/vim-fsharp/issues/96
+    # Run :CheckHealth from within neovim
     pip3 install neovim --user --upgrade
+
+
 
     install_aws_cli
 
