@@ -42,10 +42,11 @@ Plugin 'https://github.com/w0rp/ale'
 Plugin 'https://github.com/Valloric/YouCompleteMe.git'
 Plugin 'https://github.com/junegunn/vim-easy-align.git'
 
-" :Ack [options] {pattern} [{directories}]
 Plugin 'https://github.com/mileszs/ack.vim.git'
 Plugin 'https://github.com/fatih/vim-go.git'
 Plugin 'avakhov/vim-yaml'
+
+"Plugin 'pearofducks/ansible-vim'
 " All of your Plugins must be added before the following line
 call vundle#end()            " required
 filetype plugin indent on    " required
