@@ -152,8 +152,8 @@ function install_linux_package() {
     # Install fonts
     # Ref: https://powerline.readthedocs.io/en/latest/installation/linux.html
 
-    local font_d = "${HOME}/.local/share/fonts"
-    local font_config_d = "${HOME}/.config/fontconfig/conf.d"
+    local font_d="${HOME}/.local/share/fonts"
+    local font_config_d="${HOME}/.config/fontconfig/conf.d"
 
     if [ ! -d  "${font_d}"]
     then
