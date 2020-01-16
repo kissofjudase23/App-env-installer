@@ -4,6 +4,15 @@ WORK_DIR="${HOME}/WorkSpace"
 OS=$(uname)
 
 
+function check_folder_and_create(){
+    local check_folder=$1
+    echo ${check_folder}
+    if [[ ! -d "${check_folder}" ]];then
+        mkdir -p ${check_folder}
+    fi
+}
+
+
 function linux_env {
     echo "do nothing for linux here"
 }
@@ -19,9 +28,7 @@ function go_env() {
 
     local go_path="${WORK_DIR}/go"
 
-    if [ ! -d "${go_path}" ]; then
-        mkdir ${go_path}
-    fi
+    check_folder_and_create ${go_path}
 
     export GOPATH=${go_path}
     export GO111MODULE=auto
@@ -42,6 +49,9 @@ function go_env() {
 function python_env() {
 
     local py_venv="${WORK_DIR}/pyvenv"
+
+    check_folder_and_create ${py_venv}
+
     local vpy27_path="${py_venv}/python2.7/bin"
     local vpy36_path="${py_venv}/python3.6/bin"
     local vpy37_path="${py_venv}/python3.7/bin"
@@ -119,9 +129,8 @@ function common_env() {
     export PATH=$HOME/bin:/usr/local/bin:/usr/local/opt/:${PATH}
 
     # create the work space
-    if [ ! -d "${WORK_DIR}" ]; then
-        mkdir ${WORK_DIR}
-    fi
+    check_folder_and_create ${WORK_DIR}
+
 
     editor_env
 

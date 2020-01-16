@@ -2,7 +2,7 @@
 
 set -e
 
-source ./common_utils.sh
+source ./utils.sh
 
 function backup_dotfiles() {
     echo "========================="

@@ -59,7 +59,7 @@ function print_install_info() {
 }
 
 function check_file_and_create(){
-    checkFile=$1
+    local checkFile=$1
     echo $checkFile
     if [[ ! -f "$checkFile" ]];then
         touch "$checkFile"
@@ -67,8 +67,16 @@ function check_file_and_create(){
     chmod +x "$checkFile"
 }
 
+function check_folder_and_create(){
+    local check_folder=$1
+    echo ${check_folder}
+    if [[ ! -d "${check_folder}" ]];then
+        mkdir -p ${check_folder}
+    fi
+}
+
 function check_link_and_create(){
-    checkFile=$1
+    local checkFile=$1
     echo $checkFile
     if [[ ! -L "$checkFile" ]];then
         touch "$checkFile"
@@ -77,7 +85,7 @@ function check_link_and_create(){
 }
 
 function check_file_and_remove(){
-    checkFile=$1
+    local checkFile=$1
     echo $checkFile
     if [[ -f "$checkFile" ]];then
         rm -rf  "$checkFile"
@@ -85,7 +93,7 @@ function check_file_and_remove(){
 }
 
 function check_Link_and_remove(){
-    checkFile=$1
+    local checkFile=$1
     echo $checkFile
     if [[ -L "$checkFile" ]];then
         rm -rf  "$checkFile"
