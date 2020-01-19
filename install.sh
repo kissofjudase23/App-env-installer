@@ -60,7 +60,7 @@ function install_vundle() {
 
 
 function install_oh_my_zsh_powerlevel9k() {
-    if [ ! -d "${HOME}/.oh-my-zsh" ]; then
+    if [ ! -d "${HOME}/.oh-my-zsh" ];then
         echo "install oh-my-zsh"
         git clone git://github.com/robbyrussell/oh-my-zsh.git ~/.oh-my-zsh
 
@@ -69,6 +69,24 @@ function install_oh_my_zsh_powerlevel9k() {
 
     else
         echo "oh-my-zsh has been installed before"
+    fi
+}
+
+function install_powerline_fonts() {
+    # Install fonts
+    # Ref: https://powerline.readthedocs.io/en/latest/installation/linux.html
+    local font_d="${HOME}/.local/share/fonts"
+    local font_config_d="${HOME}/.config/fontconfig/conf.d"
+
+    if [ ! -d "${font_d}" ];then
+        mkdir -p "${font_d}"
+        curl https://github.com/powerline/powerline/raw/develop/font/PowerlineSymbols.otf -o "${font_d}/PowerlineSymbols.otf"
+        fc-cache -vf "${font_d}"
+    fi
+
+    if [ ! -d "${font_config_d}" ];then
+        mkdir -p "${font_config_d}"
+        curl https://github.com/powerline/powerline/raw/develop/font/10-powerline-symbols.conf -o "${font_config_d}/10-powerline-symbols.conf"
     fi
 }
 
@@ -154,24 +172,9 @@ function install_linux_package() {
 
     install_oh_my_zsh_powerlevel9k
 
-    # Install fonts
-    # Ref: https://powerline.readthedocs.io/en/latest/installation/linux.html
+    install_powerline_fonts
 
-    local font_d="${HOME}/.local/share/fonts"
-    local font_config_d="${HOME}/.config/fontconfig/conf.d"
 
-    if [ ! -d  "${font_d}"]
-    then
-        mkdir -p "${font_d}"
-        wget https://github.com/powerline/powerline/raw/develop/font/PowerlineSymbols.otf -O "${font_d}/PowerlineSymbols.otf"
-        fc-cache -vf "${font_d}"
-    fi
-
-    if [ ! -d "${font_config_d}" ]
-    then
-        mkdir -p "${font_config_d}"
-        wget https://github.com/powerline/powerline/raw/develop/font/10-powerline-symbols.conf "${font_config_d}/10-powerline-symbols.conf"
-    fi
 
 }
 
@@ -230,11 +233,17 @@ function install_darwin_package() {
     brew install bash-completion
 
     brew install zsh-syntax-highlighting
+
     install_oh_my_zsh_powerlevel9k
 
-    # special font item2
-    # brew tap homebrew/cask-fonts
+    # Ref
+    # https://github.com/Homebrew/homebrew-cask-fonts
+    # install nerd font
+    brew tap homebrew/cask-fonts
     brew cask install font-sourcecodepro-nerd-font
+
+    sudo sh -c "echo $(which zsh) >> /etc/shells"
+    chsh -s $(which zsh)
 
 }
 
@@ -254,38 +263,6 @@ function install_package() {
         ;;
     esac
 
-    #update_git_script
-    #update_docker_script
-}
-
-function update_docker_script() {
-    echo "========================="
-    echo "try to get docker compose and docker machine autocomplete"
-    local machine_url="https://raw.githubusercontent.com/docker/machine/v0.13.0/contrib/completion/bash/docker-machine.bash"
-    local compose_url="https://raw.githubusercontent.com/docker/compose/1.18.0/contrib/completion/bash/docker-compose"
-    case ${OS} in
-        "Linux")
-         local auto_complete_dir="/etc/bash_completion.d"
-        ;;
-        "Darwin")
-         local auto_complete_dir="/usr/local/etc/bash_completion.d"
-        ;;
-        *)
-        echo "Do not support ${OS} now"
-        ;;
-    esac
-    curl -L ${machine_url} -o ${auto_complete_dir}/docker-machine
-    curl -L ${compose_url} -o ${auto_complete_dir}/docker-compose
-    echo "========================="
-}
-
-function update_git_script() {
-    echo "========================="
-    echo "try to get latest git-prompt.sh and git-completion.bash"
-    local git_src_url="https://raw.githubusercontent.com/git/git/master/contrib/completion/"
-    curl ${git_src_url}/git-prompt.sh -o ${UTILITY_DIR}/git/git-prompt.sh
-    curl ${git_src_url}/git-completion.bash -o ${UTILITY_DIR}/git/git-completion.bash
-    echo "========================="
 }
 
 
@@ -296,7 +273,10 @@ function main() {
 }
 
 print_os_info
-sleep 3
 print_install_info
 sleep 3
 main
+
+
+
+/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
