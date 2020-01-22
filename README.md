@@ -71,4 +71,17 @@ $ bash ./uninstall.sh
   * [zsh themem, powerlevel9k](https://github.com/bhilburn/powerlevel9k)
 
 ## font
-  * [powerline-font](https://github.com/Powerlevel9k/powerlevel9k/wiki/Install-Instructions#step-2-install-a-powerline-font)
+  * Ubuntu
+    * [powerline-font](https://github.com/Powerlevel9k/powerlevel9k/wiki/Install-Instructions#step-2-install-a-powerline-font)
+      * https://powerline.readthedocs.io/en/latest/installation/linux.html#fonts-installation
+      * https://github.com/powerline/fonts
+  * Latest neovim
+    * ```sh
+      sudo apt install software-properties-common
+
+      # or sudo add-apt-repository ppa:neovim-ppa/unstable for unstable version
+      sudo add-apt-repository ppa:neovim-ppa/stable
+      sudo apt update
+      sudo apt install -y neovim
+      ```
+
