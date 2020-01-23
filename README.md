@@ -52,17 +52,32 @@ bash ./install.sh
 vim ~/.vimrc
 :PluginInstall
 
-# 3. compile auto complete engine
-# note, your vim (or nvim) have to compiled with python plugins.
-# https://github.com/ycm-core/YouCompleteMe
+# 3. Compile YCM (YouCompleteMe) Engine
 
 # 4. Check font if you want to use oh-my-zsh and powerlevel9k
 ```
 
-## Uninstallation
-```bash
-$ bash ./uninstall.sh
-```
+## Compile YCM (YouCompleteMe) Engine
+*  Note
+   *  your vim (or nvim) have to compiled with python plugins.
+
+* ```bash
+  cd ~/.vim/bundle/YouCompleteMe
+  $ ./install.py --go-completer
+
+
+  # Options
+
+  # Go
+  --go-completer
+
+  # C-family languages
+  --clang-completer  # libclang
+  --clangd-completer # clangd
+  ```
+* Ref:
+  * https://github.com/ycm-core/YouCompleteMe
+
 
 
 ## Reference

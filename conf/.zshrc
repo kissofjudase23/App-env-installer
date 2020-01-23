@@ -1,5 +1,5 @@
 
-source ~/.utility/shell/bzsh_common.sh
+source ~/.utility/shell/common.sh
 
 # Path to your oh-my-zsh installation
 # git clone git://github.com/robbyrussell/oh-my-zsh.git ~/.oh-my-zsh
@@ -88,8 +88,12 @@ export DEFAULT_USER="$USER"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
+# plugins=(
+#   aws autojump docker docker-compose docker-machine golang tmux
+# )
+
 plugins=(
-  aws autojump docker docker-compose docker-machine golang tmux
+  aws autojump docker docker-compose tmux
 )
 
 source $ZSH/oh-my-zsh.sh

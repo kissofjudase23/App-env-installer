@@ -1,4 +1,4 @@
-source ~/.utility/shell/bzsh_common.sh
+source ~/.utility/shell/common.sh
 
 function exitstatus {
     EXITSTATUS="$?"
@@ -51,7 +51,7 @@ function common_env_setting() {
 }
 
 function linux_env_setting() {
-    
+
    # auto jump script
     if [ -f /etc/profile.d/autojump.bash ]; then
        . /etc/profile.d/autojump.bash
