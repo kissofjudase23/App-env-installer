@@ -1,4 +1,6 @@
-source ~/.utility/shell/common.sh
+source ~/.assets/shell/common.sh
+source ~/.assets/git/git-prompt.sh
+source ~/.assets/git/git-completion.bash
 
 function exitstatus {
     EXITSTATUS="$?"
@@ -33,8 +35,7 @@ function common_env_setting() {
     HISTCONTROL=ignoreboth
     PROMPT_COMMAND=exitstatus
 
-    source ~/.utility/git/git-prompt.sh
-    source ~/.utility/git/git-completion.bash
+
 
     if command -v nvim > /dev/null 2>&1 ; then
         export VISUAL=nvim       # set nvim as default editor

@@ -65,9 +65,6 @@ vim ~/.vimrc
   cd ~/.vim/bundle/YouCompleteMe
   $ ./install.py --go-completer
 
-
-  # Options
-
   # Go
   --go-completer
 
@@ -85,15 +82,14 @@ vim ~/.vimrc
   * [zsh env for mac](https://medium.com/statementdog-engineering/prettify-your-zsh-command-line-prompt-3ca2acc967f)
   * [zsh themem, powerlevel9k](https://github.com/bhilburn/powerlevel9k)
 
-## font
+### font
   * Ubuntu
     * [powerline-font](https://github.com/Powerlevel9k/powerlevel9k/wiki/Install-Instructions#step-2-install-a-powerline-font)
       * https://powerline.readthedocs.io/en/latest/installation/linux.html#fonts-installation
       * https://github.com/powerline/fonts
-  * Latest neovim
+  * Latest neovim in Ubuntu
     * ```sh
       sudo apt install software-properties-common
-
       # or sudo add-apt-repository ppa:neovim-ppa/unstable for unstable version
       sudo add-apt-repository ppa:neovim-ppa/stable
       sudo apt update

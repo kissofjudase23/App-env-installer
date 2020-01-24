@@ -25,39 +25,6 @@ function print_os_info() {
 }
 
 
-function get_install_info() {
-    SCRIPT_NAME=${0}
-    SCRIPT_DIR=$(my_realpath ${0})
-    WORK_DIR=$(dirname $SCRIPT_DIR)
-    BK_DIR=${WORK_DIR}/conf_bk
-    SRC_DIR=${WORK_DIR}/conf
-    UTILITY_DIR=${SRC_DIR}/.utility
-
-    DOT_FILE_LIST=( ".bashrc"\
-                    ".vimrc"\
-                    ".gitconfig"\
-                    ".screenrc"\
-                    ".tmux.conf"\
-                    ".gdbinit"\
-                    ".bash_profile"\
-                    ".utility"
-                    ".zshrc"
-                  )
-
-}
-
-function print_install_info() {
-    get_install_info
-    echo "========================="
-    echo "Install info:"
-    echo "Script_Name=${0}"
-    echo "Script_Dir=${SCRIPT_DIR}"
-    echo "Working_Dir=${WORK_DIR}"
-    echo "Backup_Dir=${BK_DIR}"
-    echo "Source_Dir=${SRC_DIR}"
-    echo "========================"
-}
-
 function check_file_and_create(){
     local checkFile=$1
     echo $checkFile

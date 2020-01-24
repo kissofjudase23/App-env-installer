@@ -1,0 +1,254 @@
+
+
+git_repos:
+  - {name: "Vundle",
+     src: "git://github.com/VundleVim/Vundle.vim.git",
+     dst:  ".vim/bundle/Vundle.vim"}
+
+  - {name: "oh-my-zsh",
+     src: "git://github.com/robbyrussell/oh-my-zsh.git",
+     dst:  ".oh-my-zsh"}
+
+  - {name: "powerlevel9k",
+     src: "git://github.com/bhilburn/powerlevel9k.git",
+     dst:  ".oh-my-zsh/custom/themes/powerlevel9k"}
+
+dotfiles:
+  - {name: "vimrc",
+     src: "assets/editor/vimrc.vim",
+     dst: ".vimrc"}
+  # nvim and vim use the same config
+  - {name: "nvim_init",
+     src: "assets/editor/vimrc.vim",
+     dst: ".config/nvim/init.vim"}
+
+  - {name: "bash_profile",
+     src: "assets/shell/bash_profile.sh",
+     dst: ".bash_profile"}
+
+  - {name: "bashrc",
+     src: "assets/shell/bashrc.sh",
+     dst: ".bashrc"}
+
+  - {name: "zshrc",
+     src: "assets/shell/zshrc.sh",
+     dst: ".zshrc"}
+
+  - {name: "gdbinit",
+     src: "assets/gdb/gdbinit",
+     dst: ".gdbinit"}
+
+  - {name: "gitconfig",
+     src: "assets/git/gitconfig",
+     dst: ".gitconfig"}
+
+  - {name: "screenrc",
+     src: "assets/screen/screenrc",
+     dst: ".screenrc"}
+
+  - {name: "tmux",
+     src: "assets/tmux/tmux.conf",
+     dst: ".tmux.conf"}
+
+  - {name: "assets",
+     src: "assets",
+     dst: ".assets"}
+
+darwin_pkgs:
+  - {name: "ag",
+      bin:  "ag",
+      pkg:  "the_silver_searcher",
+      tap:  "",
+      cask: false}
+
+  - {name: "autojump",
+      bin:  "autojump",
+      pkg:  "autojump",
+      tap:  "",
+      cask: false}
+
+  - {name: "bash-completion",
+      bin:  "",
+      pkg:  "bash-completion",
+      tap:  "",
+      cask: false}
+
+  - {name: "nerd-font",
+      bin:  "",
+      pkg: "font-sourcecodepro-nerd-font",
+      tap:  "homebrew/cask-fonts",
+      cask: true}
+
+  - {name: "git",
+      bin:  "git",
+      pkg:  "git",
+      tap:  "",
+      cask: false}
+
+  - {name: "jq",
+      bin:  "jq",
+      pkg:  "jq",
+      tap:  "",
+      cask: false}
+
+  - {name: "screen",
+      bin:  "screen",
+      pkg:  "screen",
+      tap:  "",
+      cask: false}
+
+  - {name: "tmux",
+      bin:  "tmux",
+      pkg:  "tmux",
+      tap:  "",
+      cask: false}
+
+  - {name: "make",
+      bin:  "make",
+      pkg:  "make",
+      tap:  "",
+      cask: false}
+
+  # pip3 install neovim --user --upgrade to support python plugins
+  # sudo sh -c "echo $(which zsh) >> /etc/shells"
+  # chsh -s $(which zsh)
+  - {name: "neovim",
+      bin:  "nvim",
+      pkg:  "neovim",
+      tap:  "",
+      cask: false}
+
+  - {name: "realpath",
+      bin:  "realpath",
+      pkg:  "realpath",
+      tap:  "iveney/mocha",
+      cask: false}
+
+  - {name: "tree",
+      bin:  "tree",
+      pkg:  "tree",
+      tap:  "",
+      cask: false}
+
+  - {name: "zsh",
+      bin:  "zsh",
+      pkg:  "zsh",
+      tap:  "",
+      cask: false}
+
+apt_pkgs:
+  - {name: "ag",
+     bin:  "ag",
+     pkg:  "silversearcher-ag",
+     add-repo: ""}
+
+  - {name: "autojump",
+     bin:  "autojump",
+     pkg:  "autojump",
+     add-repo: ""}
+
+  - {name: "curl",
+     bin:  "curl",
+     pkg:  "curl",
+     add-repo: ""}
+
+  - {name: "fontconfig",
+     bin:  "fontconfig",
+     pkg:  "fontconfig",
+     add-repo: ""}
+
+  - {name: "git",
+     bin:  "git",
+     pkg:  "git",
+     add-repo: ""}
+
+  - {name: "jq",
+     bin:  "jq",
+     pkg:  "jq",
+     add-repo: ""}
+
+  - {name: "realpath",
+     bin:  "realpath",
+     pkg:  "realpath",
+     add-repo: ""}
+
+  - {name: "screen",
+     bin:  "screen",
+     pkg:  "screen",
+     add-repo: ""}
+
+  - {name: "tmux",
+     bin:  "tmux",
+     pkg:  "tmux",
+     add-repo: ""}
+
+  - {name: "tree",
+     bin:  "tree",
+     pkg:  "tree",
+     add-repo: ""}
+
+  - {name: "language-pack-en",
+     bin:  "",
+     pkg:  "language-pack-en",
+     add-repo: ""}
+
+  - {name: "neovim",
+     bin:  "neovim",
+     pkg:  "neovim",
+     add-repo: "ppa:neovim-ppa/stable"}
+
+  - {name: "zsh",
+     bin:  "zsh",
+     pkg:  "zsh",
+     add-repo: ""}
+
+
+dnf_pkgs:
+  - {name: "ag",
+     bin:  "ag",
+     pkg:  "the_silver_searcher"}
+
+  - {name: "autojump",
+     bin:  "autojump",
+     pkg:  "autojump"}
+
+  - {name: "curl",
+     bin:  "curl",
+     pkg:  "curl"}
+
+  - {name: "git",
+     bin:  "git",
+     pkg:  "git"}
+
+  - {name: "jq",
+     bin:  "jq",
+     pkg:  "jq"}
+
+  - {name: "realpath",
+     bin:  "realpath",
+     pkg:  "realpath"}
+
+  - {name: "screen",
+     bin:  "screen",
+     pkg:  "screen"}
+
+  - {name: "tmux",
+     bin:  "tmux",
+     pkg:  "tmux"}
+
+  - {name: "tree",
+     bin:  "tree",
+     pkg:  "tree"}
+
+  - {name: "neovim",
+     bin:  "neovim",
+     pkg:  "neovim"}
+
+  - {name: "zsh",
+     bin:  "zsh",
+     pkg:  "zsh"}
+
+
+
+
+
