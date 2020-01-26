@@ -5,7 +5,7 @@ source ~/.assets/shell/common.sh
 # git clone git://github.com/robbyrussell/oh-my-zsh.git ~/.oh-my-zsh
 export ZSH=$HOME/.oh-my-zsh
 
-
+####### POWERLEVEL9K #######
 # Set name of the theme to load. Optionally, if you set this to "random"
 # it'll load a random theme each time that oh-my-zsh is loaded.
 # See https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
@@ -38,7 +38,7 @@ POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=( command_execution_time background_jobs load
 export DEFAULT_USER="$USER"
 
 
-
+####### oh-my-zsh #######
 # Set list of themes to load
 # Setting this variable when ZSH_THEME=random
 # cause zsh load theme from this variable instead of
@@ -51,7 +51,7 @@ export DEFAULT_USER="$USER"
 
 # Uncomment the following line to use hyphen-insensitive completion. Case
 # sensitive completion must be off. _ and - will be interchangeable.
-# HYPHEN_INSENSITIVE="true"
+HYPHEN_INSENSITIVE="true"
 
 # Uncomment the following line to disable bi-weekly auto-update checks.
 # DISABLE_AUTO_UPDATE="true"
@@ -69,7 +69,7 @@ export DEFAULT_USER="$USER"
 # ENABLE_CORRECTION="true"
 
 # Uncomment the following line to display red dots whilst waiting for completion.
-# COMPLETION_WAITING_DOTS="true"
+COMPLETION_WAITING_DOTS="true"
 
 # Uncomment the following line if you want to disable marking untracked files
 # under VCS as dirty. This makes repository status check for large repositories
@@ -88,12 +88,14 @@ export DEFAULT_USER="$USER"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-# plugins=(
-#   aws autojump docker docker-compose docker-machine golang tmux
-# )
 
 plugins=(
-  aws autojump docker docker-compose golang tmux
+  aws
+  autojump
+  docker
+  docker-compose
+  golang
+  tmux
 )
 
 source $ZSH/oh-my-zsh.sh
