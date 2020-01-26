@@ -1,7 +1,10 @@
 
 
 WORK_DIR="${HOME}/WorkSpace"
-OS=$(uname)
+OS=$(uname -s)
+ARCH=$(uname -m)
+VER=$(uname -r)
+# DISTRIBUTION=$(grep DISTRIB_ID /etc/*-release | awk -F '=' '{print $2}')
 
 
 function check_folder_and_create(){
@@ -10,6 +13,18 @@ function check_folder_and_create(){
     if [[ ! -d "${check_folder}" ]];then
         mkdir -p ${check_folder}
     fi
+}
+
+
+function print_os_info() {
+    get_os_info
+    echo "========================="
+    echo "OS Info:"
+    echo "OS=${OS}"
+    echo "ARCH=${VER}"
+    echo "VER=${VER}"
+    echo "DISTRIBUTION=${DISTRIBUTION}"
+    echo "========================="
 }
 
 

@@ -93,7 +93,7 @@ export DEFAULT_USER="$USER"
 # )
 
 plugins=(
-  aws autojump docker docker-compose tmux
+  aws autojump docker docker-compose golang tmux
 )
 
 source $ZSH/oh-my-zsh.sh
