@@ -60,7 +60,7 @@ if has('nvim')
     " ESC to leave insert mode
     tnoremap <Esc> <C-\><C-n>
 
-    nmap t<Enter> :bo vsp term://bash<CR>
+    nmap t<Enter> :bo vsp term://zsh<CR>
 
     " The mouse can be enabled for different modes:
         " n   Normal mode
