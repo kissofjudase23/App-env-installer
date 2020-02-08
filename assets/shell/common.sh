@@ -75,9 +75,8 @@ function python_env() {
     alias vpy36="source ${vpy36_path}/activate"
     alias vpy37="source ${vpy37_path}/activate"
 
-    export VPY27="${vpy27_path}/python"
-    export VPY36="${vpy36_path}/python"
-    export VPY37="${vpy37_path}/python"
+    alias vpyd="deactivate"
+
 
     case ${OS} in
         "Linux")

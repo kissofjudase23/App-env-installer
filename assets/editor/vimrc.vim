@@ -90,6 +90,9 @@ set shiftwidth=4             " the number of space characters inserted for
 "http://vi.stackexchange.com/questions/4244/what-is-softtabstop-used-for
 "set softtabstop=4
 
+autocmd FileType yaml setlocal ts=2 sts=2 sw=2 expandtab
+
+
 set listchars=tab:>-,trail:~
 set list                     " show invisible characters
 set autoread                 " auto read when file is changed from outside
