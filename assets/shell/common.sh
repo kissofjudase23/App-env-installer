@@ -145,7 +145,6 @@ function common_env() {
     # create the work space
     check_folder_and_create ${WORK_DIR}
 
-
     editor_env
 
     python_env
@@ -155,6 +154,9 @@ function common_env() {
     mysql_env
 
     redis_env
+
+    export LC_ALL=C.UTF-8
+    export LANG=C.UTF-8
 
 }
 
