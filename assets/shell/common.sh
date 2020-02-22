@@ -29,7 +29,7 @@ function print_os_info() {
 
 
 function linux_env {
-    echo "do nothing for linux here"
+
 }
 
 
@@ -51,7 +51,7 @@ function go_env() {
 
     case ${OS} in
         "Linux")
-            echo "Set go path here if necessary"
+            # echo "Set go path here if necessary"
             ;;
         "Darwin")
             export PATH="${PATH}:/usr/local/go/bin"
@@ -80,7 +80,7 @@ function python_env() {
 
     case ${OS} in
         "Linux")
-            echo "Set python path here if necessary"
+            # echo "Set python path here if necessary"
             ;;
         "Darwin")
             local python_framework_path="/Library/Frameworks/Python.framework/Versions"
