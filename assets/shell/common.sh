@@ -51,7 +51,7 @@ function go_env() {
 
     case ${OS} in
         "Linux")
-            # echo "Set go path here if necessary"
+            export PATH="${PATH}:/usr/local/go/bin"
             ;;
         "Darwin")
             export PATH="${PATH}:/usr/local/go/bin"
