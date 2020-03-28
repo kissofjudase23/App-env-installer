@@ -29,11 +29,13 @@ function print_os_info() {
 
 
 function linux_env {
-
+    export LC_ALL=C.UTF-8
+    export LANG=C.UTF-8
 }
 
 
 function darwin_env {
+    export LC_ALL=en_US.UTF-8
     export CLICOLOR='true'
     export LSCOLORS="gxfxcxdxcxegedabagacad"
 }
@@ -154,9 +156,6 @@ function common_env() {
     mysql_env
 
     redis_env
-
-    export LC_ALL=C.UTF-8
-    export LANG=C.UTF-8
 
 }
 
