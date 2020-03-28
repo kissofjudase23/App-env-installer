@@ -52,15 +52,8 @@ class SubProcess():
         p = subprocess.run(cmd,
                            shell=shell,
                            input=user_input,
-                           stdout=subprocess.PIPE,
-                           stderr=subprocess.STDOUT,
                            encoding="utf-8")
-        try:
-            p.check_returncode()
-        except subprocess.CalledProcessError as e:
-            raise SubProcessError(f"{e}, err={p.stdout}") from e
-        else:
-            print(p.stdout)
+        p.check_returncode()
 
 
 class FileUtils():
