@@ -217,7 +217,7 @@ class Installer():
         print("test")
 
     def pkgs(self, pkgs):
-        print(f'\nstart to pkgs:')
+        print(f'\nstart to install llpkgs:')
         for pkg in pkgs:
             self.pkg_install_agent.install(pkg)
 

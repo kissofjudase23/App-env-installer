@@ -17,6 +17,7 @@ dotfiles:
   - {name: "vimrc",
      src: "assets/editor/vimrc.vim",
      dst: ".vimrc"}
+
   # nvim and vim use the same config
   - {name: "nvim_init",
      src: "assets/editor/vimrc.vim",
@@ -49,6 +50,10 @@ dotfiles:
   - {name: "tmux",
      src: "assets/tmux/tmux.conf",
      dst: ".tmux.conf"}
+
+  - {name: "tigrc",
+     src: "assets/tig/tigrc",
+     dst: ".tigrc"}
 
   - {name: "assets",
      src: "assets",
@@ -130,6 +135,12 @@ darwin_pkgs:
       tap:  "",
       cask: false}
 
+  - {name: "tig",
+      bin:  "tig",
+      pkg:  "tig",
+      tap:  "",
+      cask: false}
+
   - {name: "zsh",
       bin:  "zsh",
       pkg:  "zsh",
@@ -187,6 +198,11 @@ apt_pkgs:
      pkg:  "tree",
      add-repo: ""}
 
+  - {name: "tig",
+     bin:  "tig",
+     pkg:  "tig",
+     add-repo: ""}
+
   - {name: "language-pack-en",
      bin:  "",
      pkg:  "language-pack-en",
@@ -201,7 +217,6 @@ apt_pkgs:
      bin:  "zsh",
      pkg:  "zsh",
      add-repo: ""}
-
 
 dnf_pkgs:
   - {name: "ag",
@@ -240,6 +255,10 @@ dnf_pkgs:
      bin:  "tree",
      pkg:  "tree"}
 
+  - {name: "tig",
+     bin:  "tig",
+     pkg:  "tig"}
+
   - {name: "neovim",
      bin:  "neovim",
      pkg:  "neovim"}
@@ -247,8 +266,3 @@ dnf_pkgs:
   - {name: "zsh",
      bin:  "zsh",
      pkg:  "zsh"}
-
-
-
-
-
