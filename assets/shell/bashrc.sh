@@ -96,3 +96,5 @@ function main() {
 main
 
 
+
+[ -f ~/.fzf.bash ] && source ~/.fzf.bash

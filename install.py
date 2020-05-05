@@ -126,7 +126,7 @@ class DarwinAgent(PkgMgrAgent):
         tap = pkg_info["tap"]
         cask = pkg_info["cask"]
 
-        print(f"install name:{name}, pkg:{pkg}, tap:{tap}:")
+        print(f"install name:{name}, pkg:{pkg}, tap:{tap}")
         if bin_name and self.check_installed(bin_name):
             return
 
@@ -217,7 +217,7 @@ class Installer():
         print("test")
 
     def pkgs(self, pkgs):
-        print(f'\nstart to install llpkgs:')
+        print(f'\nstart to install pkgs:')
         for pkg in pkgs:
             self.pkg_install_agent.install(pkg)
 

@@ -78,6 +78,12 @@ darwin_pkgs:
       tap:  "",
       cask: false}
 
+  - {name: "fzf",
+     bin: "fzf",
+     pkg: "fzf",
+     tap: "",
+     cask: false}
+
   - {name: "nerd-font",
       bin:  "",
       pkg: "font-sourcecodepro-nerd-font",
@@ -168,6 +174,11 @@ apt_pkgs:
      pkg:  "fontconfig",
      add-repo: ""}
 
+  - {name: "fzf",
+     bin:  "fzf",
+     pkg:  "fzf",
+     add-repo: ""}
+
   - {name: "git",
      bin:  "git",
      pkg:  "git",
@@ -230,6 +241,10 @@ dnf_pkgs:
   - {name: "curl",
      bin:  "curl",
      pkg:  "curl"}
+
+  - {name: "fzf",
+     bin:  "fzf",
+     pkg:  "fzf"}
 
   - {name: "git",
      bin:  "git",
