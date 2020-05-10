@@ -4,3 +4,7 @@
 tags
 conf_bk/*
 *.vscode
+.*
+.venv/
+Pipfile
+Pipfile.lock
