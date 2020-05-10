@@ -335,7 +335,7 @@ def main():
     if system != Systems.DARWIN.value:
         install_powerline_fonts()
 
-    SubProcess.run(shlex.split("pip3 install neovim --upgrade"))
+    # SubProcess.run(shlex.split("pip3 install neovim --upgrade"))
     # sudo sh -c "echo $(which zsh) >> /etc/shells"
     # SubProcess.run(cmd="chsh -s $(which zsh)", shell=True)
 
