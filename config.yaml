@@ -120,6 +120,19 @@ darwin_pkgs:
       tap:  "",
       cask: false}
 
+  - {name: "pyenv",
+      bin:  "pyenv",
+      pkg:  "pyenv",
+      tap:  "",
+      cask: false,
+      post_cmd: "pyenv init"}
+
+  - {name: "pyenv-virtualenv",
+      bin:  "pyenv-virtualenv",
+      pkg:  "pyenv-virtualenv",
+      tap:  "",
+      cask: false}
+
   # pip3 install neovim --user --upgrade to support python plugins
   # sudo sh -c "echo $(which zsh) >> /etc/shells"
   # chsh -s $(which zsh)
