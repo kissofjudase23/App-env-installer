@@ -29,12 +29,13 @@ function print_os_info() {
 
 
 function linux_env {
-    export LC_ALL=C.UTF-8
     export LANG=C.UTF-8
+    export LC_ALL=C.UTF-8
 }
 
 
 function darwin_env {
+    export LANG=en_US.UTF-8
     export LC_ALL=en_US.UTF-8
     export CLICOLOR='true'
     export LSCOLORS="gxfxcxdxcxegedabagacad"
@@ -65,6 +66,7 @@ function go_env() {
 
 function python_env() {
 
+    # pyenv
     export PYENV_ROOT="${HOME}/.pyenv"
 
     if [ -d "${PYENV_ROOT}" ]; then
@@ -89,6 +91,10 @@ function python_env() {
         *)
         echo "Do not support ${OS} now"
     esac
+
+    # pipenv
+    export PIPENV_VENV_IN_PROJECT='true'
+
 
 }
 
