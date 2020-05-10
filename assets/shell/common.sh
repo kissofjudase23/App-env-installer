@@ -81,10 +81,10 @@ function python_env() {
 
     case ${OS} in
         "Linux")
-            # echo "Set python path here if necessary"
+            export PYTHON_CONFIGURE_OPTS="--enable-shared"
             ;;
         "Darwin")
-            # echo "Set python path here if necessary"
+            export PYTHON_CONFIGURE_OPTS="--enable-framework"
             ;;
         *)
         echo "Do not support ${OS} now"
