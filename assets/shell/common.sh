@@ -65,30 +65,26 @@ function go_env() {
 
 function python_env() {
 
-    local py_venv="${WORK_DIR}/pyvenv"
+    export PYENV_ROOT="${HOME}/.pyenv"
 
-    check_folder_and_create ${py_venv}
+    if [ -d "${PYENV_ROOT}" ]; then
+        export PATH="${PYENV_ROOT}/bin:${PATH}"
+        eval "$(pyenv init -)"
+        eval "$(pyenv virtualenv-init -)"
+        export PYENV_VIRTUALENV_DISABLE_PROMPT=1
+    fi
 
-    local vp_path="$(PWD)/.pyvenv/bin"
-    local vpy27_path="${py_venv}/python2.7/bin"
-    local vpy36_path="${py_venv}/python3.6/bin"
-    local vpy37_path="${py_venv}/python3.7/bin"
-
-    alias vpy="source ${vp_path}/activate"
-    alias vpy27="source ${vpy27_path}/activate"
-    alias vpy36="source ${vpy36_path}/activate"
-    alias vpy37="source ${vpy37_path}/activate"
-
+    alias vpy27="pyenv activate vpy27"
+    alias vpy36="pyenv activate vpy36"
+    alias vpy37="pyenv activate vpy37"
+    alias vpy38="pyenv activate vpy38"
 
     case ${OS} in
         "Linux")
             # echo "Set python path here if necessary"
             ;;
         "Darwin")
-            local python_framework_path="/Library/Frameworks/Python.framework/Versions"
-            export PATH="${python_framework_path}/2.7/bin:${PATH}"
-            export PATH="${python_framework_path}/Versions/3.6/bin:${PATH}"
-            export PATH="${python_framework_path}/Versions/3.7/bin:${PATH}"
+            # echo "Set python path here if necessary"
             ;;
         *)
         echo "Do not support ${OS} now"
