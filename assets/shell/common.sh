@@ -76,6 +76,7 @@ function python_env() {
         export PYENV_VIRTUALENV_DISABLE_PROMPT=1
     fi
 
+    alias vpy="source .venv/bin/activate"
     alias vpy27="pyenv activate vpy27"
     alias vpy36="pyenv activate vpy36"
     alias vpy37="pyenv activate vpy37"
