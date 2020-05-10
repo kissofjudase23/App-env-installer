@@ -1,6 +1,7 @@
 import abc
 from enum import Enum, unique
 import platform
+import distro
 import yaml
 from pathlib import Path
 # from pprint import pprint as pp
@@ -132,6 +133,11 @@ class DarwinAgent(PkgMgrAgent):
 
         if tap:
             SubProcess.run(shlex.split(f"{self.brew} tap {tap}"))
+
+        if "post_cmd" in pkg_info:
+            post_cmd = pkg_info["post_cmd"]
+            SubProcess.run(shlex.split(post_cmd))
+
 
         pkg_mgr = self.brew
         if cask:
@@ -293,13 +299,13 @@ def install_powerline_fonts():
 def main():
     # Darwin, Ubuntu
     system = platform.system()
-    print(f"system is {system}")
+    print(f"System is {system}")
 
     # ('Ubuntu', '18.04', 'bionic')
     # ('CentOS Linux', '8.1.1911', 'Core')
-    distrib_name, distrib_ver, _ = platform.linux_distribution()
+    distrib_name, distrib_ver, _ = distro.linux_distribution()
     if system == Systems.LINUX.value:
-        print(f"distribution is {distrib_name}:{distrib_ver}")
+        print(f"Distribution is {distrib_name}:{distrib_ver}")
 
     # 1. check supported platform
     check_supported(system, distrib_name)
