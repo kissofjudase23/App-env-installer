@@ -78,6 +78,12 @@ darwin_pkgs:
       tap:  "",
       cask: false}
 
+  - {name: "ctop",
+      bin:  "ctop",
+      pkg:  "ctop",
+      tap:  "",
+      cask: false}
+
   - {name: "fzf",
      bin: "fzf",
      pkg: "fzf",
