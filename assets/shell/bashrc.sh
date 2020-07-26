@@ -1,6 +1,7 @@
 source ~/.assets/shell/common.sh
 source ~/.assets/git/git-prompt.sh
 source ~/.assets/git/git-completion.bash
+[[ -s ~/.gvm/scripts/gvm ]] && source ~/.gvm/scripts/gvm
 
 function exitstatus {
     EXITSTATUS="$?"
