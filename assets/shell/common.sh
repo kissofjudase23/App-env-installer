@@ -49,7 +49,7 @@ function go_env() {
     check_folder_and_create ${go_path}
 
     export GOPATH=${go_path}
-    export GO111MODULE=auto
+    export GO111MODULE="auto"
     export PATH="${PATH}:${GOPATH}/bin"
 
     case ${OS} in
