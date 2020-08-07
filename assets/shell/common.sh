@@ -43,25 +43,31 @@ function darwin_env {
 
 
 function go_env() {
+    # gvm will redeine the go env
+    # https://github.com/moovweb/gvm
+    if [[ -s ~/.gvm/scripts/gvm ]]; then
+        source ~/.gvm/scripts/gvm
+        gvm use go1.14
+        alias vgo1.14="gvm use go1.14"
+        alias vgo1.15="gvm use go1.15"
+    else
+        local go_path="${WORK_DIR}/go"
+        check_folder_and_create ${go_path}
+        export GOPATH=${go_path}
+        export GO111MODULE="auto"
+        export PATH="${PATH}:${GOPATH}/bin"
 
-    local go_path="${WORK_DIR}/go"
-
-    check_folder_and_create ${go_path}
-
-    export GOPATH=${go_path}
-    export GO111MODULE="auto"
-    export PATH="${PATH}:${GOPATH}/bin"
-
-    case ${OS} in
-        "Linux")
-            export PATH="${PATH}:/usr/local/go/bin"
-            ;;
-        "Darwin")
-            export PATH="${PATH}:/usr/local/go/bin"
-            ;;
-        *)
-        echo "Do not support ${OS} now"
-    esac
+        case ${OS} in
+            "Linux")
+                export PATH="${PATH}:/usr/local/go/bin"
+                ;;
+            "Darwin")
+                export PATH="${PATH}:/usr/local/go/bin"
+                ;;
+            *)
+            echo "Do not support ${OS} now"
+        esac
+    fi
 }
 
 function python_env() {

@@ -1,11 +1,6 @@
 
 source ~/.assets/shell/common.sh
 
-# can not resolve the crash issue on mac os
-# gvm will redefinition the GOPATH
-[[ -s ~/.gvm/scripts/gvm ]] && source ~/.gvm/scripts/gvm
-
-
 # Path to your oh-my-zsh installation
 # git clone git://github.com/robbyrussell/oh-my-zsh.git ~/.oh-my-zsh
 export ZSH=$HOME/.oh-my-zsh
