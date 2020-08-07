@@ -3,7 +3,7 @@ source ~/.assets/shell/common.sh
 
 # can not resolve the crash issue on mac os
 # gvm will redefinition the GOPATH
-# [[ -s ~/.gvm/scripts/gvm ]] && source ~/.gvm/scripts/gvm
+[[ -s ~/.gvm/scripts/gvm ]] && source ~/.gvm/scripts/gvm
 
 
 # Path to your oh-my-zsh installation
