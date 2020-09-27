@@ -97,6 +97,8 @@ plugins=(
   golang
   tig
   tmux
+  kubectl
+  helm
 )
 
 source $ZSH/oh-my-zsh.sh

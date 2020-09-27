@@ -172,6 +172,24 @@ darwin_pkgs:
       tap:  "",
       cask: false}
 
+  - {name: "krew",
+      bin:  "",
+      pkg:  "krew",
+      tap:  "",
+      cask: false}
+
+  - {name: "k9s",
+      bin:  "k9s",
+      pkg:  "k9s",
+      tap:  "",
+      cask: false}
+
+  - {name: "helm",
+      bin:  "helm",
+      pkg:  "helm",
+      tap:  "",
+      cask: false}
+
 apt_pkgs:
   - {name: "ag",
      bin:  "ag",

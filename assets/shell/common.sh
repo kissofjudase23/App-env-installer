@@ -138,18 +138,10 @@ function mysql_env() {
     esac
 }
 
-function redis_env() {
-    case ${OS} in
-        "Linux")
-            ;;
-        "Darwin")
-            local redis_path='/usr/local/Cellar/redis/5.0.5/bin/'
-            export PATH=${redis_path}:${PATH}
-            ;;
-        *)
-        echo "Do not support ${OS} now"
-    esac
+function k8s_env() {
+    export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
 }
+
 
 function common_env() {
     # If you come from bash you might have to change your $PATH.
@@ -166,7 +158,7 @@ function common_env() {
 
     mysql_env
 
-    redis_env
+    k8s_env
 
 }
 
