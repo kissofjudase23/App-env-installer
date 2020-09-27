@@ -43,6 +43,7 @@ function darwin_env {
 
 
 function go_env() {
+    # note:
     # gvm will redeine the go env
     # https://github.com/moovweb/gvm
     if [[ -s ~/.gvm/scripts/gvm ]]; then
@@ -87,6 +88,7 @@ function python_env() {
     alias vpy36="pyenv activate vpy36"
     alias vpy37="pyenv activate vpy37"
     alias vpy38="pyenv activate vpy38"
+    alias vpy39="pyenv activate vpy38"
 
     case ${OS} in
         "Linux")
