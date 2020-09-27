@@ -1,14 +1,16 @@
 import abc
+from abc import abstractmethod
 from enum import Enum, unique
 import platform
 import distro
 import yaml
+import prettytable as pt
 from pathlib import Path
-# from pprint import pprint as pp
 import subprocess
 import os
 import shlex
 import urllib.request
+import time
 
 
 class BaseError(Exception):
@@ -92,6 +94,7 @@ class FileUtils():
 
 
 class PkgMgrAgent(abc.ABC):
+
     def check_installed(self, pkg):
         """
         Use which to check if the pkg installed
@@ -100,13 +103,13 @@ class PkgMgrAgent(abc.ABC):
         ret_code = SubProcess.run_get_ret(cmd)
         return True if ret_code == 0 else False
 
-    @abc.abstractmethod
+    @abstractmethod
     def install(self, pkg):
         raise NotImplementedError("0.0")
 
 
 class DarwinAgent(PkgMgrAgent):
-    def __init__(self, update=True):
+    def __init__(self, update=False):
         # install homebrew
         self.brew = "brew"
         self.brew_cast = "brew cask"
@@ -137,7 +140,6 @@ class DarwinAgent(PkgMgrAgent):
         if "post_cmd" in pkg_info:
             post_cmd = pkg_info["post_cmd"]
             SubProcess.run(shlex.split(post_cmd))
-
 
         pkg_mgr = self.brew
         if cask:
@@ -206,11 +208,13 @@ class GitAgent():
         if check and FileUtils.check_and_create_dir(dst_path):
             return
         cmd = ("git", "clone", "--recurse-submodules", repo, dst_path)
-        SubProcess.run(cmd)
+        SubProcess.run(cmd).check_returncode()
 
 
 class Installer():
-    def __init__(self, *, home, git_agent, pkg_install_agent):
+    def __init__(self, *, home,
+                 git_agent: GitAgent,
+                 pkg_install_agent: PkgMgrAgent):
         self.home = home
         self.cwd = os.path.abspath(os.getcwd())
         self.git_agent = git_agent
@@ -222,29 +226,57 @@ class Installer():
     def all(self):
         print("test")
 
-    def pkgs(self, pkgs):
-        print(f'\nstart to install pkgs:')
+    def install_pkgs(self, pkgs):
+        print('\nstart to install pkgs:')
+        tb = pt.PrettyTable()
+        tb.field_names = ["name", "bin", "pkg"]
+        for pkg in pkgs:
+            tb.add_row([pkg['name'], pkg['bin'], pkg['pkg']])
+
+        print(tb)
+        time.sleep(3)
+
         for pkg in pkgs:
             self.pkg_install_agent.install(pkg)
 
-    def git_repos(self, git_repos):
-        print(f'\nstart to clone git repos:')
+    def clone_git_repos(self, git_repos):
+        print('\nstart to clone git repos:')
+        tb = pt.PrettyTable()
+        tb.field_names = ["src", "dst"]
+        src_dst_map = []
         for git_repo in git_repos:
             src = git_repo["src"]
             dst = os.path.join(self.home, git_repo["dst"])
-            print(f'"{git_repo["name"]}: src:{src}, dst:{dst}')
+            src_dst_map.append((src, dst))
+            tb.add_row([src, dst])
+
+        print(tb)
+        time.sleep(3)
+
+        for src, dst in src_dst_map:
+            print(f"start to clone:{src} to {dst}")
             self.git_agent.clone(repo=src, dst_path=dst)
 
-    def dotfiles(self, dotfiles):
-        print(f'\nstart to link dotfiles:')
+    def link_dotfiles(self, dotfiles):
+        print('\nstart to link dotfiles:')
+        tb = pt.PrettyTable()
+        tb.field_names = ["src", "dst"]
+        src_dst_map = []
         for dotfile in dotfiles:
             src = os.path.join(self.cwd, dotfile["src"])
             dst = os.path.join(self.home, dotfile["dst"])
+            src_dst_map.append((src, dst))
+            tb.add_row([src, dst])
+
+        print(tb)
+        time.sleep(3)
+
+        for src, dst in src_dst_map:
             dst_dirname = os.path.dirname(dst)
-            print(f'"{dotfile["name"]}: src:{src}, dst:{dst}')
             FileUtils.create_dir(dst_dirname)
             FileUtils.delete_link(dst)
             FileUtils.delete_file(dst)
+            print(f"start to link:{src} to {dst}")
             os.symlink(src, dst)
 
 
@@ -290,10 +322,17 @@ def install_powerline_fonts():
     urllib.request.urlretrieve("https://github.com/powerline/powerline/raw/develop/font/PowerlineSymbols.otf",
                                f"{font_d}/PowerlineSymbols.otf")
 
-    SubProcess.run(shlex.split(f"fc-cache -vf {font_d}"))
+    SubProcess.run(shlex.split(f"fc-cache -vf {font_d}")).check_returncode()
 
     urllib.request.urlretrieve("https://github.com/powerline/powerline/raw/develop/font/10-powerline-symbols.conf",
                                f"{font_config_d}/10-powerline-symbols.conf")
+
+
+def read_config(config_path="config.yaml"):
+    with open(config_path, "r") as fd:
+        config = yaml.safe_load(fd)
+
+    return config
 
 
 def main():
@@ -307,35 +346,32 @@ def main():
     if system == Systems.LINUX.value:
         print(f"Distribution is {distrib_name}:{distrib_ver}")
 
-    # 1. check supported platform
     check_supported(system, distrib_name)
 
-    # 2. load config to get pkg infomation
-    with open("config.yaml", "r") as fd:
-        config = yaml.safe_load(fd)
+    config = read_config()
 
-    # 3. get install agent
+    # get install agent
     # Darwin or Linux Agent
     pkg_mgr_agent = get_agent(system, distrib_name, distrib_ver)
     print(f'pkg_mgr_agent is {pkg_mgr_agent}')
 
     pkgs = get_pkgs(system, distrib_name, distrib_ver, config)
-    # pp(pkgs)
-    # pp(config["dotfiles"])
-    # pp(config["git_repos"])
 
     installer = Installer(home=Path.home(),
                           git_agent=GitAgent,
                           pkg_install_agent=pkg_mgr_agent)
 
-    installer.pkgs(pkgs)
-    installer.git_repos(config["git_repos"])
-    installer.dotfiles(config["dotfiles"])
+    installer.install_pkgs(pkgs)
+    installer.clone_git_repos(config["git_repos"])
+    installer.link_dotfiles(config["dotfiles"])
 
     if system != Systems.DARWIN.value:
         install_powerline_fonts()
 
+    # python plugin for neovim
     # SubProcess.run(shlex.split("pip3 install neovim --upgrade"))
+
+    # change default shell
     # sudo sh -c "echo $(which zsh) >> /etc/shells"
     # SubProcess.run(cmd="chsh -s $(which zsh)", shell=True)
 

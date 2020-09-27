@@ -48,15 +48,22 @@ vim ~/.vimrc
    *  your vim (or nvim) have to compiled with python plugins.
 
 * ```bash
-  cd ~/.vim/bundle/YouCompleteMe
-  $ ./install.py --go-completer
+  # go to build dir
 
-  # Go
-  --go-completer
+  cd ~/.vim/bundle/YouCompleteMe
+
+  # show help
+  $ ./install.py -h
+
+  # Enable Go semantic completion engine.
+  $ ./install.py --go-completer
 
   # C-family languages
   --clang-completer  # libclang
   --clangd-completer # clangd
+  # rust
+  --rust-completer
+
   ```
 * Ref:
   * https://github.com/ycm-core/YouCompleteMe
@@ -77,4 +84,3 @@ vim ~/.vimrc
       sudo apt update
       sudo apt install -y neovim
       ```
-
