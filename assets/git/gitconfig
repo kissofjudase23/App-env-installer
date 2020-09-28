@@ -44,3 +44,5 @@
 [branch  "develop"]
     # mergeoptions = --no-ff
 
+[pull]
+	rebase = true
