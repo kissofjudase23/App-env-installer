@@ -39,6 +39,10 @@ function darwin_env {
     export LC_ALL=en_US.UTF-8
     export CLICOLOR='true'
     export LSCOLORS="gxfxcxdxcxegedabagacad"
+
+    # stop ruuing brew update every time
+    export HOMEBREW_NO_AUTO_UPDATE=1
+
 }
 
 
