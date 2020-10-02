@@ -59,7 +59,7 @@ dotfiles:
      src: "assets",
      dst: ".assets"}
 
-darwin_pkgs:
+brew_pkgs:
   - {name: "ag",
       bin:  "ag",
       pkg:  "the_silver_searcher",

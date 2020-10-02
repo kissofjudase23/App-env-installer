@@ -20,11 +20,11 @@
      * git repositorys will be cloned.
    * dotfiles
      * dotfiles will be linked.
-   * darwin_pkgs
+   * brew_pkgs
      * Packages for Mac OS (brew)
-   * apt_pkgs
+   * ubuntu_pkgs
      * Packages for Ubuntu (apt)
-   * dnf_pkgs
+   * centos_pkgs
      * Packages for CentOS (dnt or yum)
 
 

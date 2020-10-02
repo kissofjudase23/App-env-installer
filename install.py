@@ -41,6 +41,13 @@ class LinuxDistributions(Enum):
     CENTOS = "CentOS Linux"
 
 
+@unique
+class Pkgs(Enum):
+    BREW = "brew_pkgs"
+    APT = "apt_pkgs"
+    DNF = "dnf_pkgs"
+
+
 class SubProcess():
     @staticmethod
     def run_get_ret(cmd):
@@ -60,6 +67,7 @@ class SubProcess():
 
 
 class FileUtils():
+
     @staticmethod
     def check_and_create_dir(dir_path):
         """
@@ -109,17 +117,20 @@ class PkgMgrAgent(abc.ABC):
 
 
 class DarwinAgent(PkgMgrAgent):
-    def __init__(self, update=False):
+
+    def __init__(self, update_brew=False):
+
         # install homebrew
         self.brew = "brew"
         self.brew_cast = "brew cask"
+
         if not self.check_installed("brew"):
             print("install brew:")
             cmd = r'/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"'
             # \n means enter
             SubProcess.run(cmd, shell=True, user_input="\n")
 
-        if update:
+        if update_brew:
             print("update brew:")
             SubProcess.run(shlex.split(f"{self.brew} update --force --verbose"))
 
@@ -132,6 +143,7 @@ class DarwinAgent(PkgMgrAgent):
 
         print(f"install name:{name}, pkg:{pkg}, tap:{tap}")
         if bin_name and self.check_installed(bin_name):
+            print(f"the {pkg} is installed already by checking the {bin_name}")
             return
 
         if tap:
@@ -152,8 +164,8 @@ class DarwinAgent(PkgMgrAgent):
 
 
 class UbuntuAgent(PkgMgrAgent):
-    def __init__(self, distrib_ver):
-        del distrib_ver
+
+    def __init__(self, _):
         self.pkg_mgr = "apt"
         SubProcess.run(shlex.split(f"{self.pkg_mgr} update -y"))
         SubProcess.run(shlex.split(f"{self.pkg_mgr} install -y software-properties-common"))
@@ -211,14 +223,49 @@ class GitAgent():
         SubProcess.run(cmd).check_returncode()
 
 
+class ConfigMgr():
+
+    def __init__(self, config_path="config.yaml"):
+        with open(config_path, "r") as fd:
+            self.config = yaml.safe_load(fd)
+
+    def pkgs(self, system, distrib_name, distrib_ver):
+        if system == Systems.DARWIN.value:
+            return self.config[Pkgs.BREW.value]
+        else:
+            if distrib_name == LinuxDistributions.UBUNTU.value:
+                return self.config[Pkgs.APT.value]
+            else:
+                return self.config[Pkgs.DNF.value]
+
+    @property
+    def dotfiles(self):
+        return self.config["dotfiles"]
+
+    @property
+    def git_repos(self):
+        return self.config["git_repos"]
+
+
 class Installer():
-    def __init__(self, *, home,
+
+    def __init__(self, *,
+                 home,
+                 system,
+                 distrib_name,
+                 distrib_ver,
                  git_agent: GitAgent,
-                 pkg_install_agent: PkgMgrAgent):
+                 pkg_install_agent: PkgMgrAgent,
+                 config_mgr: ConfigMgr):
+
         self.home = home
+        self.system = system
+        self.distrib_name = distrib_name
+        self.distrib_ver = distrib_ver
         self.cwd = os.path.abspath(os.getcwd())
         self.git_agent = git_agent
         self.pkg_install_agent = pkg_install_agent
+        self.config_mgr = config_mgr
 
     def __repr__(self):
         return "0.0"
@@ -226,7 +273,11 @@ class Installer():
     def all(self):
         print("test")
 
-    def install_pkgs(self, pkgs):
+    def install_pkgs(self):
+        pkgs = self.config_mgr.pkgs(self.system,
+                                    self.distrib_name,
+                                    self.distrib_ver)
+
         print('\nstart to install pkgs:')
         tb = pt.PrettyTable()
         tb.field_names = ["name", "bin", "pkg"]
@@ -239,7 +290,10 @@ class Installer():
         for pkg in pkgs:
             self.pkg_install_agent.install(pkg)
 
-    def clone_git_repos(self, git_repos):
+    def clone_git_repos(self):
+
+        git_repos = self.config_mgr.git_repos
+
         print('\nstart to clone git repos:')
         tb = pt.PrettyTable()
         tb.field_names = ["src", "dst"]
@@ -257,7 +311,10 @@ class Installer():
             print(f"start to clone:{src} to {dst}")
             self.git_agent.clone(repo=src, dst_path=dst)
 
-    def link_dotfiles(self, dotfiles):
+    def link_dotfiles(self):
+
+        dotfiles = self.config_mgr.dotfiles
+
         print('\nstart to link dotfiles:')
         tb = pt.PrettyTable()
         tb.field_names = ["src", "dst"]
@@ -279,8 +336,37 @@ class Installer():
             print(f"start to link:{src} to {dst}")
             os.symlink(src, dst)
 
+    def install_fonts(self):
+        if self.system == Systems.DARWIN.value:
+            return
 
-def get_agent(system, distrib_name, distrib_ver):
+        font_d = f"{Path.home()}/.local/share/fonts"
+        font_config_d = f"{Path.home()}/.config/fontconfig/conf.d"
+
+        FileUtils.create_dir(font_d)
+        FileUtils.create_dir(font_config_d)
+
+        urllib.request.urlretrieve("https://github.com/powerline/powerline/raw/develop/font/PowerlineSymbols.otf", f"{font_d}/PowerlineSymbols.otf")
+
+        SubProcess.run(shlex.split(f"fc-cache -vf {font_d}"))
+
+        urllib.request.urlretrieve("https://github.com/powerline/powerline/raw/develop/font/10-powerline-symbols.conf", f"{font_config_d}/10-powerline-symbols.conf")
+
+    def install_editor_plugins(self):
+        # python plugin for neovim
+        SubProcess.run(shlex.split("pip3 install neovim --upgrade"))
+
+    def install_kubectl_plugins(self):
+        if self.system is not Systems.DARWIN:
+            return
+
+        # context
+        SubProcess.run(shlex.split("kubectl krew install ctx"))
+        # namespace
+        SubProcess.run(shlex.split("kubectl krew install ns"))
+
+
+def get_agent(system, distrib_name, distrib_ver) -> PkgMgrAgent:
     if system == Systems.DARWIN.value:
         return DarwinAgent()
     else:
@@ -288,16 +374,6 @@ def get_agent(system, distrib_name, distrib_ver):
             return UbuntuAgent(distrib_ver)
         else:
             return CentOSAgent(distrib_ver)
-
-
-def get_pkgs(system, distrib_name, distrib_ver, config):
-    if system == Systems.DARWIN.value:
-        return config["darwin_pkgs"]
-    else:
-        if distrib_name == LinuxDistributions.UBUNTU.value:
-            return config["apt_pkgs"]
-        else:
-            return config["dnf_pkgs"]
 
 
 def check_supported(system, distrib_name):
@@ -312,66 +388,41 @@ def check_supported(system, distrib_name):
             raise NotSupportError(f"does not support {distrib_name} now")
 
 
-def install_powerline_fonts():
-    font_d = f"{Path.home()}/.local/share/fonts"
-    font_config_d = f"{Path.home()}/.config/fontconfig/conf.d"
-
-    FileUtils.create_dir(font_d)
-    FileUtils.create_dir(font_config_d)
-
-    urllib.request.urlretrieve("https://github.com/powerline/powerline/raw/develop/font/PowerlineSymbols.otf",
-                               f"{font_d}/PowerlineSymbols.otf")
-
-    SubProcess.run(shlex.split(f"fc-cache -vf {font_d}")).check_returncode()
-
-    urllib.request.urlretrieve("https://github.com/powerline/powerline/raw/develop/font/10-powerline-symbols.conf",
-                               f"{font_config_d}/10-powerline-symbols.conf")
-
-
-def read_config(config_path="config.yaml"):
-    with open(config_path, "r") as fd:
-        config = yaml.safe_load(fd)
-
-    return config
-
-
 def main():
     # Darwin, Ubuntu
     system = platform.system()
     print(f"System is {system}")
+    time.sleep(2)
 
     # ('Ubuntu', '18.04', 'bionic')
     # ('CentOS Linux', '8.1.1911', 'Core')
     distrib_name, distrib_ver, _ = distro.linux_distribution()
     if system == Systems.LINUX.value:
         print(f"Distribution is {distrib_name}:{distrib_ver}")
+        time.sleep(2)
 
     check_supported(system, distrib_name)
 
-    config = read_config()
-
-    # get install agent
-    # Darwin or Linux Agent
     pkg_mgr_agent = get_agent(system, distrib_name, distrib_ver)
     print(f'pkg_mgr_agent is {pkg_mgr_agent}')
-
-    pkgs = get_pkgs(system, distrib_name, distrib_ver, config)
+    time.sleep(2)
 
     installer = Installer(home=Path.home(),
+                          system=system,
+                          distrib_name=distrib_name,
+                          distrib_ver=distrib_ver,
                           git_agent=GitAgent,
-                          pkg_install_agent=pkg_mgr_agent)
+                          pkg_install_agent=pkg_mgr_agent,
+                          config_mgr=ConfigMgr())
 
-    installer.install_pkgs(pkgs)
-    installer.clone_git_repos(config["git_repos"])
-    installer.link_dotfiles(config["dotfiles"])
+    installer.install_pkgs()
+    installer.clone_git_repos()
+    installer.link_dotfiles()
+    installer.install_fonts()
+    installer.install_editor_plugins()
+    installer.install_kubectl_plugins()
 
-    if system != Systems.DARWIN.value:
-        install_powerline_fonts()
-
-    # python plugin for neovim
-    # SubProcess.run(shlex.split("pip3 install neovim --upgrade"))
-
-    # change default shell
+    # change default shell (need admin)
     # sudo sh -c "echo $(which zsh) >> /etc/shells"
     # SubProcess.run(cmd="chsh -s $(which zsh)", shell=True)
 
