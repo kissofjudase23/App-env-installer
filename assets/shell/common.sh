@@ -89,7 +89,7 @@ function python_env() {
 
     alias vpy="source .venv/bin/activate"
     alias vpy27="pyenv activate vpy27"
-    alias vpy36="pyenv activate vpy35"
+    alias vpy35="pyenv activate vpy35"
     alias vpy36="pyenv activate vpy36"
     alias vpy37="pyenv activate vpy37"
     alias vpy38="pyenv activate vpy38"
