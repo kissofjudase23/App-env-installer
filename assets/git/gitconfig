@@ -46,3 +46,7 @@
 
 [pull]
 	rebase = true
+[url "git@git.synology.inc:"]
+	insteadOf = https://git.synology.inc/
+[url "git@github.com:"]
+	insteadOf = https://github.com/
