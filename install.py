@@ -48,7 +48,7 @@ class Pkgs(Enum):
     DNF = "dnf_pkgs"
 
 
-class SubProcess():
+class SubProcess:
     @staticmethod
     def run_get_ret(cmd):
         return subprocess.run(cmd, stdout=subprocess.DEVNULL).returncode
@@ -59,15 +59,11 @@ class SubProcess():
         # redirect std.err to std.out
         # when set input in subprocess.run, the internal
         # stdin is subprocess.PIPE
-        p = subprocess.run(cmd,
-                           shell=shell,
-                           input=user_input,
-                           encoding="utf-8")
+        p = subprocess.run(cmd, shell=shell, input=user_input, encoding="utf-8")
         p.check_returncode()
 
 
-class FileUtils():
-
+class FileUtils:
     @staticmethod
     def check_and_create_dir(dir_path):
         """
@@ -102,7 +98,6 @@ class FileUtils():
 
 
 class PkgMgrAgent(abc.ABC):
-
     def check_installed(self, pkg):
         """
         Use which to check if the pkg installed
@@ -117,7 +112,6 @@ class PkgMgrAgent(abc.ABC):
 
 
 class DarwinAgent(PkgMgrAgent):
-
     def __init__(self, update_brew=False):
 
         # install homebrew
@@ -164,7 +158,6 @@ class DarwinAgent(PkgMgrAgent):
 
 
 class UbuntuAgent(PkgMgrAgent):
-
     def __init__(self, _):
         self.pkg_mgr = "apt"
         SubProcess.run(shlex.split(f"{self.pkg_mgr} update -y"))
@@ -193,7 +186,7 @@ class UbuntuAgent(PkgMgrAgent):
 class CentOSAgent(PkgMgrAgent):
     def __init__(self, distrib_ver):
         self.pkg_mgr = "apt"
-        if distrib_ver[0] >= '8':
+        if distrib_ver[0] >= "8":
             self.pkg_mgr = "dnf"
 
         SubProcess.run(shlex.split(f"{self.pkg_mgr} update -y"))
@@ -214,7 +207,7 @@ class CentOSAgent(PkgMgrAgent):
         return "CentOSAgent"
 
 
-class GitAgent():
+class GitAgent:
     @classmethod
     def clone(cls, repo, dst_path, *, check=True):
         if check and FileUtils.check_and_create_dir(dst_path):
@@ -223,8 +216,7 @@ class GitAgent():
         SubProcess.run(cmd).check_returncode()
 
 
-class ConfigMgr():
-
+class ConfigMgr:
     def __init__(self, config_path="config.yaml"):
         with open(config_path, "r") as fd:
             self.config = yaml.safe_load(fd)
@@ -247,16 +239,18 @@ class ConfigMgr():
         return self.config["git_repos"]
 
 
-class Installer():
-
-    def __init__(self, *,
-                 home,
-                 system,
-                 distrib_name,
-                 distrib_ver,
-                 git_agent: GitAgent,
-                 pkg_install_agent: PkgMgrAgent,
-                 config_mgr: ConfigMgr):
+class Installer:
+    def __init__(
+        self,
+        *,
+        home,
+        system,
+        distrib_name,
+        distrib_ver,
+        git_agent: GitAgent,
+        pkg_install_agent: PkgMgrAgent,
+        config_mgr: ConfigMgr,
+    ):
 
         self.home = home
         self.system = system
@@ -274,15 +268,13 @@ class Installer():
         print("test")
 
     def install_pkgs(self):
-        pkgs = self.config_mgr.pkgs(self.system,
-                                    self.distrib_name,
-                                    self.distrib_ver)
+        pkgs = self.config_mgr.pkgs(self.system, self.distrib_name, self.distrib_ver)
 
-        print('\nstart to install pkgs:')
+        print("\nstart to install pkgs:")
         tb = pt.PrettyTable()
         tb.field_names = ["name", "bin", "pkg"]
         for pkg in pkgs:
-            tb.add_row([pkg['name'], pkg['bin'], pkg['pkg']])
+            tb.add_row([pkg["name"], pkg["bin"], pkg["pkg"]])
 
         print(tb)
         time.sleep(3)
@@ -294,7 +286,7 @@ class Installer():
 
         git_repos = self.config_mgr.git_repos
 
-        print('\nstart to clone git repos:')
+        print("\nstart to clone git repos:")
         tb = pt.PrettyTable()
         tb.field_names = ["src", "dst"]
         src_dst_map = []
@@ -315,7 +307,7 @@ class Installer():
 
         dotfiles = self.config_mgr.dotfiles
 
-        print('\nstart to link dotfiles:')
+        print("\nstart to link dotfiles:")
         tb = pt.PrettyTable()
         tb.field_names = ["src", "dst"]
         src_dst_map = []
@@ -346,11 +338,17 @@ class Installer():
         FileUtils.create_dir(font_d)
         FileUtils.create_dir(font_config_d)
 
-        urllib.request.urlretrieve("https://github.com/powerline/powerline/raw/develop/font/PowerlineSymbols.otf", f"{font_d}/PowerlineSymbols.otf")
+        urllib.request.urlretrieve(
+            "https://github.com/powerline/powerline/raw/develop/font/PowerlineSymbols.otf",
+            f"{font_d}/PowerlineSymbols.otf",
+        )
 
         SubProcess.run(shlex.split(f"fc-cache -vf {font_d}"))
 
-        urllib.request.urlretrieve("https://github.com/powerline/powerline/raw/develop/font/10-powerline-symbols.conf", f"{font_config_d}/10-powerline-symbols.conf")
+        urllib.request.urlretrieve(
+            "https://github.com/powerline/powerline/raw/develop/font/10-powerline-symbols.conf",
+            f"{font_config_d}/10-powerline-symbols.conf",
+        )
 
     def install_editor_plugins(self):
         # python plugin for neovim
@@ -404,16 +402,18 @@ def main():
     check_supported(system, distrib_name)
 
     pkg_mgr_agent = get_agent(system, distrib_name, distrib_ver)
-    print(f'pkg_mgr_agent is {pkg_mgr_agent}')
+    print(f"pkg_mgr_agent is {pkg_mgr_agent}")
     time.sleep(2)
 
-    installer = Installer(home=Path.home(),
-                          system=system,
-                          distrib_name=distrib_name,
-                          distrib_ver=distrib_ver,
-                          git_agent=GitAgent,
-                          pkg_install_agent=pkg_mgr_agent,
-                          config_mgr=ConfigMgr())
+    installer = Installer(
+        home=Path.home(),
+        system=system,
+        distrib_name=distrib_name,
+        distrib_ver=distrib_ver,
+        git_agent=GitAgent,
+        pkg_install_agent=pkg_mgr_agent,
+        config_mgr=ConfigMgr(),
+    )
 
     installer.install_pkgs()
     installer.clone_git_repos()
