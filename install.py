@@ -213,7 +213,7 @@ class GitAgent:
         if check and FileUtils.check_and_create_dir(dst_path):
             return
         cmd = ("git", "clone", "--recurse-submodules", repo, dst_path)
-        SubProcess.run(cmd).check_returncode()
+        SubProcess.run(cmd)
 
 
 class ConfigMgr:
