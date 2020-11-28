@@ -1,3 +1,10 @@
+# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+# Initialization code that may require console input (password prompts, [y/n]
+# confirmations, etc.) must go above this block; everything else may go below.
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
 
 source ~/.assets/shell/common.sh
 
@@ -5,7 +12,7 @@ source ~/.assets/shell/common.sh
 # git clone git://github.com/robbyrussell/oh-my-zsh.git ~/.oh-my-zsh
 export ZSH=$HOME/.oh-my-zsh
 
-####### POWERLEVEL9K #######
+####### powerlevel10k #######
 # Set name of the theme to load. Optionally, if you set this to "random"
 # it'll load a random theme each time that oh-my-zsh is loaded.
 # See https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
@@ -15,22 +22,12 @@ export ZSH=$HOME/.oh-my-zsh
 #ZSH_THEME="apple"
 #ZSH_THEME="candy"
 
-# https://github.com/bhilburn/powerlevel9k/wiki
-# https://github.com/bhilburn/powerlevel9k/wiki/Install-Instructions
-ZSH_THEME="powerlevel9k/powerlevel9k"
-POWERLEVEL9K_MODE='nerdfont-complete'
-
-# OS_ICON
-POWERLEVEL9K_OS_ICON_BACKGROUND='white'
-POWERLEVEL9K_OS_ICON_FOREGROUND='black'
-
-# VIRTUALENV
-POWERLEVEL9K_VIRTUALENV_BACKGROUND='green'
-POWERLEVEL9K_VIRTUALENV_FOREGROUND='black'
-
-
-POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=( os_icon context dir dir_writable virtualenv vcs status)
-POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=( command_execution_time background_jobs load ram)
+# https://github.com/bhilburn/powerlevel10k/wiki
+# https://github.com/bhilburn/powerlevel10k/wiki/Install-Instructions
+ZSH_THEME="powerlevel10k/powerlevel10k"
+POWERLEVEL9K_DISABLE_CONFIGURATION_WIZARD=true
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 
 
@@ -133,3 +130,6 @@ source $ZSH/oh-my-zsh.sh
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+
+[[ -s "/Users/tomlin/.gvm/scripts/gvm" ]] && source "/Users/tomlin/.gvm/scripts/gvm"

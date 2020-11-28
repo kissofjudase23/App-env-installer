@@ -1,20 +1,17 @@
 # DATA-DOTFILES
- This project is used to provide fast env setting.
+- [Config files](#config-files)
+- [Installation](#installation)
+- [VIM Plugins](#vim-plugins)
+  - [YouCompleteMe](#youcompleteme)
+- [Shell](#shell)
+  - [zsh](#zsh)
+  - [fonts](#fonts)
+- [Terminal](#terminal)
+  - [iTerm2](#iterm2)
+- [Editor](#editor)
+  - [neovim](#neovim)
 
-
-# Table of Contents
-- [DATA-DOTFILES](#data-dotfiles)
-- [Table of Contents](#table-of-contents)
-  - [Dot Files](#dot-files)
-  - [Vim Plugins](#vim-plugins)
-  - [Installation](#installation)
-  - [Reference](#reference)
-    - [Compile YCM (YouCompleteMe) Engine](#compile-ycm-youcompleteme-engine)
-    - [zsh](#zsh)
-    - [font](#font)
-
-
-## Config file
+## Config files
  * [config.yaml](./config.yaml)
    * git_repos
      * git repositorys will be cloned.
@@ -39,14 +36,12 @@ vim ~/.vimrc
 
 # 3. Compile YCM (YouCompleteMe) Engine
 
-# 4. Check font if you want to use oh-my-zsh and powerlevel9k
+# 4. Check font if you want to use oh-my-zsh and powerlevel10k
 ```
 
-## Reference
-### Compile YCM (YouCompleteMe) Engine
-*  Note
-   *  your vim (or nvim) have to compiled with python plugins.
-
+## VIM Plugins
+### [YouCompleteMe](https://github.com/ycm-core/YouCompleteMe)
+*  Compile
 * ```bash
   # go to build dir
 
@@ -57,27 +52,31 @@ vim ~/.vimrc
 
   # Enable Go semantic completion engine.
   $ ./install.py --go-completer
-
-  # C-family languages
-  --clang-completer  # libclang
-  --clangd-completer # clangd
-  # rust
-  --rust-completer
-
   ```
-* Ref:
-  * https://github.com/ycm-core/YouCompleteMe
+## Shell
 ### zsh
   * [zsh env for mac](https://medium.com/statementdog-engineering/prettify-your-zsh-command-line-prompt-3ca2acc967f)
-  * [zsh themem, powerlevel9k](https://github.com/bhilburn/powerlevel9k)
+  * [powerlevel10k](https://github.com/romkatv/powerlevel10k)
 
-### font
+### fonts
   * Ubuntu
-    * [powerline-font](https://github.com/Powerlevel9k/powerlevel9k/wiki/Install-Instructions#step-2-install-a-powerline-font)
+    * [powerline-font](https://github.com/powerlevel10k/powerlevel10k/wiki/Install-Instructions#step-2-install-a-powerline-font)
       * https://powerline.readthedocs.io/en/latest/installation/linux.html#fonts-installation
       * https://github.com/powerline/fonts
-  * Latest neovim in Ubuntu
-    * ```sh
+
+  * Mac:
+     * path: ~/Library/Fonts
+     * Put your font here
+
+## Terminal
+### iTerm2
+   * [Color Schemes](https://github.com/mbadolato/iTerm2-Color-Schemes)
+
+
+## Editor
+### neovim
+  * Ubuntu
+      ```sh
       sudo apt install software-properties-common
       # or sudo add-apt-repository ppa:neovim-ppa/unstable for unstable version
       sudo add-apt-repository ppa:neovim-ppa/stable

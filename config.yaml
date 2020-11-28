@@ -9,9 +9,9 @@ git_repos:
      src: "git://github.com/robbyrussell/oh-my-zsh.git",
      dst:  ".oh-my-zsh"}
 
-  - {name: "powerlevel9k",
-     src: "git://github.com/bhilburn/powerlevel9k.git",
-     dst:  ".oh-my-zsh/custom/themes/powerlevel9k"}
+  - {name: "powerlevel10k",
+     src: "https://github.com/romkatv/powerlevel10k",
+     dst:  ".oh-my-zsh/custom/themes/powerlevel10k"}
 
 dotfiles:
   - {name: "vimrc",
@@ -32,8 +32,12 @@ dotfiles:
      dst: ".bashrc"}
 
   - {name: "zshrc",
-     src: "assets/shell/zshrc.sh",
+     src: "assets/shell/zshrc.zsh",
      dst: ".zshrc"}
+
+  - {name: "p10k",
+     src: "assets/shell/p10k.zsh",
+     dst: ".p10k.zsh"}
 
   - {name: "gdbinit",
      src: "assets/gdb/gdbinit",
@@ -92,7 +96,7 @@ brew_pkgs:
 
   - {name: "nerd-font",
       bin:  "",
-      pkg: "font-sourcecodepro-nerd-font",
+      pkg: "font-fira-code",
       tap:  "homebrew/cask-fonts",
       cask: true}
 
@@ -126,12 +130,12 @@ brew_pkgs:
       tap:  "",
       cask: false}
 
+  # post_cmd: "pyenv init"
   - {name: "pyenv",
       bin:  "pyenv",
       pkg:  "pyenv",
       tap:  "",
-      cask: false,
-      post_cmd: "pyenv init"}
+      cask: false}
 
   - {name: "pyenv-virtualenv",
       bin:  "pyenv-virtualenv",
