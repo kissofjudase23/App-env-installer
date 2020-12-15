@@ -50,3 +50,5 @@
 	insteadOf = https://git.synology.inc/
 [url "git@github.com:"]
 	insteadOf = https://github.com/
+[diff "sopsdiffer"]
+	textconv = sops -d

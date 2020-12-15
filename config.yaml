@@ -194,6 +194,12 @@ brew_pkgs:
       tap:  "",
       cask: false}
 
+  - {name: "helmfile",
+     bin:  "helmfile",
+     pkg:  "helmfile",
+     tap:  "",
+     cask: false}
+
 apt_pkgs:
   - {name: "ag",
      bin:  "ag",
