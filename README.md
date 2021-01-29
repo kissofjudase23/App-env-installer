@@ -26,57 +26,50 @@
 
 
 ## Installation
-```bash
-# 1. install pkgs
-bash ./install.sh
+ * Prequisites: git and python3.x
+ * step1:
+   * `bash install.sh`
+ * step2:
+   * Install vim plugins
+      * `vim ~/.vimrc`
+      *  `:PluginInstall`
+ * step3:
+   * [Compile YouCompleteMe](https://github.com/ycm-core/YouCompleteMe#installation)
 
-# 2. install vim plugins
-vim ~/.vimrc
-:PluginInstall
+   * `cd ~/.vim/bundle/YouCompleteMe`
+   * `./install.py --go-completer` , support golang and python
 
-# 3. Compile YCM (YouCompleteMe) Engine
+ * step4:
+   * Check font if you want to use powerlevel10k
 
-# 4. Check font if you want to use oh-my-zsh and powerlevel10k
-```
 
-## VIM Plugins
-### [YouCompleteMe](https://github.com/ycm-core/YouCompleteMe)
-*  Compile
-* ```bash
-  # go to build dir
-
-  cd ~/.vim/bundle/YouCompleteMe
-
-  # show help
-  $ ./install.py -h
-
-  # Enable Go semantic completion engine.
-  $ ./install.py --go-completer
-  ```
 ## Shell
-### zsh
-  * [zsh env for mac](https://medium.com/statementdog-engineering/prettify-your-zsh-command-line-prompt-3ca2acc967f)
+  * zsh
+    * [zsh env for mac](https://medium.com/statementdog-engineering/prettify-your-zsh-command-line-prompt-3ca2acc967f)
   * [powerlevel10k](https://github.com/romkatv/powerlevel10k)
 
-### fonts
+## Fonts
   * Ubuntu
     * [powerline-font](https://github.com/powerlevel10k/powerlevel10k/wiki/Install-Instructions#step-2-install-a-powerline-font)
       * https://powerline.readthedocs.io/en/latest/installation/linux.html#fonts-installation
       * https://github.com/powerline/fonts
 
-  * Mac:
-     * path: ~/Library/Fonts
-     * Put your font here
+  * Mac
+     * Put your font to `~/Library/Fonts`
+     * There is a copy of Sauce Code Pro Nerd Font Complete.ttf in asserts/fonts folder.
 
 ## Terminal
-### iTerm2
-   * [Color Schemes](https://github.com/mbadolato/iTerm2-Color-Schemes)
-
+  * iTerm2
+   * Change Fonts
+     * Preferences -> Profiles -> Text -> Font
+   * Change Color Schems
+     * Preferences -> Profiles -> Color
+     * [Color Schemes](https://github.com/mbadolato/iTerm2-Color-Schemes)
 
 ## Editor
 ### neovim
   * Ubuntu
-      ```sh
+      ```bash
       sudo apt install software-properties-common
       # or sudo add-apt-repository ppa:neovim-ppa/unstable for unstable version
       sudo add-apt-repository ppa:neovim-ppa/stable
