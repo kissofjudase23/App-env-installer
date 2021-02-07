@@ -4,7 +4,7 @@ set -e
 
 function main() {
     pip3 install -r requirements
-    python3 install.py
+    python3 install.py -a
 }
 
 main

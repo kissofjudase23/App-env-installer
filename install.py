@@ -1,16 +1,18 @@
 import abc
+import os
+import platform
+import shlex
+import subprocess
+import time
+import urllib.request
 from abc import abstractmethod
 from enum import Enum, unique
-import platform
-import distro
-import yaml
-import prettytable as pt
 from pathlib import Path
-import subprocess
-import os
-import shlex
-import urllib.request
-import time
+
+import click
+import distro
+import prettytable as pt
+import yaml
 
 
 class BaseError(Exception):
@@ -270,14 +272,15 @@ class Installer:
     def install_pkgs(self):
         pkgs = self.config_mgr.pkgs(self.system, self.distrib_name, self.distrib_ver)
 
-        print("\nstart to install pkgs:")
+        print("\nPrepare to install packages:")
         tb = pt.PrettyTable()
         tb.field_names = ["name", "bin", "pkg"]
         for pkg in pkgs:
             tb.add_row([pkg["name"], pkg["bin"], pkg["pkg"]])
 
         print(tb)
-        time.sleep(3)
+        if not click.confirm("Do you want to continue?", default=False):
+            return
 
         for pkg in pkgs:
             self.pkg_install_agent.install(pkg)
@@ -286,7 +289,7 @@ class Installer:
 
         git_repos = self.config_mgr.git_repos
 
-        print("\nstart to clone git repos:")
+        print("\nPrepare to clone git repos:")
         tb = pt.PrettyTable()
         tb.field_names = ["src", "dst"]
         src_dst_map = []
@@ -297,6 +300,8 @@ class Installer:
             tb.add_row([src, dst])
 
         print(tb)
+        if not click.confirm("Do you want to continue?", default=False):
+            return
         time.sleep(3)
 
         for src, dst in src_dst_map:
@@ -307,7 +312,7 @@ class Installer:
 
         dotfiles = self.config_mgr.dotfiles
 
-        print("\nstart to link dotfiles:")
+        print("\nPrepare to link dotfiles:")
         tb = pt.PrettyTable()
         tb.field_names = ["src", "dst"]
         src_dst_map = []
@@ -318,7 +323,8 @@ class Installer:
             tb.add_row([src, dst])
 
         print(tb)
-        time.sleep(3)
+        if not click.confirm("Do you want to continue?", default=False):
+            return
 
         for src, dst in src_dst_map:
             dst_dirname = os.path.dirname(dst)
@@ -386,7 +392,13 @@ def check_supported(system, distrib_name):
             raise NotSupportError(f"does not support {distrib_name} now")
 
 
-def main():
+@click.command(context_settings=dict(help_option_names=["-h", "--help"]))
+@click.option("-a", "--all", "install_all", is_flag=True, help="install all", default=False)
+@click.option("-p", "--pkg", "install_pkgs", is_flag=True, help="install packages", default=False)
+@click.option(
+    "-g", "--git", "clone_git_repos", is_flag=True, help="glone git repositories", default=False
+)
+def cli(install_all: bool, install_pkgs: bool, clone_git_repos: bool):
     # Darwin, Ubuntu
     system = platform.system()
     print(f"System is {system}")
@@ -397,7 +409,7 @@ def main():
     distrib_name, distrib_ver, _ = distro.linux_distribution()
     if system == Systems.LINUX.value:
         print(f"Distribution is {distrib_name}:{distrib_ver}")
-        time.sleep(2)
+        time.sleep(1)
 
     check_supported(system, distrib_name)
 
@@ -415,12 +427,16 @@ def main():
         config_mgr=ConfigMgr(),
     )
 
-    installer.install_pkgs()
-    installer.clone_git_repos()
+    if install_all or install_pkgs:
+        installer.install_pkgs()
+        installer.install_editor_plugins()
+        installer.install_kubectl_plugins()
+        installer.install_fonts()
+
+    if install_all or clone_git_repos:
+        installer.clone_git_repos()
+
     installer.link_dotfiles()
-    installer.install_fonts()
-    installer.install_editor_plugins()
-    installer.install_kubectl_plugins()
 
     # change default shell (need admin)
     # sudo sh -c "echo $(which zsh) >> /etc/shells"
@@ -428,4 +444,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    cli()
