@@ -96,6 +96,7 @@ plugins=(
   tmux
   kubectl
   helm
+  fzf
 )
 
 source $ZSH/oh-my-zsh.sh
