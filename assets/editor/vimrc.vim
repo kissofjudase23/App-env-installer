@@ -561,7 +561,7 @@ endif
 " autoloading functionality for Ctags
 " http://stackoverflow.com/questions/563616/vim-and-ctags-tips-and-tricks
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-set tags=./tags;/
+" set tags=./tags;/
 "does not work for xshell
 "map <C-\> :tab split<CR>:exec("tag ".expand("<cword>"))<CR>
 "map <A-]> :vsp <CR>:exec("tag ".expand("<cword>"))<CR>
@@ -571,16 +571,13 @@ set tags=./tags;/
 " http://vim-taglist.sourceforge.net/manual.html
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "Automatically highlight the current tag in the taglist
-let Tlist_Auto_Highligh_Tag = 1
+" let Tlist_Auto_Highligh_Tag = 1
 "Open the taglist window when Vim starts.
 "let Tlist_Auto_Open = 1
 "Close Vim if the taglist is the only window
-let Tlist_Exit_OnlyWindow = 1
+" let Tlist_Exit_OnlyWindow = 1
 
 " map TlistToggle to <F3>
-nnoremap <silent> <F3> :TlistToggle<CR>
+" nnoremap <silent> <F3> :TlistToggle<CR>
 " map TlistClose to <F4>
 " nnoremap <silent> <F4> :TlistClose<CR>
-
-
-
