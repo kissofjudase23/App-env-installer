@@ -52,8 +52,9 @@ function go_env() {
     # https://github.com/moovweb/gvm
     if [[ -s ~/.gvm/scripts/gvm ]]; then
         source ~/.gvm/scripts/gvm
-        gvm use go1.16
-        alias vgo15="gvm use go1.16"
+        gvm use go1.17
+        alias vgo16="gvm use go1.16"
+        alias vgo17="gvm use go1.17"
     else
         local go_path="${WORK_DIR}/go"
         check_folder_and_create ${go_path}
