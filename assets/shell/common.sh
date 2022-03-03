@@ -91,6 +91,7 @@ function python_env() {
     case ${OS} in
         "Linux")
             export PYTHON_CONFIGURE_OPTS="--enable-shared"
+            export REQUESTS_CA_BUNDLE="/etc/ssl/certs/ca-certificates.crt"
             ;;
         "Darwin")
             export PYTHON_CONFIGURE_OPTS="--enable-framework"
