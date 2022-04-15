@@ -200,6 +200,12 @@ brew_pkgs:
      tap:  "",
      cask: false}
 
+  - {name: "gron",
+     bin:  "gron",
+     pkg:  "gron",
+     tap:  "",
+     cask: false}
+
 apt_pkgs:
   - {name: "ag",
      bin:  "ag",
