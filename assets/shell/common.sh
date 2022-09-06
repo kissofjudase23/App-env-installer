@@ -56,24 +56,9 @@ function go_env() {
         alias vgo17="gvm use go1.17"
         alias vgo18="gvm use go1.18"
         alias vgo19="gvm use go1.19"
-    else
-        local go_path="${WORK_DIR}/go"
-        check_folder_and_create ${go_path}
-        export GOPATH=${go_path}
-        export GO111MODULE="auto"
-        export PATH="${PATH}:${GOPATH}/bin"
-
-        case ${OS} in
-            "Linux")
-                export PATH="${PATH}:/usr/local/go/bin"
-                ;;
-            "Darwin")
-                export PATH="${PATH}:/usr/local/go/bin"
-                ;;
-            *)
-            echo "Do not support ${OS} now"
-        esac
     fi
+
+    export PATH="${PATH}:${HOME}/go/bin"
 }
 
 function python_env() {
