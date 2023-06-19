@@ -52,7 +52,7 @@ function go_env() {
     # https://github.com/moovweb/gvm
     if [[ -s ~/.gvm/scripts/gvm ]]; then
         source ~/.gvm/scripts/gvm
-        gvm use go1.19.10
+        gvm use go1.20.5
         alias vgo19="gvm use go1.19.10"
         alias vgo20="gvm use go1.20.5"
     fi
