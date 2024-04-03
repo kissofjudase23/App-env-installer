@@ -1,3 +1,5 @@
+# pylint: disable=missing-module-docstring, missing-class-docstring, missing-function-docstring
+
 import abc
 import os
 import platform
@@ -32,7 +34,7 @@ class SubProcessError(InstallPkgError):
 
 
 @unique
-class Systems(Enum):
+class SupportedSystems(Enum):
     DARWIN = "Darwin"
     LINUX = "Linux"
 
@@ -118,7 +120,6 @@ class DarwinAgent(PkgMgrAgent):
 
         # install homebrew
         self.brew = "brew"
-        self.brew_cast = "brew cask"
 
         if not self.check_installed("brew"):
             print("install brew:")
@@ -150,10 +151,10 @@ class DarwinAgent(PkgMgrAgent):
             SubProcess.run(shlex.split(post_cmd))
 
         pkg_mgr = self.brew
+        install_cmd = shlex.split(f"{pkg_mgr} install {pkg}")
         if cask:
-            pkg_mgr = self.brew_cast
-
-        SubProcess.run(shlex.split(f"{pkg_mgr} install {pkg}"))
+            install_cmd = shlex.split(f"{pkg_mgr} install --cask {pkg}")
+        SubProcess.run(install_cmd)
 
     def __repr__(self):
         return "DarwinAgent"
@@ -220,17 +221,18 @@ class GitAgent:
 
 class ConfigMgr:
     def __init__(self, config_path="config.yaml"):
-        with open(config_path, "r") as fd:
+        with open(config_path, "r", encoding="utf-8") as fd:
             self.config = yaml.safe_load(fd)
 
-    def pkgs(self, system, distrib_name, distrib_ver):
-        if system == Systems.DARWIN.value:
+    def pkgs(self, system, distrib_name):
+        if system == SupportedSystems.DARWIN.value:
             return self.config[Pkgs.BREW.value]
-        else:
-            if distrib_name == LinuxDistributions.UBUNTU.value:
-                return self.config[Pkgs.APT.value]
-            else:
-                return self.config[Pkgs.DNF.value]
+
+        # Linux Distribution
+        if distrib_name == LinuxDistributions.UBUNTU.value:
+            return self.config[Pkgs.APT.value]
+
+        return self.config[Pkgs.DNF.value]
 
     @property
     def dotfiles(self):
@@ -270,20 +272,20 @@ class Installer:
         print("test")
 
     def install_pkgs(self):
-        pkgs = self.config_mgr.pkgs(self.system, self.distrib_name, self.distrib_ver)
+        pkg_infos = self.config_mgr.pkgs(self.system, self.distrib_name)
 
         print("\nPrepare to install packages:")
         tb = pt.PrettyTable()
         tb.field_names = ["name", "bin", "pkg"]
-        for pkg in pkgs:
-            tb.add_row([pkg["name"], pkg["bin"], pkg["pkg"]])
+        for pkg_info in pkg_infos:
+            tb.add_row([pkg_info["name"], pkg_info["bin"], pkg_info["pkg"]])
 
         print(tb)
         if not click.confirm("Do you want to continue?", default=False):
             return
 
-        for pkg in pkgs:
-            self.pkg_install_agent.install(pkg)
+        for pkg_info in pkg_infos:
+            self.pkg_install_agent.install(pkg_info)
 
     def clone_git_repos(self):
 
@@ -305,7 +307,7 @@ class Installer:
         time.sleep(3)
 
         for src, dst in src_dst_map:
-            print(f"start to clone:{src} to {dst}")
+            print(f"clone {src} to {dst}")
             self.git_agent.clone(repo=src, dst_path=dst)
 
     def link_dotfiles(self):
@@ -335,7 +337,7 @@ class Installer:
             os.symlink(src, dst)
 
     def install_fonts(self):
-        if self.system == Systems.DARWIN.value:
+        if self.system == SupportedSystems.DARWIN.value:
             return
 
         font_d = f"{Path.home()}/.local/share/fonts"
@@ -361,7 +363,7 @@ class Installer:
         SubProcess.run(shlex.split("pip3 install neovim --upgrade"))
 
     def install_kubectl_plugins(self):
-        if self.system is not Systems.DARWIN:
+        if self.system is not SupportedSystems.DARWIN:
             return
 
         # context
@@ -371,25 +373,28 @@ class Installer:
 
 
 def get_agent(system, distrib_name, distrib_ver) -> PkgMgrAgent:
-    if system == Systems.DARWIN.value:
+    if system == SupportedSystems.DARWIN.value:
         return DarwinAgent()
+
+    if distrib_name == LinuxDistributions.UBUNTU.value:
+        return UbuntuAgent(distrib_ver)
     else:
-        if distrib_name == LinuxDistributions.UBUNTU.value:
-            return UbuntuAgent(distrib_ver)
-        else:
-            return CentOSAgent(distrib_ver)
+        return CentOSAgent(distrib_ver)
 
 
 def check_supported(system, distrib_name):
-    supported_system = tuple(system.value for system in Systems)
-    supported_lix_distribution = tuple(dist.value for dist in LinuxDistributions)
+    supported_systems = tuple(system.value for system in SupportedSystems)
+    supported_lix_distributions = tuple(dist.value for dist in LinuxDistributions)
 
-    if system not in supported_system:
-        raise NotSupportError(f"does not support {system} now")
+    if system not in supported_systems:
+        raise NotSupportError(f"does not support {system}")
 
-    if system == "Linux":
-        if distrib_name not in supported_lix_distribution:
-            raise NotSupportError(f"does not support {distrib_name} now")
+    if system != "Linux":
+        return
+
+    # check linux distrbutino
+    if distrib_name not in supported_lix_distributions:
+        raise NotSupportError(f"does not support {distrib_name}")
 
 
 @click.command(context_settings=dict(help_option_names=["-h", "--help"]))
@@ -402,19 +407,17 @@ def cli(install_all: bool, install_pkgs: bool, clone_git_repos: bool):
     # Darwin, Ubuntu
     system = platform.system()
     print(f"System is {system}")
-    time.sleep(2)
-
     distrib_name = distro.name()
     distrib_ver = distro.version()
-    if system == Systems.LINUX.value:
-        print(f"Distribution is {distrib_name}:{distrib_ver}")
+    if system == SupportedSystems.LINUX.value:
+        print(f"Linux distribution is {distrib_name}:{distrib_ver}")
         time.sleep(1)
 
     check_supported(system, distrib_name)
 
     pkg_mgr_agent = get_agent(system, distrib_name, distrib_ver)
     print(f"pkg_mgr_agent is {pkg_mgr_agent}")
-    time.sleep(2)
+    time.sleep(3)
 
     installer = Installer(
         home=Path.home(),
