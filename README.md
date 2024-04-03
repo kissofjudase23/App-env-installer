@@ -46,17 +46,11 @@
 ## Shell
   * zsh
     * [zsh env for mac](https://medium.com/statementdog-engineering/prettify-your-zsh-command-line-prompt-3ca2acc967f)
-  * [powerlevel10k](https://github.com/romkatv/powerlevel10k)
+  * zsh scheme
+    * [powerlevel10k](https://github.com/romkatv/powerlevel10k)
+  * font for the scheme
+    * [pick the font you want](https://github.com/romkatv/powerlevel10k?tab=readme-ov-file#fonts) and configure your terminal if needed
 
-## Fonts
-  * Ubuntu
-    * [powerline-font](https://github.com/powerlevel10k/powerlevel10k/wiki/Install-Instructions#step-2-install-a-powerline-font)
-      * https://powerline.readthedocs.io/en/latest/installation/linux.html#fonts-installation
-      * https://github.com/powerline/fonts
-
-  * Mac
-     * Put your font to `~/Library/Fonts`
-     * There is a copy of Sauce Code Pro Nerd Font Complete.ttf in asserts/fonts folder.
 
 ## Terminal
   * iTerm2
