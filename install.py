@@ -404,9 +404,8 @@ def cli(install_all: bool, install_pkgs: bool, clone_git_repos: bool):
     print(f"System is {system}")
     time.sleep(2)
 
-    # ('Ubuntu', '18.04', 'bionic')
-    # ('CentOS Linux', '8.1.1911', 'Core')
-    distrib_name, distrib_ver, _ = distro.linux_distribution()
+    distrib_name = distro.name()
+    distrib_ver = distro.version()
     if system == Systems.LINUX.value:
         print(f"Distribution is {distrib_name}:{distrib_ver}")
         time.sleep(1)
@@ -427,6 +426,11 @@ def cli(install_all: bool, install_pkgs: bool, clone_git_repos: bool):
         config_mgr=ConfigMgr(),
     )
 
+    installer.link_dotfiles()
+    # change default shell (need admin)
+    # sudo sh -c "echo $(which zsh) >> /etc/shells"
+    # SubProcess.run(cmd="chsh -s $(which zsh)", shell=True)
+
     if install_all or install_pkgs:
         installer.install_pkgs()
         installer.install_editor_plugins()
@@ -435,12 +439,6 @@ def cli(install_all: bool, install_pkgs: bool, clone_git_repos: bool):
 
     if install_all or clone_git_repos:
         installer.clone_git_repos()
-
-    installer.link_dotfiles()
-
-    # change default shell (need admin)
-    # sudo sh -c "echo $(which zsh) >> /etc/shells"
-    # SubProcess.run(cmd="chsh -s $(which zsh)", shell=True)
 
 
 if __name__ == "__main__":

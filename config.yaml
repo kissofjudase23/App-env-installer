@@ -2,15 +2,15 @@
 
 git_repos:
   - {name: "Vundle",
-     src: "git://github.com/VundleVim/Vundle.vim.git",
+     src: "https://github.com/VundleVim/Vundle.vim.git",
      dst:  ".vim/bundle/Vundle.vim"}
 
   - {name: "oh-my-zsh",
-     src: "git://github.com/robbyrussell/oh-my-zsh.git",
+     src: "https://github.com/robbyrussell/oh-my-zsh.git",
      dst:  ".oh-my-zsh"}
 
   - {name: "powerlevel10k",
-     src: "git://github.com/romkatv/powerlevel10k",
+     src: "https://github.com/romkatv/powerlevel10k",
      dst:  ".oh-my-zsh/custom/themes/powerlevel10k"}
 
 dotfiles:
