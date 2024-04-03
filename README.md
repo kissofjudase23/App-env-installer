@@ -40,7 +40,7 @@
    * `./install.py --go-completer` , support golang and python
 
  * step4:
-   * Check font if you want to use powerlevel10k
+   * Check the shell configuration
 
 
 ## Shell
@@ -48,17 +48,16 @@
     * [zsh env for mac](https://medium.com/statementdog-engineering/prettify-your-zsh-command-line-prompt-3ca2acc967f)
   * zsh scheme
     * [powerlevel10k](https://github.com/romkatv/powerlevel10k)
-  * font for the scheme
-    * [pick the font you want](https://github.com/romkatv/powerlevel10k?tab=readme-ov-file#fonts) and configure your terminal if needed
+  * [font](https://github.com/romkatv/powerlevel10k?tab=readme-ov-file#fonts) for special scheme
 
 
 ## Terminal
   * iTerm2
-   * Change Fonts
-     * Preferences -> Profiles -> Text -> Font
-   * Change Color Schems
-     * Preferences -> Profiles -> Color
-     * [Color Schemes](https://github.com/mbadolato/iTerm2-Color-Schemes)
+     * Change Fonts
+       * Preferences -> Profiles -> Text -> Font
+     * Change Color Schems
+       * Preferences -> Profiles -> Color
+       * [Color Schemes](https://github.com/mbadolato/iTerm2-Color-Schemes)
 
 ## Editor
 ### neovim
