@@ -58,6 +58,8 @@
      * Change Color Schems
        * Preferences -> Profiles -> Color
        * [Color Schemes](https://github.com/mbadolato/iTerm2-Color-Schemes)
+   * Windows Terminal (for WSL)
+     * Setting -> Profile -> Appearance -> Change Fonts (display all fonts)
 
 ## Editor
 ### neovim
