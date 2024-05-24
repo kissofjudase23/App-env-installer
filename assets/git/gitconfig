@@ -7,7 +7,9 @@
 
     # checkout as-is, commit unix style format
     autocrlf = input
-    # checkou as-is, commit as-is 
+    # for unicode-display
+    quotepath = off
+    # checkou as-is, commit as-is
     #autocrlf = false
 [color]
     ui = true
