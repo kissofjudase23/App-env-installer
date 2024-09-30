@@ -25,7 +25,7 @@
     st = status
     br = branch
     d = difftool
-    mg = merge --no-ff
+    mg = merge
     ss = show --name-status
     ls = log --stat --decorate --abbrev-commit
     ll = log --graph --decorate --pretty=oneline --abbrev-commit
@@ -41,16 +41,10 @@
     prompt = false
 [merge]
     tool = vimdiff
-[branch  "master"]
-    # mergeoptions = --no-ff
-[branch  "develop"]
-    # mergeoptions = --no-ff
-
+    # Even create extra merge commit when fast forward merge would be possible
+    ff = false
 [pull]
+    # Set up pull to rebase instead of merge
 	rebase = true
-[url "git@git.synology.inc:"]
-	insteadOf = https://git.synology.inc/
-[diff "sopsdiffer"]
-	textconv = sops -d
 [url "https://github.com/"]
 	insteadOf = git://github.com/
