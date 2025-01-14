@@ -132,5 +132,4 @@ source $ZSH/oh-my-zsh.sh
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
-
-[[ -s "/Users/tomlin/.gvm/scripts/gvm" ]] && source "/Users/tomlin/.gvm/scripts/gvm"
+[[ -s ~/.gvm/scripts/gvm ]] && source ~/.gvm/scripts/gvm
