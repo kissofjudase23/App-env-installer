@@ -104,7 +104,7 @@ set showmode                 " Show current mode
 set backspace=2              " make backspace work like most other
 set hlsearch                 " hightlight search parrtern
 set ruler             " show the line and column number of the cursor position
-set cc=80
+set cc=120
 set splitbelow
 set splitright
 set encoding=utf-8
