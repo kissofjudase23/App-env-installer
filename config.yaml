@@ -33,6 +33,7 @@ dotfiles:
      src: "assets/shell/bashrc.sh",
      dst: ".bashrc"}
 
+  # zsh
   - {name: "zshrc",
      src: "assets/shell/zshrc.zsh",
      dst: ".zshrc"}
@@ -91,7 +92,7 @@ brew_pkgs:
   - {name: "nerd-font",
       bin:  "",
       pkg: "font-fira-code",
-      tap:  "homebrew/cask-fonts",
+      tap:  "",
       cask: true}
 
   - {name: "git",
