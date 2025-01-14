@@ -23,10 +23,12 @@ dotfiles:
      src: "assets/editor/vimrc.vim",
      dst: ".config/nvim/init.vim"}
 
+  # bash (mac)
   - {name: "bash_profile",
      src: "assets/shell/bash_profile.sh",
      dst: ".bash_profile"}
 
+  # bash
   - {name: "bashrc",
      src: "assets/shell/bashrc.sh",
      dst: ".bashrc"}
