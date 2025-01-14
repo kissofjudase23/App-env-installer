@@ -63,8 +63,8 @@ class SubProcess:
         # redirect std.err to std.out
         # when set input in subprocess.run, the internal
         # stdin is subprocess.PIPE
-        p = subprocess.run(cmd, shell=shell, input=user_input, encoding="utf-8")
-        p.check_returncode()
+        # check=True is equal to p.check_returncode()
+        subprocess.run(cmd, shell=shell, input=user_input, encoding="utf-8", check=True)
 
 
 class FileUtils:
@@ -108,10 +108,11 @@ class PkgMgrAgent(abc.ABC):
         """
         cmd = ("which", pkg)
         ret_code = SubProcess.run_get_ret(cmd)
-        return True if ret_code == 0 else False
+        # if ret_code == 0 -> return True
+        return not bool(ret_code)
 
     @abstractmethod
-    def install(self, pkg):
+    def install(self, pkg_info):
         raise NotImplementedError("0.0")
 
 
