@@ -39,17 +39,9 @@ dotfiles:
      src: "assets/shell/p10k.zsh",
      dst: ".p10k.zsh"}
 
-  - {name: "gdbinit",
-     src: "assets/gdb/gdbinit",
-     dst: ".gdbinit"}
-
   - {name: "gitconfig",
      src: "assets/git/gitconfig",
      dst: ".gitconfig"}
-
-  - {name: "screenrc",
-     src: "assets/screen/screenrc",
-     dst: ".screenrc"}
 
   - {name: "tmux",
      src: "assets/tmux/tmux.conf",
