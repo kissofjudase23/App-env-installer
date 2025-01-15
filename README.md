@@ -49,6 +49,11 @@
   * zsh scheme
     * [powerlevel10k](https://github.com/romkatv/powerlevel10k)
   * [font](https://github.com/romkatv/powerlevel10k?tab=readme-ov-file#fonts) for special scheme
+    *  Recommended font: Meslo Nerd Font patched for Powerlevel10k.
+       *  [mac](https://github.com/ryanoasis/nerd-fonts?tab=readme-ov-file#option-2-homebrew-fonts)
+       *  windows
+          *  [chocolatey](https://github.com/ryanoasis/nerd-fonts?tab=readme-ov-file#option-3-unofficial-chocolatey-or-scoop-repositories)
+          *  [manual](https://medium.com/@vedantkadam541/beautify-your-windows-terminal-using-nerd-fonts-and-oh-my-posh-4f4393f097)
 
 
 ## Terminal
@@ -59,7 +64,7 @@
        * Preferences -> Profiles -> Color
        * [Color Schemes](https://github.com/mbadolato/iTerm2-Color-Schemes)
    * Windows Terminal (for WSL)
-     * Setting -> Profile -> Appearance -> Change Fonts (display all fonts)
+     * Setting -> Profile -> Appearance -> Font Face
 
 ## Editor
 ### neovim
