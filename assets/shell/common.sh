@@ -1,6 +1,5 @@
 
 
-WORK_DIR="${HOME}/WorkSpace"
 OS=$(uname -s)
 ARCH=$(uname -m)
 VER=$(uname -r)
@@ -132,7 +131,7 @@ function common_env() {
     export PATH=$HOME/bin:/usr/local/bin:/usr/local/opt/:${PATH}
 
     # create the work space
-    check_folder_and_create ${WORK_DIR}
+    # check_folder_and_create ${WORK_DIR}
 
     editor_env
 
@@ -228,10 +227,10 @@ function screen_color_setting()
     esac
 }
 
-function networking()
+function network_setting()
 {
-    # set proxy if you need
-    local proxy_server="http://{ip}:{port}"
+    # set proxy config
+    local proxy_server="http://10.160.3.88:8080"
     export HTTPS_PROXY=${proxy_server}
     export HTTP_PROXY=${proxy_server}
     export no_proxy="127.0.0.1,localhost"
@@ -241,7 +240,7 @@ function main() {
     env_setting
     alias_setting
     screen_color_setting
-    # networking
+    #network_setting
 }
 
 
