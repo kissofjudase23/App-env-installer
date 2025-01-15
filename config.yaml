@@ -107,12 +107,6 @@ brew_pkgs:
       tap:  "",
       cask: false}
 
-  - {name: "screen",
-      bin:  "screen",
-      pkg:  "screen",
-      tap:  "",
-      cask: false}
-
   - {name: "tmux",
       bin:  "tmux",
       pkg:  "tmux",
@@ -145,12 +139,6 @@ brew_pkgs:
       bin:  "nvim",
       pkg:  "neovim",
       tap:  "",
-      cask: false}
-
-  - {name: "realpath",
-      bin:  "realpath",
-      pkg:  "realpath",
-      tap:  "iveney/mocha",
       cask: false}
 
   - {name: "tree",
@@ -237,16 +225,6 @@ apt_pkgs:
      pkg:  "jq",
      add-repo: ""}
 
-  - {name: "realpath",
-     bin:  "realpath",
-     pkg:  "realpath",
-     add-repo: ""}
-
-  - {name: "screen",
-     bin:  "screen",
-     pkg:  "screen",
-     add-repo: ""}
-
   - {name: "tmux",
      bin:  "tmux",
      pkg:  "tmux",
@@ -301,14 +279,6 @@ dnf_pkgs:
   - {name: "jq",
      bin:  "jq",
      pkg:  "jq"}
-
-  - {name: "realpath",
-     bin:  "realpath",
-     pkg:  "realpath"}
-
-  - {name: "screen",
-     bin:  "screen",
-     pkg:  "screen"}
 
   - {name: "tmux",
      bin:  "tmux",
