@@ -50,21 +50,23 @@
     * [powerlevel10k](https://github.com/romkatv/powerlevel10k)
   * [font](https://github.com/romkatv/powerlevel10k?tab=readme-ov-file#fonts) for special scheme
     *  Recommended font: Meslo Nerd Font patched for Powerlevel10k.
-       *  [mac](https://github.com/ryanoasis/nerd-fonts?tab=readme-ov-file#option-2-homebrew-fonts)
-       *  windows
-          *  [chocolatey](https://github.com/ryanoasis/nerd-fonts?tab=readme-ov-file#option-3-unofficial-chocolatey-or-scoop-repositories)
-          *  [manual](https://medium.com/@vedantkadam541/beautify-your-windows-terminal-using-nerd-fonts-and-oh-my-posh-4f4393f097)
 
 
 ## Terminal
   * iTerm2
      * Change Fonts
-       * Preferences -> Profiles -> Text -> Font
+       * Preferences -> Profiles -> Text -> Font (nerd-font)
      * Change Color Schems
        * Preferences -> Profiles -> Color
        * [Color Schemes](https://github.com/mbadolato/iTerm2-Color-Schemes)
-   * Windows Terminal (for WSL)
-     * Setting -> Profile -> Appearance -> Font Face
+   * Windows Terminal
+     * Install Fonts
+       *  [chocolatey](https://github.com/ryanoasis/nerd-fonts?tab=readme-ov-file#option-3-unofficial-chocolatey-or-scoop-repositories)
+       *  [manual](https://medium.com/@vedantkadam541/beautify-your-windows-terminal-using-nerd-fonts-and-oh-my-posh-4f4393f097)
+     * Change Fonts
+       * Setting -> Profile -> Appearance -> Font Face
+     * [Change Scheme](https://dev.to/ansonh/customize-beautify-your-windows-terminal-2022-edition-541l)
+       * https://github.com/mbadolato/iTerm2-Color-Schemes/tree/master/windowsterminal
 
 ## Editor
 ### neovim
