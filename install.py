@@ -393,7 +393,16 @@ def get_agent(system, distrib_name, distrib_ver) -> PkgMgrAgent:
         return CentOSAgent(distrib_ver)
 
 
-def check_supported(system, distrib_name):
+def check_supported() -> tuple[str, str, str]:
+    system = platform.system()
+    distrib_name = distro.name()
+    distrib_ver = distro.version()
+
+    print(f"System is {system}")
+    if system == SupportedSystems.LINUX.value:
+        print(f"Linux distribution is {distrib_name}:{distrib_ver}")
+        time.sleep(1)
+
     supported_systems = tuple(system.value for system in SupportedSystems)
     supported_lix_distributions = tuple(dist.value for dist in LinuxDistributions)
 
@@ -401,11 +410,14 @@ def check_supported(system, distrib_name):
         raise NotSupportError(f"does not support {system}")
 
     if system != "Linux":
-        return
+        return system, distrib_name, distrib_ver
 
     # check linux distrbutino
     if distrib_name not in supported_lix_distributions:
         raise NotSupportError(f"does not support {distrib_name}")
+
+
+    return system, distrib_name, distrib_ver
 
 
 @click.command(context_settings=dict(help_option_names=["-h", "--help"]))
@@ -415,16 +427,8 @@ def check_supported(system, distrib_name):
     "-g", "--git", "clone_git_repos", is_flag=True, help="glone git repositories", default=False
 )
 def cli(install_all: bool, install_pkgs: bool, clone_git_repos: bool):
-    # Darwin, Ubuntu
-    system = platform.system()
-    print(f"System is {system}")
-    distrib_name = distro.name()
-    distrib_ver = distro.version()
-    if system == SupportedSystems.LINUX.value:
-        print(f"Linux distribution is {distrib_name}:{distrib_ver}")
-        time.sleep(1)
 
-    check_supported(system, distrib_name)
+    system, distrib_name, distrib_ver = check_supported()
 
     pkg_mgr_agent = get_agent(system, distrib_name, distrib_ver)
     print(f"pkg_mgr_agent is {pkg_mgr_agent}")
