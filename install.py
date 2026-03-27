@@ -42,14 +42,14 @@ class SupportedSystems(Enum):
 @unique
 class LinuxDistributions(Enum):
     UBUNTU = "Ubuntu"
-    CENTOS = "CentOS Linux"
+
 
 
 @unique
 class Pkgs(Enum):
     BREW = "brew_pkgs"
     APT = "apt_pkgs"
-    DNF = "dnf_pkgs"
+
 
 
 class SubProcess:
