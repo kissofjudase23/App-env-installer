@@ -44,6 +44,13 @@ function darwin_env {
 
 }
 
+function uv_env() {
+    # sh, bash and zsh
+    source $HOME/.local/bin/env (sh, bash, zsh)
+    # fsh
+    # source $HOME/.local/bin/env.fish (
+}
+
 
 function go_env() {
     # note:
@@ -143,6 +150,7 @@ function common_env() {
 
     k8s_env
 
+    uv_env
 }
 
 
@@ -240,7 +248,7 @@ function main() {
     env_setting
     alias_setting
     screen_color_setting
-    #network_setting
+    network_setting
 }
 
 
