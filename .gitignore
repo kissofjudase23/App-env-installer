@@ -3,7 +3,6 @@
 *.vim-bookmarks
 tags
 conf_bk/*
-*.vscode
 .venv/
 *.DS_Store
 Pipfile
