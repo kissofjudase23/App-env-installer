@@ -372,6 +372,16 @@ class Installer:
         # namespace
         SubProcess.run(shlex.split("kubectl krew install ns"))
 
+    def install_uv(self):
+        if self.pkg_install_agent.check_installed("uv"):
+            print("uv is already installed")
+            return
+
+        SubProcess.run(
+            "curl -LsSf https://astral.sh/uv/install.sh | sh",
+            shell=True,
+        )
+
 
 def get_agent(system, distrib_name, distrib_ver) -> PkgMgrAgent:
     if system == SupportedSystems.DARWIN.value:
@@ -439,6 +449,7 @@ def cli(install_all: bool, install_pkgs: bool, clone_git_repos: bool):
         installer.install_pkgs()
         installer.install_editor_plugins()
         installer.install_kubectl_plugins()
+        installer.install_uv()
         installer.install_fonts()
 
     if install_all or clone_git_repos:
