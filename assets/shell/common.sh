@@ -46,7 +46,7 @@ function darwin_env {
 
 function uv_env() {
     # sh, bash and zsh
-    source $HOME/.local/bin/env (sh, bash, zsh)
+    source $HOME/.local/bin/env
     # fsh
     # source $HOME/.local/bin/env.fish (
 }
