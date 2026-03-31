@@ -8,3 +8,4 @@ conf_bk/*
 Pipfile
 Pipfile.lock
 .python-version
+uv.lock

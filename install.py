@@ -1,13 +1,10 @@
 # pylint: disable=missing-module-docstring, missing-class-docstring, missing-function-docstring
-
-import abc
 import os
 import platform
 import shlex
 import subprocess
 import time
 import urllib.request
-from abc import abstractmethod
 from enum import Enum, unique
 from pathlib import Path
 
@@ -42,14 +39,6 @@ class SupportedSystems(Enum):
 @unique
 class LinuxDistributions(Enum):
     UBUNTU = "Ubuntu"
-
-
-
-@unique
-class Pkgs(Enum):
-    BREW = "brew_pkgs"
-    APT = "apt_pkgs"
-
 
 
 class SubProcess:
@@ -101,116 +90,6 @@ class FileUtils:
         os.unlink(link_path)
 
 
-class PkgMgrAgent(abc.ABC):
-    def check_installed(self, pkg):
-        """
-        Use which to check if the pkg installed
-        """
-        cmd = ("which", pkg)
-        ret_code = SubProcess.run_get_ret(cmd)
-        # if ret_code == 0 -> return True
-        return not bool(ret_code)
-
-    @abstractmethod
-    def install(self, pkg_info):
-        raise NotImplementedError("0.0")
-
-
-class DarwinAgent(PkgMgrAgent):
-    def __init__(self, update_brew=False):
-
-        # install homebrew
-        self.brew = "brew"
-
-        if not self.check_installed("brew"):
-            print("install brew:")
-            cmd = r'/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"'
-            # \n means enter
-            SubProcess.run(cmd, shell=True, user_input="\n")
-
-        if update_brew:
-            print("update brew:")
-            SubProcess.run(shlex.split(f"{self.brew} update --force --verbose"))
-
-    def install(self, pkg_info):
-        bin_name = pkg_info["bin"]
-        name = pkg_info["bin"]
-        pkg = pkg_info["pkg"]
-        tap = pkg_info["tap"]
-        cask = pkg_info["cask"]
-
-        print(f"install name:{name}, pkg:{pkg}, tap:{tap}")
-        if bin_name and self.check_installed(bin_name):
-            print(f"the {pkg} is installed already by checking the {bin_name}")
-            return
-
-        if tap:
-            SubProcess.run(shlex.split(f"{self.brew} tap {tap}"))
-
-        if "post_cmd" in pkg_info:
-            post_cmd = pkg_info["post_cmd"]
-            SubProcess.run(shlex.split(post_cmd))
-
-        pkg_mgr = self.brew
-        install_cmd = shlex.split(f"{pkg_mgr} install {pkg}")
-        if cask:
-            install_cmd = shlex.split(f"{pkg_mgr} install --cask {pkg}")
-        SubProcess.run(install_cmd)
-
-    def __repr__(self):
-        return "DarwinAgent"
-
-
-class UbuntuAgent(PkgMgrAgent):
-    def __init__(self, _):
-        self.pkg_mgr = "apt"
-        SubProcess.run(shlex.split(f"{self.pkg_mgr} update -y"))
-        SubProcess.run(shlex.split(f"{self.pkg_mgr} install -y software-properties-common"))
-        SubProcess.run(shlex.split(f"{self.pkg_mgr} update -y"))
-
-    def install(self, pkg_info):
-        bin_name = pkg_info["bin"]
-        name = pkg_info["bin"]
-        pkg = pkg_info["pkg"]
-        add_repo = pkg_info["add-repo"]
-
-        print(f"install name:{name}, pkg:{pkg}:, add_repo:{add_repo}")
-        if bin_name and self.check_installed(bin_name):
-            return
-
-        if add_repo:
-            SubProcess.run(shlex.split(f"add-apt-repository -y {add_repo}"))
-
-        SubProcess.run(shlex.split(f"{self.pkg_mgr} install -y {pkg}"))
-
-    def __repr__(self):
-        return "UbuntuAgent"
-
-
-class CentOSAgent(PkgMgrAgent):
-    def __init__(self, distrib_ver):
-        self.pkg_mgr = "apt"
-        if distrib_ver[0] >= "8":
-            self.pkg_mgr = "dnf"
-
-        SubProcess.run(shlex.split(f"{self.pkg_mgr} update -y"))
-        SubProcess.run(shlex.split(f"{self.pkg_mgr} install -y epel-release"))
-
-    def install(self, pkg_info):
-        bin_name = pkg_info["bin"]
-        name = pkg_info["bin"]
-        pkg = pkg_info["pkg"]
-
-        print(f"install name:{name}, pkg:{pkg}:")
-        if bin_name and self.check_installed(bin_name):
-            return
-
-        SubProcess.run(shlex.split(f"{self.pkg_mgr} install -y {pkg}"))
-
-    def __repr__(self):
-        return "CentOSAgent"
-
-
 class GitAgent:
     @classmethod
     def clone(cls, repo, dst_path, *, check=True):
@@ -224,16 +103,6 @@ class ConfigMgr:
     def __init__(self, config_path="config.yaml"):
         with open(config_path, "r", encoding="utf-8") as fd:
             self.config = yaml.safe_load(fd)
-
-    def pkgs(self, system, distrib_name):
-        if system == SupportedSystems.DARWIN.value:
-            return self.config[Pkgs.BREW.value]
-
-        # Linux Distribution
-        if distrib_name == LinuxDistributions.UBUNTU.value:
-            return self.config[Pkgs.APT.value]
-
-        return self.config[Pkgs.DNF.value]
 
     @property
     def dotfiles(self):
@@ -253,7 +122,6 @@ class Installer:
         distrib_name,
         distrib_ver,
         git_agent: GitAgent,
-        pkg_install_agent: PkgMgrAgent,
         config_mgr: ConfigMgr,
     ):
 
@@ -263,7 +131,6 @@ class Installer:
         self.distrib_ver = distrib_ver
         self.cwd = os.path.abspath(os.getcwd())
         self.git_agent = git_agent
-        self.pkg_install_agent = pkg_install_agent
         self.config_mgr = config_mgr
 
     def __repr__(self):
@@ -271,22 +138,6 @@ class Installer:
 
     def all(self):
         print("test")
-
-    def install_pkgs(self):
-        pkg_infos = self.config_mgr.pkgs(self.system, self.distrib_name)
-
-        print("\nPrepare to install packages:")
-        tb = pt.PrettyTable()
-        tb.field_names = ["name", "bin", "pkg"]
-        for pkg_info in pkg_infos:
-            tb.add_row([pkg_info["name"], pkg_info["bin"], pkg_info["pkg"]])
-
-        print(tb)
-        if not click.confirm("Do you want to continue?", default=False):
-            return
-
-        for pkg_info in pkg_infos:
-            self.pkg_install_agent.install(pkg_info)
 
     def clone_git_repos(self):
 
@@ -359,39 +210,6 @@ class Installer:
             f"{font_config_d}/10-powerline-symbols.conf",
         )
 
-    def install_editor_plugins(self):
-        # python plugin for neovim
-        SubProcess.run(shlex.split("pip3 install neovim --upgrade"))
-
-    def install_kubectl_plugins(self):
-        if self.system is not SupportedSystems.DARWIN:
-            return
-
-        # context
-        SubProcess.run(shlex.split("kubectl krew install ctx"))
-        # namespace
-        SubProcess.run(shlex.split("kubectl krew install ns"))
-
-    def install_uv(self):
-        if self.pkg_install_agent.check_installed("uv"):
-            print("uv is already installed")
-            return
-
-        SubProcess.run(
-            "curl -LsSf https://astral.sh/uv/install.sh | sh",
-            shell=True,
-        )
-
-
-def get_agent(system, distrib_name, distrib_ver) -> PkgMgrAgent:
-    if system == SupportedSystems.DARWIN.value:
-        return DarwinAgent()
-
-    if distrib_name == LinuxDistributions.UBUNTU.value:
-        return UbuntuAgent(distrib_ver)
-    else:
-        return CentOSAgent(distrib_ver)
-
 
 def check_supported() -> tuple[str, str, str]:
     system = platform.system()
@@ -422,17 +240,12 @@ def check_supported() -> tuple[str, str, str]:
 
 @click.command(context_settings=dict(help_option_names=["-h", "--help"]))
 @click.option("-a", "--all", "install_all", is_flag=True, help="install all", default=False)
-@click.option("-p", "--pkg", "install_pkgs", is_flag=True, help="install packages", default=False)
 @click.option(
     "-g", "--git", "clone_git_repos", is_flag=True, help="glone git repositories", default=False
 )
-def cli(install_all: bool, install_pkgs: bool, clone_git_repos: bool):
+def cli(install_all: bool, clone_git_repos: bool):
 
     system, distrib_name, distrib_ver = check_supported()
-
-    pkg_mgr_agent = get_agent(system, distrib_name, distrib_ver)
-    print(f"pkg_mgr_agent is {pkg_mgr_agent}")
-    time.sleep(3)
 
     installer = Installer(
         home=Path.home(),
@@ -440,20 +253,12 @@ def cli(install_all: bool, install_pkgs: bool, clone_git_repos: bool):
         distrib_name=distrib_name,
         distrib_ver=distrib_ver,
         git_agent=GitAgent,
-        pkg_install_agent=pkg_mgr_agent,
         config_mgr=ConfigMgr(),
     )
 
     installer.link_dotfiles()
-    # change default shell (need admin)
-    # sudo sh -c "echo $(which zsh) >> /etc/shells"
-    # SubProcess.run(cmd="chsh -s $(which zsh)", shell=True)
 
-    if install_all or install_pkgs:
-        installer.install_pkgs()
-        installer.install_editor_plugins()
-        installer.install_kubectl_plugins()
-        installer.install_uv()
+    if install_all:
         installer.install_fonts()
 
     if install_all or clone_git_repos:
