@@ -128,11 +128,6 @@ function mysql_env() {
     esac
 }
 
-function k8s_env() {
-    export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
-}
-
-
 function common_env() {
     # If you come from bash you might have to change your $PATH.
     export PATH=$HOME/bin:/usr/local/bin:/usr/local/opt/:${PATH}
@@ -147,8 +142,6 @@ function common_env() {
     go_env
 
     mysql_env
-
-    k8s_env
 
     uv_env
 }

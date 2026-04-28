@@ -160,30 +160,11 @@ brew_pkgs:
       tap:  "",
       cask: false}
 
-  # Krew is the plugin manager for kubectl command-line tool.
-  - {name: "krew",
-      bin:  "",
-      pkg:  "krew",
-      tap:  "",
-      cask: false}
-
   - {name: "k9s",
       bin:  "k9s",
       pkg:  "k9s",
       tap:  "",
       cask: false}
-
-  - {name: "helm",
-      bin:  "helm",
-      pkg:  "helm",
-      tap:  "",
-      cask: false}
-
-  - {name: "helmfile",
-     bin:  "helmfile",
-     pkg:  "helmfile",
-     tap:  "",
-     cask: false}
 
   # Make JSON greppable
   # gron "https://api.github.com/repos/tomnomnom/gron/commits?per_page=1" | fgrep "commit.author"

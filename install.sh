@@ -34,18 +34,6 @@ function detect_os() {
     esac
 }
 
-function install_krew_plugins() {
-    echo "Installing krew plugins (ctx, ns)..."
-    local krew_plugins=(
-        "ctx"
-        "ns"
-    )
-    for plugin in "${krew_plugins[@]}"; do
-        echo "Installing krew plugin: ${plugin}"
-        kubectl krew install "${plugin}" || true
-    done
-}
-
 function install_pynvim() {
     echo "Installing pynvim for neovim..."
     pip3 install pynvim --upgrade
@@ -129,11 +117,7 @@ function install_pkgs_for_darwin() {
         "tree"
         "tig"
         "zsh"
-        "kubectl"
-        "krew"
         "k9s"
-        "helm"
-        "helmfile"
         "gron"
         "uv"
     )
@@ -163,7 +147,6 @@ function install_pkgs_for_darwin() {
         fi
     done
 
-    install_krew_plugins
     install_pynvim
     change_default_shell_to_zsh
 }

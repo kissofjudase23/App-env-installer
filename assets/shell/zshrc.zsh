@@ -94,8 +94,6 @@ plugins=(
   golang
   tig
   tmux
-  kubectl
-  helm
   fzf
 )
 
