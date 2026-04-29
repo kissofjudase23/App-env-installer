@@ -34,11 +34,6 @@ function detect_os() {
     esac
 }
 
-function install_pynvim() {
-    echo "Installing pynvim for neovim..."
-    pip3 install pynvim --upgrade
-}
-
 function change_default_shell_to_zsh() {
     if [ "$SHELL" != "$(which zsh)" ]; then
         echo "Changing default shell to zsh..."
@@ -84,7 +79,6 @@ function install_pkgs_for_ubuntu() {
     # install uv
     curl -LsSf https://astral.sh/uv/install.sh | sh
 
-    install_pynvim
     change_default_shell_to_zsh
 }
 
@@ -96,6 +90,9 @@ function install_pkgs_for_darwin() {
         echo "Homebrew not found, installing..."
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     fi
+
+    # reload shell to get the path of homebrew
+    exec zsh
 
     # Taps needed for cask fonts
     brew tap homebrew/cask-fonts 2>/dev/null || true
@@ -117,7 +114,6 @@ function install_pkgs_for_darwin() {
         "tree"
         "tig"
         "zsh"
-        "k9s"
         "gron"
         "uv"
     )
@@ -147,7 +143,6 @@ function install_pkgs_for_darwin() {
         fi
     done
 
-    install_pynvim
     change_default_shell_to_zsh
 }
 
