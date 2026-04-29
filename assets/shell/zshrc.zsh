@@ -8,10 +8,6 @@ fi
 
 source ~/.assets/shell/common.sh
 
-# Path to your oh-my-zsh installation
-# git clone git://github.com/robbyrussell/oh-my-zsh.git ~/.oh-my-zsh
-export ZSH=$HOME/.oh-my-zsh
-
 ####### powerlevel10k #######
 # Set name of the theme to load. Optionally, if you set this to "random"
 # it'll load a random theme each time that oh-my-zsh is loaded.
@@ -22,8 +18,8 @@ export ZSH=$HOME/.oh-my-zsh
 #ZSH_THEME="apple"
 #ZSH_THEME="candy"
 
-# https://github.com/bhilburn/powerlevel10k/wiki
-# https://github.com/bhilburn/powerlevel10k/wiki/Install-Instructions
+
+# https://github.com/romkatv/powerlevel10k#oh-my-zsh
 ZSH_THEME="powerlevel10k/powerlevel10k"
 POWERLEVEL9K_DISABLE_CONFIGURATION_WIZARD=true
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
@@ -97,6 +93,9 @@ plugins=(
   fzf
 )
 
+# Path to your oh-my-zsh installation
+# git clone git://github.com/robbyrussell/oh-my-zsh.git ~/.oh-my-zsh
+export ZSH=$HOME/.oh-my-zsh
 source $ZSH/oh-my-zsh.sh
 
 # User configuration
@@ -127,10 +126,6 @@ source $ZSH/oh-my-zsh.sh
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
-
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-
-[[ -s ~/.gvm/scripts/gvm ]] && source ~/.gvm/scripts/gvm
 
 # Checks if the shell is running inside a VS Code terminal.
 [[ "$TERM_PROGRAM" == "vscode" ]] && . "$(code --locate-shell-integration-path zsh)"
