@@ -46,7 +46,8 @@ function darwin_env {
 
 function uv_env() {
     # sh, bash and zsh
-    source $HOME/.local/bin/env
+    local uv_env_file="$HOME/.local/bin/env"
+    [[ -f "$uv_env_file" ]] && source "$uv_env_file"
     # fsh
     # source $HOME/.local/bin/env.fish (
 }
