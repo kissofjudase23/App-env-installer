@@ -82,6 +82,19 @@ function install_pkgs_for_ubuntu() {
     change_default_shell_to_zsh
 }
 
+function install_nerd_fonts() {
+    echo "Installing Nerd Fonts..."
+    fonts_list=(
+        font-meslo-lg-nerd-font
+        font-mononoki-nerd-font
+        )
+    for font in "${fonts_list[@]}"
+    do
+        brew install --cask "$font"
+    done
+}
+
+
 function install_pkgs_for_darwin() {
     echo "Installing brew packages for macOS..."
 
@@ -90,12 +103,6 @@ function install_pkgs_for_darwin() {
         echo "Homebrew not found, installing..."
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     fi
-
-    # reload shell to get the path of homebrew
-    exec zsh
-
-    # Taps needed for cask fonts
-    brew tap homebrew/cask-fonts 2>/dev/null || true
 
     # Regular packages from config.yaml brew_pkgs (cask: false)
     local pkgs=(
@@ -128,20 +135,7 @@ function install_pkgs_for_darwin() {
         fi
     done
 
-    # Cask packages from config.yaml brew_pkgs (cask: true)
-    local casks=(
-        "font-fira-code"  # nerd-font
-    )
-
-    echo "Installing cask packages: ${casks[*]}"
-    for cask in "${casks[@]}"; do
-        if ! brew list --cask "${cask}" &> /dev/null; then
-            echo "Installing cask ${cask}..."
-            brew install --cask "${cask}"
-        else
-            echo "${cask} already installed, skipping."
-        fi
-    done
+    install_nerd_fonts
 
     change_default_shell_to_zsh
 }
