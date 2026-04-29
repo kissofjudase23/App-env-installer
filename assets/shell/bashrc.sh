@@ -100,4 +100,6 @@ main
 
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
 
-. "$HOME/.local/bin/env"
+if [ -f "$HOME/.local/bin/env" ]; then
+    . "$HOME/.local/bin/env"
+fi

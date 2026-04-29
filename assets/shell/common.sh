@@ -242,7 +242,9 @@ function main() {
     env_setting
     alias_setting
     screen_color_setting
-    network_setting
+    if [[ "${OS}" != "Darwin" ]]; then
+        network_setting
+    fi
 }
 
 
