@@ -123,6 +123,7 @@ function install_pkgs_for_darwin() {
         "zsh"
         "gron"
         "uv"
+        "copilot-cli"
     )
 
     echo "Installing brew packages: ${pkgs[*]}"
