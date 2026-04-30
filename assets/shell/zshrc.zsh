@@ -91,6 +91,7 @@ plugins=(
   tig
   tmux
   fzf
+  uv
 )
 
 # Path to your oh-my-zsh installation
