@@ -17,13 +17,11 @@ call vundle#begin()
 Plugin 'VundleVim/Vundle.vim'
 Plugin 'https://github.com/flazz/vim-colorschemes.git'
 Plugin 'https://github.com/MattesGroeger/vim-bookmarks.git'
-Plugin 'https://github.com/tpope/vim-fugitive.git'
 " Plugin 'https://github.com/vim-scripts/taglist.vim.git'
 Plugin 'https://github.com/scrooloose/nerdtree.git'
 Plugin 'https://github.com/scrooloose/nerdcommenter.git'
 " Plugin 'https://github.com/scrooloose/syntastic.git'
 Plugin 'https://github.com/w0rp/ale'
-Plugin 'https://github.com/Valloric/YouCompleteMe.git'
 Plugin 'https://github.com/junegunn/vim-easy-align.git'
 
 Plugin 'https://github.com/mileszs/ack.vim.git'
@@ -281,58 +279,6 @@ let g:NERDTrimTrailingWhitespace = 1
 " Add your own custom formats or override the defaults
 "let g:NERDCustomDelimiters = { 'c': { 'left': '/**','right': '*/' } }
 
-
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Syntastic setting
-" https://github.com/scrooloose/syntastic
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" set statusline+=%#warningmsg#
-" set statusline+=%{SyntasticStatuslineFlag()}
-" set statusline+=%*
-" let g:syntastic_error_symbol ='>>'
-" let g:syntastic_warning_symbol = '>>'
-" let g:syntastic_always_populate_loc_list = 1
-" let g:syntastic_auto_loc_list = 1
-" let g:syntastic_check_on_open = 1
-" let g:syntastic_check_on_wq = 0
-" let g:syntastic_enable_highlighting= 1
-" highlight SyntasticErrorSign guifg=white guibg=black
-
-"" use ctrl+w+E to enable/disable
-" let g:syntastic_mode_map = { 'mode': 'passive', 'active_filetypes': [],'passive_filetypes': [] }
-" nnoremap <C-w>E :SyntasticCheck<CR> :SyntasticToggleMode<CR>
-
-" Checker options
-" :help syntastic-checkers to read the menual
-" use ':SyntasticInfo' to show which checkers are enabled.
-" https://github.com/scrooloose/syntastic/wiki to get more info
-"
-" Python
-"
-" determine operating system
-" let os = substitute(system('uname'), "\n", "", "")
-" "g:syntastic_python_<checker>_exec
-" if os == "Darwin"
-    " let g:syntastic_python_python_exec = '/usr/local/bin/python3'
-" elseif os == "Linux"
-    " let g:syntastic_python_python_exec = '/usr/bin/python3'
-" endif
-" "python requires either flake8 or pylint to be installed and in your $PATH
-" let g:syntastic_python_checkers = ['prospector']
-
-" C family languages
-"C
-" let g:syntastic_c_check_header = 1
-" let b:syntastic_c_cflags = '-I../lib -I./lib '
-" let g:syntastic_c_include_dirs = ['./lib/', '../lib/', '../Data_Structure' ]
-" let g:syntastic_c_compiler = 'gcc'
-"
-" "C++
-" let g:syntastic_cpp_check_header = 1
-" let b:syntastic_cpp_cflags = '-I../lib -I./lib '
-" let g:syntastic_cpp_include_dirs = [ './lib','../lib/', '../Data_Structure' ]
-" let g:syntastic_cpp_compiler_options = '-std=c++0x'
-
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " ale  setting (Asychronous Lint Engine)
 " https://github.com/Valloric/YouCompleteMe
@@ -346,82 +292,8 @@ let g:ale_echo_msg_format = '[%linter%] %s [%severity%]'
 nmap <silent> <C-k> <Plug>(ale_previous_wrap)
 nmap <silent> <C-j> <Plug>(ale_next_wrap)
 
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" YouCompleteMe  setting
-" https://github.com/Valloric/YouCompleteMe
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"close the preview automatically
-let g:ycm_autoclose_preview_window_after_completion = 1
-let g:ycm_autoclose_preview_window_after_insertion = 1
-
-"When set, this option turns on YCM's diagnostic display features
-"This option also makes YCM remove all Syntastic checkers set for
-"the c, cpp, objc and objcpp filetypes since this would conflict with YCM's
-"own diagnostics UI.
-let g:ycm_show_diagnostics_ui = 0
-let g:ycm_error_symbol = '>'
-let g:ycm_warning_symbol = '>'
-
-"When this option is set to 1 YCM will ask once per .ycm_extra_conf.py file if
-"it is safe to be loaded. This is to prevent execution of malicious code from
-"a .ycm_extra_conf.py file you didn't write.
-let g:ycm_confirm_extra_conf = 1
-
 "default map leader is '\'
 let mapleader = '\'
-"
-" determine operating system
-let os = substitute(system('uname'), "\n", "", "")
-"Python
-if os == "Darwin"
-    "By default YCM runs jedi with the same Python interpreter used by the
-    "ycmd server, so if you would like to use a different interpreter, use the
-    "following option specifying the Python binary to use. For example, to
-    "provide Python 3 completion in your project, set:
-    " let g:ycm_python_binary_path = 'python'
-    "Restarts the semantic-engine-as-localhost-server for those semantic engines
-    "that work as separate servers that YCM talks to.
-    " nnoremap <leader>restart :YcmCompleter RestartServer /usr/local/bin/python3.5 <CR>
-elseif os == "Linux"
-    " let g:ycm_python_binary_path = 'python'
-    " nnoremap <leader>restart :YcmCompleter RestartServer /usr/bin/python3.5 <CR>
-endif
-
-"let g:ycm_collect_identifiers_from_tag_files = 1
-"
-"YCM SubCommands
-"This command attempts to find all of the references within the project to the
-"identifier under the cursor and populates the quickfix list with those
-"locations.
-" Supported in filetypes: [javascript, python, typescript]
-nnoremap <leader>fref :YcmCompleter GoToReferences<CR>
-
-"Looks up the symbol under the cursor and jumps to its declaration.
-"Supported in filetypes: [c, cpp, objc, objcpp, cs, go, python, rust]
-nnoremap <leader>gdec :YcmCompleter GoToDeclaration<CR>
-
-"Looks up the symbol under the cursor and jumps to its definition.
-"NOTE: For C-family languages this only works in certain situations, namely
-"when the definition of the symbol is in the current translation unit. A
-"translation unit consists of the file you are editing and all the files you
-"are including with #include directives (directly or indirectly) in that file.
-"Supported in filetypes: [c, cpp, objc, objcpp, cs, go, javascript, python,
-"rust, typescript]
-nnoremap <leader>gdef :YcmCompleter GoToDefinition <CR>
-
-"This command tries to perform the "most sensible" GoTo operation it can.
-"Supported in filetypes: [c, cpp, objc, objcpp, cs, go, javascript, python,
-"rust]
-nnoremap <leader>gt :YcmCompleter GoTo<CR>
-
-"Displays the preview window prpulated with qick info
-"Supported in filetypes: [c, cpp, objc, objcpp, cs, python, typescript,
-"                         javascript]
-nnoremap <leader>getdoc :YcmCompleter GetDoc<CR>
-
-"Echos the type of the variable or method under the cursor, and where it
-"differs, the derived type.
-nnoremap <leader>gettype :YcmCompleter GetType<CR>
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " vim-bookmarks  setting
