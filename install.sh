@@ -94,16 +94,7 @@ function install_nerd_fonts() {
     done
 }
 
-
-function install_pkgs_for_darwin() {
-    echo "Installing brew packages for macOS..."
-
-    # Install Homebrew if not present
-    if ! command -v brew &> /dev/null; then
-        echo "Homebrew not found, installing..."
-        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-    fi
-
+function install_brew_packages() {
     # Regular packages from config.yaml brew_pkgs (cask: false)
     local pkgs=(
         "the_silver_searcher"  # ag
@@ -135,6 +126,17 @@ function install_pkgs_for_darwin() {
             echo "${pkg} already installed, skipping."
         fi
     done
+}
+
+
+function install_pkgs_for_darwin() {
+    # Install Homebrew if not present
+    if ! command -v brew &> /dev/null; then
+        echo "Homebrew not found, installing..."
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    fi
+
+    install_brew_packages
 
     install_nerd_fonts
 
