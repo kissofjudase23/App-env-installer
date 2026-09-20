@@ -94,6 +94,22 @@ function install_nerd_fonts() {
     done
 }
 
+function install_brew_casks() {
+    local casks=(
+        "copilot-cli"
+    )
+
+    echo "Installing brew casks: ${casks[*]}"
+    for cask in "${casks[@]}"; do
+        if ! brew list --cask "${cask}" &> /dev/null; then
+            echo "Installing ${cask}..."
+            brew install --cask "${cask}"
+        else
+            echo "${cask} already installed, skipping."
+        fi
+    done
+}
+
 function install_brew_packages() {
     # Regular packages from config.yaml brew_pkgs (cask: false)
     local pkgs=(
@@ -114,7 +130,6 @@ function install_brew_packages() {
         "zsh"
         "gron"
         "uv"
-        "copilot-cli"
     )
 
     echo "Installing brew packages: ${pkgs[*]}"
@@ -137,6 +152,8 @@ function install_pkgs_for_darwin() {
     fi
 
     install_brew_packages
+
+    install_brew_casks
 
     install_nerd_fonts
 
