@@ -35,7 +35,7 @@ Python (>= 3.15) is installed by `uv`; no system Python is required.
 ```bash
 git clone <this-repo> App-env-installer
 cd App-env-installer
-bash install.sh
+bash install.sh   # or: make install
 ```
 
 `install.sh` will:
@@ -99,8 +99,10 @@ Symlinks created from this repo into `$HOME`:
 ## Shell Setup
 
 - **zsh** + [oh-my-zsh](https://ohmyz.sh/) + [Powerlevel10k](https://github.com/romkatv/powerlevel10k) theme.
-- The installer auto-runs `chsh -s $(which zsh)`.
-- After install, restart your terminal. P10k will start a configuration wizard on first launch (or run `p10k configure`).
+- oh-my-zsh plugins: `aws`, `autojump`, `docker`, `docker-compose`, `golang`, `tig`, `tmux`, `fzf`, `uv` (see [zshrc.zsh](./assets/shell/zshrc.zsh)).
+- Bash and zsh share environment settings via [common.sh](./assets/shell/common.sh).
+- The installer auto-runs `chsh -s $(which zsh)`. Restart your terminal afterwards.
+- The prompt uses the bundled [p10k.zsh](./assets/shell/p10k.zsh); the first-launch wizard is disabled. Run `p10k configure` to regenerate it.
 - Recommended font: **Meslo Nerd Font** (installed by the installer on both macOS and Linux). See [Powerlevel10k fonts](https://github.com/romkatv/powerlevel10k?tab=readme-ov-file#fonts).
 
 ### Machine-specific settings
@@ -147,7 +149,9 @@ The proxy variables (`HTTP_PROXY`, `HTTPS_PROXY`, `no_proxy`) are only set when 
 
 Neovim and Vim share the same config (`assets/editor/vimrc.vim`), linked to `~/.vimrc` and `~/.config/nvim/init.vim`.
 
-Vim plugins are managed by [vim-plug](https://github.com/junegunn/vim-plug), which bootstraps itself and installs plugins on first launch. To manage plugins later:
+Vim plugins are managed by [vim-plug](https://github.com/junegunn/vim-plug), which bootstraps itself and installs plugins on first launch. Included plugins: vim-colorschemes, vim-bookmarks, NERDTree, NERD Commenter, ALE, vim-easy-align, ack.vim, vim-go, vim-yaml.
+
+To manage plugins later:
 
 ```vim
 :PlugInstall
@@ -159,12 +163,26 @@ Vim plugins are managed by [vim-plug](https://github.com/junegunn/vim-plug), whi
 
 This project uses `uv` for Python dependency management.
 
+Run `make` (or `make help`) to list all targets with descriptions.
+
+| Target            | Description                                                                                                  |
+| ----------------- | ------------------------------------------------------------------------------------------------------------ |
+| `make help`       | Default target. Lists all targets and their descriptions.                                                    |
+| `make install`    | Full bootstrap via `install.sh`: OS packages, Python 3.15, `install.py -a -y`, `chsh` to zsh. Uses `sudo` and modifies `$HOME`. |
+| `make sync`       | Creates/updates `.venv` with the Python deps pinned in `uv.lock` (`uv sync`).                                |
+| `make lint`       | `ruff check` + `ruff format --check`; reports issues without modifying files (same as CI).                   |
+| `make format`     | `ruff check --fix` + `ruff format`; fixes lint issues and reformats Python code in place.                    |
+| `make shellcheck` | Runs `shellcheck` on `install.sh`, `common.sh`, `bashrc.sh`, `bash_profile.sh` (`shellcheck` is installed by `install.sh`). |
+| `make check`      | Pre-commit gate: `lint` + `shellcheck` + `install.py -a -y --dry-run`. Makes no changes.                     |
+
+> Running `make` with no arguments only shows help; use `make install` explicitly to bootstrap.
+
+Without a local `shellcheck`, run it via `uvx --from shellcheck-py shellcheck <files>`.
+
+To test `install.py` without touching your real home directory:
+
 ```bash
-make sync        # uv sync
-make lint        # ruff check + ruff format --check
-make format      # ruff check --fix + ruff format
-make shellcheck  # shellcheck install.sh and shell dotfiles
-make check       # lint + shellcheck + install.py dry run
+T=$(mktemp -d) && HOME=$T uv run install.py -d -y && ls -la $T; rm -rf $T
 ```
 
-Python deps and tool config live in [pyproject.toml](./pyproject.toml); `uv.lock` pins versions. CI runs the same checks on Ubuntu and macOS ([.github/workflows/ci.yml](./.github/workflows/ci.yml)).
+Python deps and tool config live in [pyproject.toml](./pyproject.toml); `uv.lock` pins versions. CI ([.github/workflows/ci.yml](./.github/workflows/ci.yml)) runs ruff and an `install.py` dry run on Ubuntu and macOS, plus shellcheck on Ubuntu.
