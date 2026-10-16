@@ -7,6 +7,5 @@ conf_bk/*
 *.DS_Store
 Pipfile
 Pipfile.lock
-.python-version
 __pycache__/
 *.bak.*

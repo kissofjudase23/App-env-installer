@@ -6,7 +6,7 @@ Dotfiles + dev-environment bootstrapper for **macOS** and **Ubuntu** only.
 
 Two-stage install:
 
-1. [install.sh](../install.sh) (bash, `set -Eeuo pipefail`) – detects OS, installs system packages, installs Python 3.15 + deps via `uv`, runs `install.py -a -y`, then `chsh` to zsh.
+1. [install.sh](../install.sh) (bash, `set -Eeuo pipefail`) – detects OS, installs system packages, installs Python (version from [.python-version](../.python-version)) + deps via `uv`, runs `install.py -a -y`, then `chsh` to zsh.
 2. [install.py](../install.py) (click CLI) – reads [config.yaml](../config.yaml) and:
    - `link_dotfiles` – symlinks `assets/*` into `$HOME`; skips correct links; backs up real files to `<dst>.bak.<YYYYmmddHHMMSS>`.
    - `ensure_gitconfig_local` – creates a commented placeholder `~/.gitconfig.local` (never overwrites).
@@ -22,7 +22,8 @@ Two-stage install:
 | macOS packages / casks / fonts | [Brewfile](../Brewfile) |
 | Ubuntu packages | [apt-packages.txt](../apt-packages.txt) (`#` comments allowed) |
 | Dotfile symlinks, git repos to clone | [config.yaml](../config.yaml) (`src` relative to repo, `dst` relative to `$HOME`) |
-| Python deps, ruff config, Python version | [pyproject.toml](../pyproject.toml) (`uv` project, `package = false`) |
+| Python deps, ruff config | [pyproject.toml](../pyproject.toml) (`uv` project, `package = false`) |
+| Python interpreter version | [.python-version](../.python-version) – single source of truth; `install.sh` and CI call bare `uv python install`. Bump `requires-python` in [pyproject.toml](../pyproject.toml) only if the floor changes. |
 | Shared bash+zsh env | [assets/shell/common.sh](../assets/shell/common.sh) |
 | bash / zsh specific | [bashrc.sh](../assets/shell/bashrc.sh), [bash_profile.sh](../assets/shell/bash_profile.sh), [zshrc.zsh](../assets/shell/zshrc.zsh) |
 | vim + nvim (shared config, vim-plug) | [assets/editor/vimrc.vim](../assets/editor/vimrc.vim) |

@@ -10,7 +10,7 @@ help: ## Show available targets and their descriptions (default target)
 	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | \
 		awk 'BEGIN {FS = ":.*## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
 
-install: ## Full bootstrap: OS packages (brew/apt), Python 3.15 via uv, install.py -a -y, chsh to zsh (uses sudo, modifies $HOME)
+install: ## Full bootstrap: OS packages (brew/apt), Python via uv (.python-version), install.py -a -y, chsh to zsh (uses sudo, modifies $HOME)
 	bash install.sh
 
 sync: ## Create/update .venv with Python deps pinned in uv.lock (uv sync)

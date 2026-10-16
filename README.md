@@ -18,7 +18,7 @@ Automated development environment setup for **macOS** and **Ubuntu**. Installs C
 
 The installer is split into two stages:
 
-1. **`install.sh`** – Detects the OS, installs system packages ([Brewfile](./Brewfile) on macOS, [apt-packages.txt](./apt-packages.txt) on Ubuntu), installs Python 3.15 and dependencies with [`uv`](https://github.com/astral-sh/uv), runs `install.py`, and changes the default shell to `zsh`.
+1. **`install.sh`** – Detects the OS, installs system packages ([Brewfile](./Brewfile) on macOS, [apt-packages.txt](./apt-packages.txt) on Ubuntu), installs Python (version from [.python-version](./.python-version)) and dependencies with [`uv`](https://github.com/astral-sh/uv), runs `install.py`, and changes the default shell to `zsh`.
 2. **`install.py`** – Reads [config.yaml](./config.yaml) to symlink dotfiles into `$HOME`, clone git repositories, and install fonts.
 
 Both scripts are idempotent and can be re-run safely.
@@ -28,7 +28,7 @@ Both scripts are idempotent and can be re-run safely.
 - `git`, `curl`
 - `bash` / `sudo` (for Ubuntu apt installs and `/etc/shells`)
 
-Python (>= 3.15) is installed by `uv`; no system Python is required.
+Python (the version pinned in [.python-version](./.python-version)) is installed by `uv`; no system Python is required.
 
 ## Installation
 
@@ -42,7 +42,7 @@ bash install.sh   # or: make install
 1. Detect OS (macOS / Ubuntu).
 2. macOS: install Homebrew (if missing) and run `brew bundle` with the [Brewfile](./Brewfile) (includes Nerd Fonts).
    Ubuntu: add the neovim PPA, install [apt-packages.txt](./apt-packages.txt), and install `uv`.
-3. Run `uv python install 3.15` and `uv sync`.
+3. Run `uv python install` (version read from [.python-version](./.python-version)) and `uv sync`.
 4. Run `uv run install.py -a -y`, which:
    - Symlinks dotfiles from [assets/](./assets) into `$HOME` (existing files are backed up as `<file>.bak.<timestamp>`).
    - Creates `~/.gitconfig.local` if missing.
@@ -168,7 +168,7 @@ Run `make` (or `make help`) to list all targets with descriptions.
 | Target            | Description                                                                                                  |
 | ----------------- | ------------------------------------------------------------------------------------------------------------ |
 | `make help`       | Default target. Lists all targets and their descriptions.                                                    |
-| `make install`    | Full bootstrap via `install.sh`: OS packages, Python 3.15, `install.py -a -y`, `chsh` to zsh. Uses `sudo` and modifies `$HOME`. |
+| `make install`    | Full bootstrap via `install.sh`: OS packages, Python (from `.python-version`), `install.py -a -y`, `chsh` to zsh. Uses `sudo` and modifies `$HOME`. |
 | `make sync`       | Creates/updates `.venv` with the Python deps pinned in `uv.lock` (`uv sync`).                                |
 | `make lint`       | `ruff check` + `ruff format --check`; reports issues without modifying files (same as CI).                   |
 | `make format`     | `ruff check --fix` + `ruff format`; fixes lint issues and reformats Python code in place.                    |

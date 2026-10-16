@@ -4,8 +4,6 @@ set -Eeuo pipefail
 
 cd "$(dirname "$0")"
 
-PYTHON_VERSION="3.15"
-
 function detect_os() {
     local os_type
     os_type="$(uname -s)"
@@ -91,7 +89,8 @@ function install_pkgs_for_darwin() {
 }
 
 function setup_python() {
-    uv python install "${PYTHON_VERSION}"
+    # No argument: uv reads the version from .python-version
+    uv python install
     uv sync
     uv run install.py -a -y
 }
