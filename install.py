@@ -1,32 +1,41 @@
 # pylint: disable=missing-module-docstring, missing-class-docstring, missing-function-docstring
-import os
 import platform
-import shlex
 import subprocess
-import time
+import sys
 import urllib.request
+from datetime import datetime
 from enum import Enum, unique
 from pathlib import Path
+from urllib.parse import quote
 
 import click
 import distro
 import prettytable as pt
 import yaml
 
+ROOT = Path(__file__).resolve().parent
 
-class BaseError(Exception):
+MESLO_FONT_URL = "https://github.com/romkatv/powerlevel10k-media/raw/master/"
+MESLO_FONTS = (
+    "MesloLGS NF Regular.ttf",
+    "MesloLGS NF Bold.ttf",
+    "MesloLGS NF Italic.ttf",
+    "MesloLGS NF Bold Italic.ttf",
+)
+
+GITCONFIG_LOCAL_TEMPLATE = """\
+# Machine-specific git settings (not tracked). Uncomment and set your identity.
+# [user]
+#     name = Your Name
+#     email = you@example.com
+"""
+
+
+class InstallerError(Exception):
     pass
 
 
-class NotSupportError(BaseError):
-    pass
-
-
-class InstallPkgError(BaseError):
-    pass
-
-
-class SubProcessError(InstallPkgError):
+class NotSupportError(InstallerError):
     pass
 
 
@@ -41,75 +50,36 @@ class LinuxDistributions(Enum):
     UBUNTU = "Ubuntu"
 
 
-class SubProcess:
-    @staticmethod
-    def run_get_ret(cmd):
-        return subprocess.run(cmd, stdout=subprocess.DEVNULL).returncode
-
-    @staticmethod
-    def run(cmd, *, shell=False, user_input=None):
-        print(f"subprocess cmd: {cmd}")
-        # redirect std.err to std.out
-        # when set input in subprocess.run, the internal
-        # stdin is subprocess.PIPE
-        # check=True is equal to p.check_returncode()
-        subprocess.run(cmd, shell=shell, input=user_input, encoding="utf-8", check=True)
-
-
-class FileUtils:
-    @staticmethod
-    def check_and_create_dir(dir_path):
-        """
-        Create the dir if it does not exist
-        p.mkdir(parents=True, exist_ok=True) may be a better solution.
-        """
-        p = Path(dir_path)
-        if p.is_dir():
-            # alreasdy exists
-            return True
-
-        # create the parent dir
-        p.mkdir(parents=True, exist_ok=True)
-        return False
-
-    @staticmethod
-    def create_dir(dir_path):
-        p = Path(dir_path)
-        p.mkdir(parents=True, exist_ok=True)
-
-    @staticmethod
-    def delete_file(file_path):
-        if not os.path.isfile(file_path):
-            return
-        os.unlink(file_path)
-
-    @staticmethod
-    def delete_link(link_path):
-        if not os.path.islink(link_path):
-            return
-        os.unlink(link_path)
+def run(cmd: list[str], *, dry_run: bool) -> None:
+    click.echo(f"$ {' '.join(cmd)}")
+    if not dry_run:
+        subprocess.run(cmd, check=True)
 
 
 class GitAgent:
-    @classmethod
-    def clone(cls, repo, dst_path, *, check=True):
-        if check and FileUtils.check_and_create_dir(dst_path):
+    def __init__(self, *, dry_run: bool = False):
+        self.dry_run = dry_run
+
+    def clone(self, repo: str, dst: Path) -> None:
+        if (dst / ".git").is_dir():
+            click.echo(f"skip {dst}: already cloned")
             return
-        cmd = ("git", "clone", "--recurse-submodules", repo, dst_path)
-        SubProcess.run(cmd)
+        if not self.dry_run:
+            dst.parent.mkdir(parents=True, exist_ok=True)
+        run(["git", "clone", "--recurse-submodules", repo, str(dst)], dry_run=self.dry_run)
 
 
 class ConfigMgr:
-    def __init__(self, config_path="config.yaml"):
-        with open(config_path, "r", encoding="utf-8") as fd:
+    def __init__(self, config_path: Path = ROOT / "config.yaml"):
+        with open(config_path, encoding="utf-8") as fd:
             self.config = yaml.safe_load(fd)
 
     @property
-    def dotfiles(self):
+    def dotfiles(self) -> list[dict]:
         return self.config["dotfiles"]
 
     @property
-    def git_repos(self):
+    def git_repos(self) -> list[dict]:
         return self.config["git_repos"]
 
 
@@ -117,152 +87,151 @@ class Installer:
     def __init__(
         self,
         *,
-        home,
-        system,
-        distrib_name,
-        distrib_ver,
+        home: Path,
+        system: str,
         git_agent: GitAgent,
         config_mgr: ConfigMgr,
+        assume_yes: bool = False,
+        dry_run: bool = False,
     ):
-
         self.home = home
         self.system = system
-        self.distrib_name = distrib_name
-        self.distrib_ver = distrib_ver
-        self.cwd = os.path.abspath(os.getcwd())
         self.git_agent = git_agent
         self.config_mgr = config_mgr
+        self.assume_yes = assume_yes
+        self.dry_run = dry_run
 
-    def __repr__(self):
-        return "0.0"
-
-    def all(self):
-        print("test")
-
-    def clone_git_repos(self):
-
-        git_repos = self.config_mgr.git_repos
-
-        print("\nPrepare to clone git repos:")
+    def _confirm(self, title: str, pairs: list[tuple]) -> bool:
+        click.echo(f"\n{title}:")
         tb = pt.PrettyTable()
         tb.field_names = ["src", "dst"]
-        src_dst_map = []
-        for git_repo in git_repos:
-            src = git_repo["src"]
-            dst = os.path.join(self.home, git_repo["dst"])
-            src_dst_map.append((src, dst))
-            tb.add_row([src, dst])
+        tb.add_rows([[str(src), str(dst)] for src, dst in pairs])
+        click.echo(tb)
+        return self.assume_yes or click.confirm("Do you want to continue?", default=False)
 
-        print(tb)
-        if not click.confirm("Do you want to continue?", default=False):
-            return
-        time.sleep(3)
-
-        for src, dst in src_dst_map:
-            print(f"clone {src} to {dst}")
-            self.git_agent.clone(repo=src, dst_path=dst)
-
-    def link_dotfiles(self):
-
-        dotfiles = self.config_mgr.dotfiles
-
-        print("\nPrepare to link dotfiles:")
-        tb = pt.PrettyTable()
-        tb.field_names = ["src", "dst"]
-        src_dst_map = []
-        for dotfile in dotfiles:
-            src = os.path.join(self.cwd, dotfile["src"])
-            dst = os.path.join(self.home, dotfile["dst"])
-            src_dst_map.append((src, dst))
-            tb.add_row([src, dst])
-
-        print(tb)
-        if not click.confirm("Do you want to continue?", default=False):
+    def clone_git_repos(self) -> None:
+        pairs = [(repo["src"], self.home / repo["dst"]) for repo in self.config_mgr.git_repos]
+        if not self._confirm("Prepare to clone git repos", pairs):
             return
 
-        for src, dst in src_dst_map:
-            dst_dirname = os.path.dirname(dst)
-            FileUtils.create_dir(dst_dirname)
-            FileUtils.delete_link(dst)
-            FileUtils.delete_file(dst)
-            print(f"start to link:{src} to {dst}")
-            os.symlink(src, dst)
+        for src, dst in pairs:
+            self.git_agent.clone(src, dst)
 
-    def install_fonts(self):
-        if self.system == SupportedSystems.DARWIN.value:
+    def link_dotfiles(self) -> None:
+        pairs = [(ROOT / f["src"], self.home / f["dst"]) for f in self.config_mgr.dotfiles]
+        if not self._confirm("Prepare to link dotfiles", pairs):
             return
 
-        font_d = f"{Path.home()}/.local/share/fonts"
-        font_config_d = f"{Path.home()}/.config/fontconfig/conf.d"
+        for src, dst in pairs:
+            if dst.is_symlink() and dst.resolve() == src.resolve():
+                click.echo(f"skip {dst}: already linked")
+                continue
 
-        FileUtils.create_dir(font_d)
-        FileUtils.create_dir(font_config_d)
+            click.echo(f"link {src} -> {dst}")
+            if self.dry_run:
+                continue
 
-        urllib.request.urlretrieve(
-            "https://github.com/powerline/powerline/raw/develop/font/PowerlineSymbols.otf",
-            f"{font_d}/PowerlineSymbols.otf",
-        )
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            if dst.is_symlink():
+                dst.unlink()
+            elif dst.exists():
+                backup = dst.with_name(f"{dst.name}.bak.{datetime.now():%Y%m%d%H%M%S}")
+                click.echo(f"backup {dst} -> {backup}")
+                dst.rename(backup)
+            dst.symlink_to(src)
 
-        SubProcess.run(shlex.split(f"fc-cache -vf {font_d}"))
+    def ensure_gitconfig_local(self) -> None:
+        path = self.home / ".gitconfig.local"
+        if path.exists():
+            return
+        click.echo(f"create {path}: set your git user.name/user.email there")
+        if not self.dry_run:
+            path.write_text(GITCONFIG_LOCAL_TEMPLATE, encoding="utf-8")
 
-        urllib.request.urlretrieve(
-            "https://github.com/powerline/powerline/raw/develop/font/10-powerline-symbols.conf",
-            f"{font_config_d}/10-powerline-symbols.conf",
-        )
+    def install_fonts(self) -> None:
+        # macOS fonts are installed by the Brewfile
+        if self.system != SupportedSystems.LINUX.value:
+            return
+
+        font_dir = self.home / ".local/share/fonts"
+        if not self.dry_run:
+            font_dir.mkdir(parents=True, exist_ok=True)
+
+        for name in MESLO_FONTS:
+            dst = font_dir / name
+            if dst.exists():
+                click.echo(f"skip {dst}: already exists")
+                continue
+            url = MESLO_FONT_URL + quote(name)
+            click.echo(f"download {url} -> {dst}")
+            if not self.dry_run:
+                urllib.request.urlretrieve(url, dst)
+
+        run(["fc-cache", "-f", str(font_dir)], dry_run=self.dry_run)
 
 
-def check_supported() -> tuple[str, str, str]:
+def check_supported() -> str:
     system = platform.system()
-    distrib_name = distro.name()
-    distrib_ver = distro.version()
+    click.echo(f"System is {system}")
 
-    print(f"System is {system}")
-    if system == SupportedSystems.LINUX.value:
-        print(f"Linux distribution is {distrib_name}:{distrib_ver}")
-        time.sleep(1)
-
-    supported_systems = tuple(system.value for system in SupportedSystems)
-    supported_lix_distributions = tuple(dist.value for dist in LinuxDistributions)
-
-    if system not in supported_systems:
+    if system not in {s.value for s in SupportedSystems}:
         raise NotSupportError(f"does not support {system}")
 
-    if system != "Linux":
-        return system, distrib_name, distrib_ver
+    if system == SupportedSystems.LINUX.value:
+        distrib_name = distro.name()
+        click.echo(f"Linux distribution is {distrib_name}:{distro.version()}")
+        if distrib_name not in {d.value for d in LinuxDistributions}:
+            raise NotSupportError(f"does not support {distrib_name}")
 
-    # check linux distrbutino
-    if distrib_name not in supported_lix_distributions:
-        raise NotSupportError(f"does not support {distrib_name}")
-
-
-    return system, distrib_name, distrib_ver
+    return system
 
 
-@click.command(context_settings=dict(help_option_names=["-h", "--help"]))
-@click.option("-a", "--all", "install_all", is_flag=True, help="install all", default=False)
+@click.command(context_settings={"help_option_names": ["-h", "--help"]})
 @click.option(
-    "-g", "--git", "clone_git_repos", is_flag=True, help="glone git repositories", default=False
+    "-d",
+    "--dotfiles",
+    "link_dotfiles",
+    is_flag=True,
+    help="Link dotfiles into $HOME (default when no action is given).",
 )
-def cli(install_all: bool, clone_git_repos: bool):
+@click.option("-g", "--git", "clone_git_repos", is_flag=True, help="Clone git repositories.")
+@click.option("-f", "--fonts", "install_fonts", is_flag=True, help="Install fonts (Linux only).")
+@click.option("-a", "--all", "install_all", is_flag=True, help="Run all actions.")
+@click.option("-y", "--yes", "assume_yes", is_flag=True, help="Skip confirmation prompts.")
+@click.option("--dry-run", is_flag=True, help="Print actions without changing anything.")
+def cli(
+    link_dotfiles: bool,
+    clone_git_repos: bool,
+    install_fonts: bool,
+    install_all: bool,
+    assume_yes: bool,
+    dry_run: bool,
+) -> None:
+    if not (link_dotfiles or clone_git_repos or install_fonts or install_all):
+        link_dotfiles = True
 
-    system, distrib_name, distrib_ver = check_supported()
+    try:
+        installer = Installer(
+            home=Path.home(),
+            system=check_supported(),
+            git_agent=GitAgent(dry_run=dry_run),
+            config_mgr=ConfigMgr(),
+            assume_yes=assume_yes,
+            dry_run=dry_run,
+        )
 
-    installer = Installer(
-        home=Path.home(),
-        system=system,
-        distrib_name=distrib_name,
-        distrib_ver=distrib_ver,
-        git_agent=GitAgent,
-        config_mgr=ConfigMgr(),
-    )
+        if install_all or link_dotfiles:
+            installer.link_dotfiles()
+            installer.ensure_gitconfig_local()
 
-    installer.link_dotfiles()
+        if install_all or install_fonts:
+            installer.install_fonts()
 
-    if install_all:
-        installer.install_fonts()
-
-    if install_all or clone_git_repos:
-        installer.clone_git_repos()
+        if install_all or clone_git_repos:
+            installer.clone_git_repos()
+    except (InstallerError, subprocess.CalledProcessError, OSError) as e:
+        click.echo(f"error: {e}", err=True)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

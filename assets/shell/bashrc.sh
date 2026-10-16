@@ -1,105 +1,70 @@
+# shellcheck shell=bash disable=SC1090,SC1091
 source ~/.assets/shell/common.sh
 source ~/.assets/git/git-prompt.sh
 source ~/.assets/git/git-completion.bash
-[[ -s ~/.gvm/scripts/gvm ]] && source ~/.gvm/scripts/gvm
 
 function exitstatus {
-    EXITSTATUS="$?"
+    local exit_code="$?"
 
-    # Colors
-    RCol='\e[0m'    # Text Reset
+    local RCol='\e[0m'
+    local Bold='\e[1m'
+    local Yel='\e[0;33m'
+    local Pur='\e[0;35m'
+    local IBla='\e[0;90m'
+    local On_IBla='\e[0;100m'
+    local BGre='\e[1;32m'
+    local BRed='\e[1;31m'
 
-    # Regular           Bold                Underline           High Intensity      BoldHigh Intens     Background          High Intensity Backgrounds
-    Bla='\e[0;30m';     BBla='\e[1;30m';    UBla='\e[4;30m';    IBla='\e[0;90m';    BIBla='\e[1;90m';   On_Bla='\e[40m';    On_IBla='\e[0;100m';
-    Red='\e[0;31m';     BRed='\e[1;31m';    URed='\e[4;31m';    IRed='\e[0;91m';    BIRed='\e[1;91m';   On_Red='\e[41m';    On_IRed='\e[0;101m';
-    Gre='\e[0;32m';     BGre='\e[1;32m';    UGre='\e[4;32m';    IGre='\e[0;92m';    BIGre='\e[1;92m';   On_Gre='\e[42m';    On_IGre='\e[0;102m';
-    Yel='\e[0;33m';     BYel='\e[1;33m';    UYel='\e[4;33m';    IYel='\e[0;93m';    BIYel='\e[1;93m';   On_Yel='\e[43m';    On_IYel='\e[0;103m';
-    Blu='\e[0;34m';     BBlu='\e[1;34m';    UBlu='\e[4;34m';    IBlu='\e[0;94m';    BIBlu='\e[1;94m';   On_Blu='\e[44m';    On_IBlu='\e[0;104m';
-    Pur='\e[0;35m';     BPur='\e[1;35m';    UPur='\e[4;35m';    IPur='\e[0;95m';    BIPur='\e[1;95m';   On_Pur='\e[45m';    On_IPur='\e[0;105m';
-    Cya='\e[0;36m';     BCya='\e[1;36m';    UCya='\e[4;36m';    ICya='\e[0;96m';    BICya='\e[1;96m';   On_Cya='\e[46m';    On_ICya='\e[0;106m';
-    Whi='\e[0;37m';     BWhi='\e[1;37m';    UWhi='\e[4;37m';    IWhi='\e[0;97m';    BIWhi='\e[1;97m';   On_Whi='\e[47m';    On_IWhi='\e[0;107m';
+    local prompt="${RCol}${On_IBla}[\d \t]${RCol} ${IBla}\u@\h${RCol}:${Yel}\w${RCol}${Pur}\$(__git_ps1)${RCol}"
 
-    PROMPT="${RCol}${On_IBla}[\d \t]${RCol} ${IBla}\u@\h${RCol}:${Yel}\w${RCol}${Pur}\$(__git_ps1)${RCol}"
-
-    if [ "${EXITSTATUS}" -eq 0 ]; then
-        PS1="${PROMPT} ${BGre}:)${RCol}\n\$ "
+    if [ "${exit_code}" -eq 0 ]; then
+        PS1="${prompt} ${BGre}:)${RCol}\n\$ "
     else
-        PS1="${PROMPT} ${BRed}:(${RCol}\n\$ "
+        PS1="${prompt} ${BRed}:(${RCol}\n\$ "
     fi
 
-    PS2="${BOLD}>${RCol} "
+    PS2="${Bold}>${RCol} "
 }
 
-function common_env_setting() {
-    # don't put duplicate lines or lines starting with space in the history.
-    # See bash(1) for more options
+function common_bash_setting() {
+    # don't put duplicate lines or lines starting with space in the history
     HISTCONTROL=ignoreboth
     PROMPT_COMMAND=exitstatus
 
-
-
-    if command -v nvim > /dev/null 2>&1 ; then
-        export VISUAL=nvim       # set nvim as default editor
-        export EDITOR="$VISUAL"
-    else
-        export VISUAL=vim       # set vim as default editor
-        export EDITOR="$VISUAL"
-    fi
-
-    if command -v aws > /dev/null 2>&1 ; then
-        local aws_completer_path=$(command -v aws_completer)
-        complete -C ${aws_completer_path} aws
+    if command -v aws_completer > /dev/null 2>&1; then
+        complete -C "$(command -v aws_completer)" aws
     fi
 }
 
-function linux_env_setting() {
+function linux_bash_setting() {
+    local f
+    for f in /etc/profile.d/autojump.bash /usr/share/autojump/autojump.bash; do
+        if [ -f "${f}" ]; then
+            source "${f}"
+            break
+        fi
+    done
+}
 
-   # auto jump script
-    if [ -f /etc/profile.d/autojump.bash ]; then
-       . /etc/profile.d/autojump.bash
+function darwin_bash_setting() {
+    local prefix="${HOMEBREW_PREFIX:-}"
+    [ -z "${prefix}" ] && return 0
+
+    if [ -f "${prefix}/etc/bash_completion" ]; then
+        source "${prefix}/etc/bash_completion"
+    fi
+
+    if [ -f "${prefix}/etc/profile.d/autojump.sh" ]; then
+        source "${prefix}/etc/profile.d/autojump.sh"
     fi
 }
 
-function darwin_env_setting() {
+common_bash_setting
+case ${OS} in
+    "Linux") linux_bash_setting ;;
+    "Darwin") darwin_bash_setting ;;
+esac
 
-    if [ -f $(brew --prefix)/etc/bash_completion ]; then
-        . $(brew --prefix)/etc/bash_completion
-    fi
-
-   # auto jump script
-    if [ -f /usr/local/etc/profile.d/autojump.sh ]; then
-       . /usr/local/etc/profile.d/autojump.sh
-    fi
-}
-
-function envir_setting() {
-    common_env_setting
-
-    OS=$(uname)
-    case ${OS} in
-        "Linux")
-            linux_env_setting
-            ;;
-        "Darwin")
-            darwin_env_setting
-            ;;
-        *)
-        echo "Do not support ${OS} now"
-    esac
-
-}
-
-function main() {
-    envir_setting
-
-}
-
-main
-
-
-
-[ -f ~/.fzf.bash ] && source ~/.fzf.bash
-
-if [ -f "$HOME/.local/bin/env" ]; then
-    . "$HOME/.local/bin/env"
+if [ -f ~/.fzf.bash ]; then
+    source ~/.fzf.bash
 fi

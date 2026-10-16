@@ -1,82 +1,66 @@
-
+# shellcheck shell=bash disable=SC1090,SC1091
+# Shared environment for bash and zsh; must not print anything (p10k instant prompt).
 
 OS=$(uname -s)
-ARCH=$(uname -m)
-VER=$(uname -r)
-# DISTRIBUTION=$(grep DISTRIB_ID /etc/*-release | awk -F '=' '{print $2}')
 
+# Untracked machine-specific overrides, e.g. USE_CORP_PROXY=1 and CORP_PROXY_URL
+if [[ -f "$HOME/.shell_local" ]]; then
+    source "$HOME/.shell_local"
+fi
 
-function check_folder_and_create(){
-    local check_folder=$1
-    # echo ${check_folder}
-    if [[ ! -d "${check_folder}" ]];then
-        mkdir -p ${check_folder}
-    fi
-}
-
-
-function print_os_info() {
-    get_os_info
-    echo "========================="
-    echo "OS Info:"
-    echo "OS=${OS}"
-    echo "ARCH=${VER}"
-    echo "VER=${VER}"
-    echo "DISTRIBUTION=${DISTRIBUTION}"
-    echo "========================="
-}
-
-
-function linux_env {
+function linux_env() {
     export LANG=C.UTF-8
     export LC_ALL=C.UTF-8
 }
 
-
-function darwin_env {
+function darwin_env() {
     export LANG=en_US.UTF-8
     export LC_ALL=en_US.UTF-8
     export CLICOLOR='true'
     export LSCOLORS="gxfxcxdxcxegedabagacad"
 
-    # stop ruuing brew update every time
+    # stop running brew update every time
     export HOMEBREW_NO_AUTO_UPDATE=1
+}
 
+function brew_env() {
+    [[ -n "${HOMEBREW_PREFIX:-}" ]] && return 0
+
+    local brew_bin
+    for brew_bin in /opt/homebrew/bin/brew /usr/local/bin/brew /home/linuxbrew/.linuxbrew/bin/brew; do
+        if [[ -x "${brew_bin}" ]]; then
+            eval "$("${brew_bin}" shellenv)"
+            return 0
+        fi
+    done
 }
 
 function uv_env() {
-    # sh, bash and zsh
-    local uv_env_file="$HOME/.local/bin/env"
-    [[ -f "$uv_env_file" ]] && source "$uv_env_file"
-    # fsh
-    # source $HOME/.local/bin/env.fish (
+    if [[ -f "$HOME/.local/bin/env" ]]; then
+        source "$HOME/.local/bin/env"
+    fi
 }
 
-
 function go_env() {
-    # note:
-    # gvm will redeine the go env
-    # https://github.com/moovweb/gvm
-    if [[ -s ~/.gvm/scripts/gvm ]]; then
-        source ~/.gvm/scripts/gvm
-        gvm use go1.20.5
-        alias vgo19="gvm use go1.19.10"
-        alias vgo20="gvm use go1.20.5"
+    # gvm redefines the go env; pick a version with `gvm use <ver> --default`
+    if [[ -s "$HOME/.gvm/scripts/gvm" ]]; then
+        source "$HOME/.gvm/scripts/gvm"
     fi
 
     export PATH="${PATH}:${HOME}/go/bin"
 }
 
 function python_env() {
-
-    # pyenv
     export PYENV_ROOT="${HOME}/.pyenv"
-
-    if [ -d "${PYENV_ROOT}" ]; then
+    if [[ -d "${PYENV_ROOT}/bin" ]]; then
         export PATH="${PYENV_ROOT}/bin:${PATH}"
-        eval "$(pyenv init --path)"
+    fi
+
+    if command -v pyenv > /dev/null 2>&1; then
         eval "$(pyenv init -)"
-        eval "$(pyenv virtualenv-init -)"
+        if command -v pyenv-virtualenv-init > /dev/null 2>&1; then
+            eval "$(pyenv virtualenv-init -)"
+        fi
         export PYENV_VIRTUALENV_DISABLE_PROMPT=1
     fi
 
@@ -88,19 +72,13 @@ function python_env() {
         "Darwin")
             export PYTHON_CONFIGURE_OPTS="--enable-framework"
             ;;
-        *)
-        echo "Do not support ${OS} now"
     esac
 
-    # pipenv
     export PIPENV_VENV_IN_PROJECT='true'
-
-
 }
 
 function editor_env() {
-    if command -v nvim > /dev/null 2>&1 ; then
-        # set nvim as default editor
+    if command -v nvim > /dev/null 2>&1; then
         export VISUAL='nvim'
         export EDITOR="$VISUAL"
         export GIT_EDITOR='nvim'
@@ -108,7 +86,6 @@ function editor_env() {
         alias vim='nvim'
         alias vimdiff='nvim -d'
     else
-        # set vim as default editor
         export VISUAL='vim'
         export EDITOR="$VISUAL"
         export GIT_EDITOR='vim'
@@ -117,135 +94,76 @@ function editor_env() {
 }
 
 function mysql_env() {
-    case ${OS} in
-        "Linux")
-            ;;
-        "Darwin")
-            local mysql_path='/usr/local/opt/mysql-client/bin/'
-            export PATH=${mysql_path}:${PATH}
-            ;;
-        *)
-        echo "Do not support ${OS} now"
-    esac
-}
-
-function common_env() {
-    # If you come from bash you might have to change your $PATH.
-    export PATH=$HOME/bin:/usr/local/bin:/usr/local/opt/:${PATH}
-
-    # create the work space
-    # check_folder_and_create ${WORK_DIR}
-
-    editor_env
-
-    python_env
-
-    go_env
-
-    mysql_env
-
-    uv_env
-}
-
-
-function env_setting() {
-    common_env
-    case ${OS} in
-        "Linux")
-            linux_env
-            ;;
-        "Darwin")
-            darwin_env
-            ;;
-        *)
-        echo "Do not support ${OS} now"
-    esac
-}
-
-
-function linux_alias() {
-    alias grep='grep --color=auto'
-    alias fgrep='fgrep --color=auto'
-    alias egrep='egrep --color=auto'
-    alias ls='ls --colo=auto'
-    alias ll='ls -alF --color=auto'
-    alias la='ls -A --color=auto'
-    alias l='ls -CF --color=auto'
-}
-
-
-function darwin_alias() {
-    alias grep='grep'
-    alias fgrep='fgrep'
-    alias egrep='egrep'
-    alias ls='ls'
-    alias ll='ls -alF'
-    alias la='ls -A'
-    alias l='ls -CF'
-}
-
-function common_alias(){
-
-    alias tree='tree -C'
-}
-
-function alias_setting() {
-
-    common_alias
-
-    case ${OS} in
-        "Linux")
-            linux_alias
-            ;;
-        "Darwin")
-            darwin_alias
-            ;;
-        *)
-        echo "Do not support ${OS} now"
-    esac
-}
-
-function screen_color_setting()
-{
-    export TERM="xterm-256color"
-
-    case "$TERM" in
-    *-256color)
-        alias ssh='TERM=${TERM%-256color} ssh'
-        ;;
-    *)
-        POTENTIAL_TERM=${TERM}-256color
-        gOTENTIAL_TERMINFO=${TERM:0:1}/$POTENTIAL_TERM
-
-        # better to check $(toe -a | awk '{print $1}') maybe?
-        BOX_TERMINFO_DIR=/usr/share/terminfo
-        [[ -f $BOX_TERMINFO_DIR/$POTENTIAL_TERMINFO ]] && \
-            export TERM=$POTENTIAL_TERM
-
-        HOME_TERMINFO_DIR=$HOME/.terminfo
-        [[ -f $HOME_TERMINFO_DIR/$POTENTIAL_TERMINFO ]] && \
-            export TERM=$POTENTIAL_TERM
-        ;;
-    esac
-}
-
-function network_setting()
-{
-    # set proxy config
-    local proxy_server="http://10.160.3.88:8080"
-    export HTTPS_PROXY=${proxy_server}
-    export HTTP_PROXY=${proxy_server}
-    export no_proxy="127.0.0.1,localhost"
-}
-
-function main() {
-    env_setting
-    alias_setting
-    screen_color_setting
-    if [[ "${OS}" != "Darwin" ]]; then
-        network_setting
+    local mysql_bin="${HOMEBREW_PREFIX:-}/opt/mysql-client/bin"
+    if [[ -n "${HOMEBREW_PREFIX:-}" && -d "${mysql_bin}" ]]; then
+        export PATH="${mysql_bin}:${PATH}"
     fi
 }
 
+function network_setting() {
+    if [[ "${USE_CORP_PROXY:-0}" != "1" || -z "${CORP_PROXY_URL:-}" ]]; then
+        return 0
+    fi
 
-main
+    export HTTPS_PROXY="${CORP_PROXY_URL}"
+    export HTTP_PROXY="${CORP_PROXY_URL}"
+    export no_proxy="127.0.0.1,localhost"
+}
+
+function env_setting() {
+    export PATH="$HOME/bin:${PATH}"
+
+    brew_env
+    editor_env
+    python_env
+    go_env
+    mysql_env
+    uv_env
+
+    case ${OS} in
+        "Linux") linux_env ;;
+        "Darwin") darwin_env ;;
+    esac
+}
+
+function alias_setting() {
+    alias tree='tree -C'
+
+    case ${OS} in
+        "Linux")
+            alias grep='grep --color=auto'
+            alias fgrep='fgrep --color=auto'
+            alias egrep='egrep --color=auto'
+            alias ls='ls --color=auto'
+            alias ll='ls -alF --color=auto'
+            alias la='ls -A --color=auto'
+            alias l='ls -CF --color=auto'
+            ;;
+        "Darwin")
+            alias ll='ls -alF'
+            alias la='ls -A'
+            alias l='ls -CF'
+            ;;
+    esac
+}
+
+function term_setting() {
+    case "${TERM:-}" in
+        *-256color) ;;
+        *)
+            local candidate="${TERM:-xterm}-256color"
+            local terminfo="${candidate:0:1}/${candidate}"
+            if [[ -f "/usr/share/terminfo/${terminfo}" || -f "$HOME/.terminfo/${terminfo}" ]]; then
+                export TERM="${candidate}"
+            fi
+            ;;
+    esac
+
+    # remote hosts may lack tmux/screen terminfo entries
+    alias ssh='TERM=xterm-256color ssh'
+}
+
+env_setting
+alias_setting
+term_setting
+network_setting

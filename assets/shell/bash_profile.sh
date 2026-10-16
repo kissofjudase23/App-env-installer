@@ -1,7 +1,9 @@
-if [ -f ~/.bashrc ]; then
-    source ~/.bashrc
+# shellcheck shell=bash disable=SC1090
+# Docker Desktop CLI tools
+if [ -d "$HOME/.docker/bin" ]; then
+    export PATH="$PATH:$HOME/.docker/bin"
 fi
 
-if [ -f "$HOME/.local/bin/env" ]; then
-    . "$HOME/.local/bin/env"
+if [ -f ~/.bashrc ]; then
+    source ~/.bashrc
 fi

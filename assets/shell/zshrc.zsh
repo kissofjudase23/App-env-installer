@@ -95,7 +95,7 @@ plugins=(
 )
 
 # Path to your oh-my-zsh installation
-# git clone git://github.com/robbyrussell/oh-my-zsh.git ~/.oh-my-zsh
+# git clone https://github.com/ohmyzsh/ohmyzsh.git ~/.oh-my-zsh
 export ZSH=$HOME/.oh-my-zsh
 source $ZSH/oh-my-zsh.sh
 
@@ -127,6 +127,3 @@ source $ZSH/oh-my-zsh.sh
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
-
-# Checks if the shell is running inside a VS Code terminal.
-[[ "$TERM_PROGRAM" == "vscode" ]] && . "$(code --locate-shell-integration-path zsh)"

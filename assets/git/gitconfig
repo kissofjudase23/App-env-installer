@@ -1,6 +1,3 @@
-[user]
-    name = Tom Lin
-    email = kissofjudase23@gmail.com
 [core]
     # let git uses the editor set by $EDITOR or $VISUAL
     # editor = vim
@@ -34,7 +31,6 @@
     la = log --graph --decorate --abbrev-commit --all --pretty=format:'%C(yellow)%h%C(reset) %s %C(bold blue)<%an>%C(reset) %C(bold red)[%cd]%C(reset)%C(bold green)%d%C(reset)' --date=short
     lo = log --graph --decorate --abbrev-commit --all --pretty=format:'%C(yellow)%h%C(reset) %s %C(bold blue)<%an>%C(reset) %C(bold red)[%cd]%C(reset)%C(bold green)%d%C(reset)' --date=short --date-order
     lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'
-    cibr = !export cur_br=$1 && echo $1 || git push origin --delete ${cur_br} && git branch ${cur_br} && git push origin ${cur_br} && git push origin --delete ${cur_br} && git branch -d ${cur_br} && echo "done"
 [diff]
     tool = vimdiff
 [difftool]
@@ -48,3 +44,6 @@
 	rebase = true
 [url "https://github.com/"]
 	insteadOf = git://github.com/
+# Machine-specific settings such as [user] name/email (created by install.py)
+[include]
+    path = ~/.gitconfig.local

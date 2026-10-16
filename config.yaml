@@ -1,12 +1,8 @@
 
 
 git_repos:
-  - {name: "Vundle",
-     src: "https://github.com/VundleVim/Vundle.vim.git",
-     dst:  ".vim/bundle/Vundle.vim"}
-
   - {name: "oh-my-zsh",
-     src: "https://github.com/robbyrussell/oh-my-zsh.git",
+     src: "https://github.com/ohmyzsh/ohmyzsh.git",
      dst:  ".oh-my-zsh"}
 
   - {name: "powerlevel10k",
@@ -53,6 +49,10 @@ dotfiles:
   - {name: "tigrc",
      src: "assets/tig/tigrc",
      dst: ".tigrc"}
+
+  - {name: "screenrc",
+     src: "assets/screen/screenrc",
+     dst: ".screenrc"}
 
   - {name: "assets",
      src: "assets",

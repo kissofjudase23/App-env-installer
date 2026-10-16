@@ -1,46 +1,37 @@
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Vundle
-" https://github.com/VundleVim/Vundle.vim
-" http://www.erikzaadi.com/2012/03/19/auto-installing-vundle-from-your-vimrc/
+" vim-plug
+" https://github.com/junegunn/vim-plug
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-set nocompatible  "iMproved, required
-filetype off      "required
+set nocompatible
 
-" set the runtime path to include Vundle and initialize
-set rtp+=~/.vim/bundle/Vundle.vim
-call vundle#begin()
+" vim and nvim keep autoload in different dirs
+let s:plug_path = has('nvim')
+    \ ? stdpath('data') . '/site/autoload/plug.vim'
+    \ : expand('~/.vim/autoload/plug.vim')
+if empty(glob(s:plug_path))
+    silent execute '!curl -fLo ' . shellescape(s:plug_path) . ' --create-dirs '
+        \ . 'https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+    " autoload dirs created after startup are not on the runtimepath yet
+    execute 'source ' . fnameescape(s:plug_path)
+    autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+endif
 
-" let Vundle manage Vundle, required
-" https://github.com/VundleVim/Vundle.vim
-Plugin 'VundleVim/Vundle.vim'
-Plugin 'https://github.com/flazz/vim-colorschemes.git'
-Plugin 'https://github.com/MattesGroeger/vim-bookmarks.git'
-" Plugin 'https://github.com/vim-scripts/taglist.vim.git'
-Plugin 'https://github.com/scrooloose/nerdtree.git'
-Plugin 'https://github.com/scrooloose/nerdcommenter.git'
-" Plugin 'https://github.com/scrooloose/syntastic.git'
-Plugin 'https://github.com/w0rp/ale'
-Plugin 'https://github.com/junegunn/vim-easy-align.git'
+call plug#begin('~/.vim/plugged')
+Plug 'flazz/vim-colorschemes'
+Plug 'MattesGroeger/vim-bookmarks'
+Plug 'preservim/nerdtree'
+Plug 'preservim/nerdcommenter'
+Plug 'dense-analysis/ale'
+Plug 'junegunn/vim-easy-align'
+Plug 'mileszs/ack.vim'
+Plug 'fatih/vim-go'
+Plug 'avakhov/vim-yaml'
+" Plug 'pearofducks/ansible-vim'
+call plug#end()
 
-Plugin 'https://github.com/mileszs/ack.vim.git'
-Plugin 'https://github.com/fatih/vim-go.git'
-Plugin 'avakhov/vim-yaml'
-
-"Plugin 'pearofducks/ansible-vim'
-" All of your Plugins must be added before the following line
-call vundle#end()            " required
-filetype plugin indent on    " required
-" To ignore plugin indent changes, instead use:
-" filetype plugin on
-
-" <<<< Brief help>>>>
-" :PluginList       - lists configured plugins
-" :PluginInstall    - installs plugins; append `!` to update or just :PluginUpdate
-" :PluginSearch foo - searches for foo; append `!` to refresh local cache
-" :PluginClean      - confirms removal of unused plugins; append `!` to  auto-approve removal
-" see :h vundle for more details or wiki for FAQ
+" :PlugInstall / :PlugUpdate / :PlugClean / :PlugStatus
 
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -135,7 +126,8 @@ nnoremap <C-H> <C-W><C-H>
 syntax on
 set t_Co=256
 "wombat/molokai
-colorscheme molokai
+" plugins are missing until the first PlugInstall finishes
+silent! colorscheme molokai
 
 "Remove all trailing whitespace by pressing F4
 nnoremap <F4> :let _s=@/<Bar>:%s/\s\+$//e<Bar>:let @/=_s<Bar><CR>

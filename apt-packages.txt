@@ -1,0 +1,14 @@
+# Installed by install.sh on Ubuntu; neovim comes from ppa:neovim-ppa/stable
+autojump
+curl
+fontconfig
+fzf
+git
+jq
+language-pack-en
+neovim
+silversearcher-ag
+tig
+tmux
+tree
+zsh
