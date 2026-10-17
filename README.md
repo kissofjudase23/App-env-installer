@@ -77,7 +77,7 @@ uv run install.py -a -y           # skip confirmation prompts
 
 ## What Gets Installed
 
-- **macOS**: see [Brewfile](./Brewfile) (formulae, `copilot-cli`, Meslo/Mononoki Nerd Fonts).
+- **macOS**: see [Brewfile](./Brewfile) (formulae, `claude` (Claude Desktop), `claude-code`, `copilot-cli`, Meslo/Mononoki Nerd Fonts).
 - **Ubuntu**: see [apt-packages.txt](./apt-packages.txt); `neovim` comes from `ppa:neovim-ppa/stable`, `uv` from the official install script.
 
 To add a package, edit the corresponding file and re-run `bash install.sh`.

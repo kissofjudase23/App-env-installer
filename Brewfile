@@ -18,6 +18,8 @@ brew "tree"
 brew "uv"
 brew "zsh"
 
+cask "claude"
+cask "claude-code"
 cask "copilot-cli"
 cask "font-meslo-lg-nerd-font"
 cask "font-mononoki-nerd-font"
