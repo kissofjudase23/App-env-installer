@@ -9,7 +9,6 @@ Based on [Conventional Commits](https://www.conventionalcommits.org/).
 
 <body>
 
-Refs: #<taskID>
 ```
 - **type**: Required, the commit type
 - **scope**: Optional, the affected module or component
@@ -67,7 +66,6 @@ Use a single scope matching the main area changed; omit it if the change spans m
 ```text
 feat(brew): add copilot-cli cask
 
-Refs: #123456
 ```
 
 ```text
@@ -82,19 +80,16 @@ fix(installer): skip go tools when go is missing
 Print a warning instead of failing so the rest of the install
 continues on machines without a Go toolchain.
 
-Refs: #123458
 ```
 
 ```text
 fix(shell): use HOMEBREW_PREFIX instead of /opt/homebrew
 
-Refs: #123459
 ```
 
 ```text
 refactor(vim): remove unused plugins
 
-Refs: #123460
 ```
 
 ```text
@@ -106,7 +101,6 @@ Refs: #123461
 ```text
 ci: add shellcheck job for ubuntu and macos
 
-Refs: #123462
 ```
 
 ```text
@@ -120,7 +114,6 @@ feat(installer)!: back up existing dotfiles with timestamp
 
 BREAKING CHANGE: backups are now written to <dst>.bak.<YYYYmmddHHMMSS>
 instead of <dst>.bak
-Refs: #123464
 ```
 
 ## Bad Examples
