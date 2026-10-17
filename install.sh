@@ -68,6 +68,53 @@ function install_pkgs_for_ubuntu() {
     fi
 }
 
+GO_MIN_VERSION="1.21"
+GO_ROOT="/usr/local/go"
+
+function go_is_recent_enough() {
+    local current
+    command -v go &> /dev/null || return 1
+    current="$(go env GOVERSION)"
+    current="${current#go}"
+    [ "$(printf '%s\n%s\n' "${GO_MIN_VERSION}" "${current}" | sort -V | head -n1)" = "${GO_MIN_VERSION}" ]
+}
+
+function install_go_for_ubuntu() {
+    # Bootstrap go only; later versions are fetched by the go command via GOTOOLCHAIN
+    export PATH="${GO_ROOT}/bin:${PATH}"
+    if go_is_recent_enough; then
+        echo "Go $(go env GOVERSION) found, skip bootstrap"
+        return
+    fi
+
+    local arch version tarball sha256 tmp_dir
+    case "$(uname -m)" in
+        x86_64) arch="amd64" ;;
+        aarch64 | arm64) arch="arm64" ;;
+        *)
+            echo "Error: Unsupported architecture for Go: $(uname -m)" >&2
+            exit 1
+            ;;
+    esac
+
+    version="$(curl -fsSL 'https://go.dev/VERSION?m=text' | head -n1)"
+    tarball="${version}.linux-${arch}.tar.gz"
+    sha256="$(curl -fsSL 'https://go.dev/dl/?mode=json' |
+        jq -r --arg f "${tarball}" '.[].files[] | select(.filename == $f) | .sha256')"
+    if [ -z "${sha256}" ]; then
+        echo "Error: Cannot find checksum for ${tarball}" >&2
+        exit 1
+    fi
+
+    echo "Installing ${version} to ${GO_ROOT}..."
+    tmp_dir="$(mktemp -d)"
+    curl -fsSL -o "${tmp_dir}/${tarball}" "https://go.dev/dl/${tarball}"
+    echo "${sha256}  ${tmp_dir}/${tarball}" | sha256sum -c -
+    sudo rm -rf "${GO_ROOT}"
+    sudo tar -C "$(dirname "${GO_ROOT}")" -xzf "${tmp_dir}/${tarball}"
+    rm -rf "${tmp_dir}"
+}
+
 function load_brew_env() {
     local brew_bin
     for brew_bin in /opt/homebrew/bin/brew /usr/local/bin/brew; do
@@ -100,7 +147,10 @@ function main() {
 
     case "${DETECTED_OS}" in
         Darwin) install_pkgs_for_darwin ;;
-        Linux) install_pkgs_for_ubuntu ;;
+        Linux)
+            install_pkgs_for_ubuntu
+            install_go_for_ubuntu
+            ;;
     esac
 
     setup_python

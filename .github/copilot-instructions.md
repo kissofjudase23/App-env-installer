@@ -6,13 +6,14 @@ Dotfiles + dev-environment bootstrapper for **macOS** and **Ubuntu** only.
 
 Two-stage install:
 
-1. [install.sh](../install.sh) (bash, `set -Eeuo pipefail`) – detects OS, installs system packages, installs Python (version from [.python-version](../.python-version)) + deps via `uv`, runs `install.py -a -y`, then `chsh` to zsh.
+1. [install.sh](../install.sh) (bash, `set -Eeuo pipefail`) – detects OS, installs system packages, installs Python (version from [.python-version](../.python-version)) + deps via `uv`, bootstraps Go (Ubuntu: go.dev tarball → `/usr/local/go` if missing or < 1.21; macOS: Brewfile), runs `install.py -a -y`, then `chsh` to zsh.
 2. [install.py](../install.py) (click CLI) – reads [config.yaml](../config.yaml) and:
    - `link_dotfiles` – symlinks `assets/*` into `$HOME`; skips correct links; backs up real files to `<dst>.bak.<YYYYmmddHHMMSS>`.
    - `ensure_gitconfig_local` – creates a commented placeholder `~/.gitconfig.local` (never overwrites).
    - `install_fonts` – Linux only (MesloLGS NF + `fc-cache`); macOS fonts come from the Brewfile.
    - `clone_git_repos` – skips when `dst/.git` exists.
-   - Flags: `-d` (default), `-g`, `-f`, `-a`, `-y`, `--dry-run`. Every side effect must honor `dry_run`.
+   - `install_go_tools` – `go install` each `go_tools` entry; skips with a warning if `go` is missing.
+   - Flags: `-d` (default), `-g`, `-f`, `-t`, `-a`, `-y`, `--dry-run`. Every side effect must honor `dry_run`.
    - All paths resolve from `ROOT = Path(__file__).resolve().parent`; never rely on cwd.
 
 ## Where things live
@@ -24,6 +25,8 @@ Two-stage install:
 | Dotfile symlinks, git repos to clone | [config.yaml](../config.yaml) (`src` relative to repo, `dst` relative to `$HOME`) |
 | Python deps, ruff config | [pyproject.toml](../pyproject.toml) (`uv` project, `package = false`) |
 | Python interpreter version | [.python-version](../.python-version) – single source of truth; `install.sh` and CI call bare `uv python install`. Bump `requires-python` in [pyproject.toml](../pyproject.toml) only if the floor changes. |
+| Go version | Go's official toolchain (`GOTOOLCHAIN=auto`, per-project `go.mod` `go`/`toolchain` lines). Only a bootstrap `go` is installed; no gvm/goenv. |
+| Go tools (`go install`) | `go_tools` in [config.yaml](../config.yaml) |
 | Shared bash+zsh env | [assets/shell/common.sh](../assets/shell/common.sh) |
 | bash / zsh specific | [bashrc.sh](../assets/shell/bashrc.sh), [bash_profile.sh](../assets/shell/bash_profile.sh), [zshrc.zsh](../assets/shell/zshrc.zsh) |
 | vim + nvim (shared config, vim-plug) | [assets/editor/vimrc.vim](../assets/editor/vimrc.vim) |

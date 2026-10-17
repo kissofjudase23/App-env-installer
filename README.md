@@ -10,6 +10,7 @@ Automated development environment setup for **macOS** and **Ubuntu**. Installs C
 - [What Gets Installed](#what-gets-installed)
 - [Dotfiles Linked](#dotfiles-linked)
 - [Shell Setup](#shell-setup)
+- [Go](#go)
 - [Terminal Setup](#terminal-setup)
 - [Editor](#editor)
 - [Development](#development)
@@ -18,8 +19,8 @@ Automated development environment setup for **macOS** and **Ubuntu**. Installs C
 
 The installer is split into two stages:
 
-1. **`install.sh`** – Detects the OS, installs system packages ([Brewfile](./Brewfile) on macOS, [apt-packages.txt](./apt-packages.txt) on Ubuntu), installs Python (version from [.python-version](./.python-version)) and dependencies with [`uv`](https://github.com/astral-sh/uv), runs `install.py`, and changes the default shell to `zsh`.
-2. **`install.py`** – Reads [config.yaml](./config.yaml) to symlink dotfiles into `$HOME`, clone git repositories, and install fonts.
+1. **`install.sh`** – Detects the OS, installs system packages ([Brewfile](./Brewfile) on macOS, [apt-packages.txt](./apt-packages.txt) on Ubuntu), installs Python (version from [.python-version](./.python-version)) and dependencies with [`uv`](https://github.com/astral-sh/uv), bootstraps Go, runs `install.py`, and changes the default shell to `zsh`.
+2. **`install.py`** – Reads [config.yaml](./config.yaml) to symlink dotfiles into `$HOME`, clone git repositories, install fonts, and install Go tools.
 
 Both scripts are idempotent and can be re-run safely.
 
@@ -41,13 +42,14 @@ bash install.sh   # or: make install
 `install.sh` will:
 1. Detect OS (macOS / Ubuntu).
 2. macOS: install Homebrew (if missing) and run `brew bundle` with the [Brewfile](./Brewfile) (includes Nerd Fonts).
-   Ubuntu: add the neovim PPA, install [apt-packages.txt](./apt-packages.txt), and install `uv`.
+   Ubuntu: add the neovim PPA, install [apt-packages.txt](./apt-packages.txt), install `uv`, and install the latest stable Go from [go.dev](https://go.dev/dl/) into `/usr/local/go` if `go` is missing or older than 1.21.
 3. Run `uv python install` (version read from [.python-version](./.python-version)) and `uv sync`.
 4. Run `uv run install.py -a -y`, which:
    - Symlinks dotfiles from [assets/](./assets) into `$HOME` (existing files are backed up as `<file>.bak.<timestamp>`).
    - Creates `~/.gitconfig.local` if missing.
    - On Linux, installs MesloLGS NF fonts.
    - Clones git repos (oh-my-zsh, Powerlevel10k).
+   - Installs Go tools with `go install`.
 5. Add `zsh` to `/etc/shells` if needed and switch your default shell to it.
 
 ### Manual `install.py` usage
@@ -57,6 +59,7 @@ uv run install.py --help
 uv run install.py                 # link dotfiles (default)
 uv run install.py -g              # only clone git repositories
 uv run install.py -f              # only install fonts (Linux)
+uv run install.py -t              # only install Go tools (go install)
 uv run install.py -a              # all actions
 uv run install.py -a --dry-run    # print what would happen
 uv run install.py -a -y           # skip confirmation prompts
@@ -70,6 +73,7 @@ uv run install.py -a -y           # skip confirmation prompts
 | ----------- | -------------------------------------------------------- |
 | `git_repos` | Repositories to clone (oh-my-zsh, Powerlevel10k)         |
 | `dotfiles`  | Files in `assets/` to symlink into `$HOME`               |
+| `go_tools`  | Packages installed with `go install` (gopls, goimports, dlv) |
 
 ## What Gets Installed
 
@@ -126,6 +130,18 @@ The proxy variables (`HTTP_PROXY`, `HTTPS_PROXY`, `no_proxy`) are only set when 
     name = Your Name
     email = you@example.com
 ```
+
+## Go
+
+Go versions are managed by Go's official [toolchain mechanism](https://go.dev/doc/toolchain) (Go ≥ 1.21); no version manager (gvm/goenv) is used.
+
+- A single bootstrap `go` is installed: `brew "go"` on macOS, the official tarball in `/usr/local/go` on Ubuntu.
+- `GOTOOLCHAIN` is left at its default `auto`: inside a module, the `go` / `toolchain` lines of `go.mod` select the version, and newer toolchains are downloaded on demand into the module cache.
+- Pin a project: `go get go@1.23.0` (minimum version) or `go get toolchain@go1.23.4` (preferred toolchain).
+- Global override: `go env -w GOTOOLCHAIN=go1.23.4+auto` (undo with `go env -u GOTOOLCHAIN`).
+- Run a one-off version: `GOTOOLCHAIN=go1.22.0 go version`.
+- `${GOBIN:-${GOPATH:-~/go}/bin}` is added to `PATH` by [common.sh](./assets/shell/common.sh); the Powerlevel10k prompt shows the Go version inside Go projects.
+- Migrating from gvm: gvm is no longer loaded; remove it with `rm -rf ~/.gvm`.
 
 ## Terminal Setup
 

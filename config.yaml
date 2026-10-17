@@ -57,3 +57,9 @@ dotfiles:
   - {name: "assets",
      src: "assets",
      dst: ".assets"}
+
+# Installed with `go install`; the active toolchain follows GOTOOLCHAIN (default: auto)
+go_tools:
+  - "golang.org/x/tools/gopls@latest"
+  - "golang.org/x/tools/cmd/goimports@latest"
+  - "github.com/go-delve/delve/cmd/dlv@latest"

@@ -42,12 +42,12 @@ function uv_env() {
 }
 
 function go_env() {
-    # gvm redefines the go env; pick a version with `gvm use <ver> --default`
-    if [[ -s "$HOME/.gvm/scripts/gvm" ]]; then
-        source "$HOME/.gvm/scripts/gvm"
+    # Bootstrap go only; GOTOOLCHAIN=auto (default) switches per go.mod go/toolchain lines
+    if [[ -d /usr/local/go/bin ]]; then
+        export PATH="/usr/local/go/bin:${PATH}"
     fi
 
-    export PATH="${PATH}:${HOME}/go/bin"
+    export PATH="${PATH}:${GOBIN:-${GOPATH:-${HOME}/go}/bin}"
 }
 
 function python_env() {

@@ -1,5 +1,7 @@
 # pylint: disable=missing-module-docstring, missing-class-docstring, missing-function-docstring
+import os
 import platform
+import shutil
 import subprocess
 import sys
 import urllib.request
@@ -81,6 +83,10 @@ class ConfigMgr:
     @property
     def git_repos(self) -> list[dict]:
         return self.config["git_repos"]
+
+    @property
+    def go_tools(self) -> list[str]:
+        return self.config.get("go_tools", [])
 
 
 class Installer:
@@ -169,6 +175,23 @@ class Installer:
 
         run(["fc-cache", "-f", str(font_dir)], dry_run=self.dry_run)
 
+    def install_go_tools(self) -> None:
+        go = shutil.which("go")
+        if go is None and not self.dry_run:
+            click.echo("skip go tools: go not found in PATH", err=True)
+            return
+
+        gobin = (
+            os.environ.get("GOBIN")
+            or Path(os.environ.get("GOPATH", "").split(os.pathsep)[0] or self.home / "go") / "bin"
+        )
+        pairs = [(pkg, gobin) for pkg in self.config_mgr.go_tools]
+        if not self._confirm("Prepare to install go tools", pairs):
+            return
+
+        for pkg, _ in pairs:
+            run([go or "go", "install", pkg], dry_run=self.dry_run)
+
 
 def check_supported() -> str:
     system = platform.system()
@@ -196,6 +219,7 @@ def check_supported() -> str:
 )
 @click.option("-g", "--git", "clone_git_repos", is_flag=True, help="Clone git repositories.")
 @click.option("-f", "--fonts", "install_fonts", is_flag=True, help="Install fonts (Linux only).")
+@click.option("-t", "--go-tools", "install_go_tools", is_flag=True, help="Install Go tools.")
 @click.option("-a", "--all", "install_all", is_flag=True, help="Run all actions.")
 @click.option("-y", "--yes", "assume_yes", is_flag=True, help="Skip confirmation prompts.")
 @click.option("--dry-run", is_flag=True, help="Print actions without changing anything.")
@@ -203,11 +227,12 @@ def cli(
     link_dotfiles: bool,
     clone_git_repos: bool,
     install_fonts: bool,
+    install_go_tools: bool,
     install_all: bool,
     assume_yes: bool,
     dry_run: bool,
 ) -> None:
-    if not (link_dotfiles or clone_git_repos or install_fonts or install_all):
+    if not (link_dotfiles or clone_git_repos or install_fonts or install_go_tools or install_all):
         link_dotfiles = True
 
     try:
@@ -229,6 +254,9 @@ def cli(
 
         if install_all or clone_git_repos:
             installer.clone_git_repos()
+
+        if install_all or install_go_tools:
+            installer.install_go_tools()
     except (InstallerError, subprocess.CalledProcessError, OSError) as e:
         click.echo(f"error: {e}", err=True)
         sys.exit(1)
