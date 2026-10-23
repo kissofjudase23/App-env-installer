@@ -26,12 +26,32 @@ symbol = ' '
 [os]
 disabled = false
 style = 'fg:232 bg:7'
-format = '[ $symbol ]($style)'
+# symbols carry their own trailing space (starship nerd-font-symbols preset)
+format = '[ $symbol]($style)'
 
 [os.symbols]
-Macos = ''
-Ubuntu = ''
-Linux = ''
+Windows = "󰍲 "
+Ubuntu = " "
+SUSE = " "
+Raspbian = " "
+Mint = " "
+Macos = " "
+Manjaro = " "
+Linux = " "
+Gentoo = " "
+Fedora = " "
+Alpine = " "
+Amazon = " "
+Android = " "
+AOSC = " "
+Arch = " "
+Artix = " "
+CachyOS = " "
+CentOS = " "
+Debian = " "
+Redhat = "󱄛 "
+RedHatEnterprise = "󱄛 "
+Void = " "
 
 # The tail arrow is drawn here outside git repos, and by git_status inside them
 [directory]
