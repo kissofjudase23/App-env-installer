@@ -210,6 +210,13 @@ function install_release_tools_for_ubuntu() {
     else
         install_github_binary dandavison/delta "^delta-.*-${rust_arch}-unknown-linux-gnu\\.tar\\.gz$" delta
     fi
+
+    # starship publishes aarch64 builds for musl only; the static binary runs on any Ubuntu
+    if command -v starship &> /dev/null; then
+        echo "starship found, skip install"
+    else
+        install_github_binary starship/starship "^starship-${rust_arch}-unknown-linux-musl\\.tar\\.gz$" starship
+    fi
 }
 
 function install_neovim_for_ubuntu() {
