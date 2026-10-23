@@ -50,7 +50,7 @@ Use a single scope matching the main area changed; omit it if the change spans m
 | `ci`        | `.github/workflows/*`                                         |
 | `make`      | `Makefile`                                                    |
 | `readme`    | `README.md`                                                   |
-| `copilot`   | `.github/copilot-instructions.md`, `.github/instructions/*`   |
+| `agents`    | `AGENTS.md`, `CLAUDE.md`, `.claude/*`, `.github/instructions/*` |
 
 ### Rules
 
@@ -59,7 +59,7 @@ Use a single scope matching the main area changed; omit it if the change spans m
 - Use lowercase for **type** and **scope**
 - Wrap lines at **72 characters** (body / footer)
 - For Breaking Changes, add `BREAKING CHANGE:` in footer or append `!` after type
-- Always include `Refs: #<taskID>` as footer to link the related task
+- Add a `Refs: #<taskID>` footer when the change has a related task
 
 ### Examples
 
