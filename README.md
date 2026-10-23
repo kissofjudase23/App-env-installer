@@ -1,6 +1,6 @@
 # App-env-installer
 
-Automated development environment setup for **macOS** and **Ubuntu**. Installs CLI tools, links dotfiles, clones supporting git repos (oh-my-zsh, Powerlevel10k), and configures shell/editor/terminal.
+Automated development environment setup for **macOS** and **Ubuntu**. Installs CLI tools, links dotfiles, clones supporting git repos (oh-my-zsh), and configures shell/editor/terminal.
 
 ## Table of Contents
 - [Overview](#overview)
@@ -42,13 +42,13 @@ bash install.sh   # or: make install
 `install.sh` will:
 1. Detect OS (macOS / Ubuntu).
 2. macOS: install Homebrew (if missing) and run `brew bundle` with the [Brewfile](./Brewfile) (includes Nerd Fonts).
-   Ubuntu: add the neovim PPA, install [apt-packages.txt](./apt-packages.txt), install `uv`, and install the latest stable Go from [go.dev](https://go.dev/dl/) into `/usr/local/go` if `go` is missing or older than 1.21.
+   Ubuntu: add the gh apt repo, install [apt-packages.txt](./apt-packages.txt) and the GitHub-release tools (fzf, neovim, eza, delta, starship), install `uv`, and install the latest stable Go from [go.dev](https://go.dev/dl/) into `/usr/local/go` if `go` is missing or older than 1.21.
 3. Run `uv python install` (version read from [.python-version](./.python-version)) and `uv sync`.
 4. Run `uv run install.py -a -y`, which:
    - Symlinks dotfiles from [assets/](./assets) into `$HOME` (existing files are backed up as `<file>.bak.<timestamp>`).
    - Creates `~/.gitconfig.local` if missing.
-   - On Linux, installs MesloLGS NF fonts.
-   - Clones git repos (oh-my-zsh, Powerlevel10k).
+   - On Linux, installs the Meslo and Mononoki Nerd Fonts from the official [Nerd Fonts](https://github.com/ryanoasis/nerd-fonts) release (sha256-verified) into `~/.local/share/fonts/NerdFonts/`.
+   - Clones git repos (oh-my-zsh).
    - Installs Go tools with `go install`.
 5. Add `zsh` to `/etc/shells` if needed and switch your default shell to it.
 
@@ -69,16 +69,17 @@ uv run install.py -a -y           # skip confirmation prompts
 
 ## Configuration (`config.yaml`)
 
-| Key         | Description                                              |
-| ----------- | -------------------------------------------------------- |
-| `git_repos` | Repositories to clone (oh-my-zsh, Powerlevel10k)         |
-| `dotfiles`  | Files in `assets/` to symlink into `$HOME`               |
-| `go_tools`  | Packages installed with `go install` (gopls, goimports, dlv) |
+| Key          | Description                                                  |
+| ------------ | ------------------------------------------------------------ |
+| `git_repos`  | Repositories to clone (oh-my-zsh)                            |
+| `dotfiles`   | Files in `assets/` to symlink into `$HOME`                   |
+| `nerd_fonts` | Nerd Fonts release archives installed on Linux (Meslo, Mononoki) |
+| `go_tools`   | Packages installed with `go install` (gopls, goimports, dlv) |
 
 ## What Gets Installed
 
 - **macOS**: see [Brewfile](./Brewfile) (formulae, `claude` (Claude Desktop), `claude-code`, `copilot-cli`, Meslo/Mononoki Nerd Fonts).
-- **Ubuntu** (22.04, 24.04): see [apt-packages.txt](./apt-packages.txt). `gh` comes from the official cli.github.com apt repo and `uv` from its install script. `fzf`, `neovim` (≥ 0.11, in `/opt/nvim`), `eza` and `delta` come from their GitHub releases, verified by sha256, because apt lacks them or ships versions that are too old. `fdfind`/`batcat` are linked as `fd`/`bat`.
+- **Ubuntu** (22.04, 24.04): see [apt-packages.txt](./apt-packages.txt). `gh` comes from the official cli.github.com apt repo and `uv` from its install script. `fzf`, `neovim` (≥ 0.11, in `/opt/nvim`), `eza`, `delta` and `starship` come from their GitHub releases, verified by sha256, because apt lacks them or ships versions that are too old. `fdfind`/`batcat` are linked as `fd`/`bat`.
 
 Usage of eza, fd, bat and gh, and how the shell wires them together: [docs/cli-tools.md](./docs/cli-tools.md).
 
@@ -104,13 +105,13 @@ Symlinks created from this repo into `$HOME`:
 
 ## Shell Setup
 
-- **zsh** + [oh-my-zsh](https://ohmyz.sh/) + [Powerlevel10k](https://github.com/romkatv/powerlevel10k) theme.
+- **zsh** + [oh-my-zsh](https://ohmyz.sh/), with the [starship](https://starship.rs/) prompt (also used by bash).
 - oh-my-zsh plugins: `sudo`, `zsh-autosuggestions`, `zsh-syntax-highlighting`, plus `docker`, `docker-compose`, `golang`, `uv`, `gh`, `zoxide`, `tig`, `tmux`, `fzf` when their tool is installed (see [zshrc.zsh](./assets/shell/zshrc.zsh)).
 - Bash and zsh share environment settings via [common.sh](./assets/shell/common.sh).
 - Directory jumping uses [zoxide](https://github.com/ajeetdsouza/zoxide): `z <dir>`, or `j <dir>` (alias kept for autojump habits); `zi` / `ji` pick interactively with fzf.
 - The installer auto-runs `chsh -s $(which zsh)`. Restart your terminal afterwards.
-- The prompt uses the bundled [p10k.zsh](./assets/shell/p10k.zsh); the first-launch wizard is disabled. Run `p10k configure` to regenerate it.
-- Recommended font: **Meslo Nerd Font** (installed by the installer on both macOS and Linux). See [Powerlevel10k fonts](https://github.com/romkatv/powerlevel10k?tab=readme-ov-file#fonts).
+- The prompt is configured in [starship.toml](./assets/starship/starship.toml) (linked to `~/.config/starship.toml`): a two-line powerline layout with OS, directory and git on the left, and command duration, jobs, virtualenv, Go version and user@host (root/SSH only) on the right. Without starship, zsh falls back to the `robbyrussell` theme and bash to a plain prompt. See the [starship config docs](https://starship.rs/config/).
+- Recommended font: **MesloLGS Nerd Font** (installed on both macOS and Linux); the prompt icons need a Nerd Font.
 
 ### Machine-specific settings
 
@@ -143,7 +144,7 @@ Go versions are managed by Go's official [toolchain mechanism](https://go.dev/do
 - Pin a project: `go get go@1.23.0` (minimum version) or `go get toolchain@go1.23.4` (preferred toolchain).
 - Global override: `go env -w GOTOOLCHAIN=go1.23.4+auto` (undo with `go env -u GOTOOLCHAIN`).
 - Run a one-off version: `GOTOOLCHAIN=go1.22.0 go version`.
-- `${GOBIN:-${GOPATH:-~/go}/bin}` is added to `PATH` by [common.sh](./assets/shell/common.sh); the Powerlevel10k prompt shows the Go version inside Go projects.
+- `${GOBIN:-${GOPATH:-~/go}/bin}` is added to `PATH` by [common.sh](./assets/shell/common.sh); the starship prompt shows the Go version inside Go projects.
 - Migrating from gvm: gvm is no longer loaded; remove it with `rm -rf ~/.gvm`.
 
 ## Terminal Setup

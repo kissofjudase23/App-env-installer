@@ -43,7 +43,7 @@ Use a single scope matching the main area changed; omit it if the change spans m
 | `brew`      | `Brewfile` (macOS packages, casks, fonts)                     |
 | `apt`       | `apt-packages.txt` (Ubuntu packages)                          |
 | `python`    | `.python-version`, `pyproject.toml`, `uv.lock`                |
-| `shell`     | `assets/shell/*` (common, bash, zsh, p10k)                    |
+| `shell`     | `assets/shell/*` (common, bash, zsh), `assets/starship/*`     |
 | `vim`       | `assets/editor/vimrc.vim` (vim + nvim)                        |
 | `git`       | `assets/git/*`                                                |
 | `tmux`      | `assets/tmux/*`                                               |

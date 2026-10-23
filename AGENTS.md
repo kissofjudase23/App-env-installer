@@ -6,11 +6,11 @@ Dotfiles + dev-environment bootstrapper for **macOS** and **Ubuntu** only.
 
 Two-stage install:
 
-1. [install.sh](install.sh) (bash, `set -Eeuo pipefail`) – detects OS, installs system packages, installs Python (version from [.python-version](.python-version)) + deps via `uv`, bootstraps Go (Ubuntu: go.dev tarball → `/usr/local/go` if missing or < 1.21; macOS: Brewfile) and, on Ubuntu (22.04 + 24.04), adds the gh apt repo, links `fdfind`/`batcat` as `fd`/`bat`, and installs fzf (< 0.48), eza, delta (→ `/usr/local/bin`) and neovim (< 0.11 → `/opt/nvim`) from GitHub releases, runs `install.py -a -y`, then `chsh` to zsh.
+1. [install.sh](install.sh) (bash, `set -Eeuo pipefail`) – detects OS, installs system packages, installs Python (version from [.python-version](.python-version)) + deps via `uv`, bootstraps Go (Ubuntu: go.dev tarball → `/usr/local/go` if missing or < 1.21; macOS: Brewfile) and, on Ubuntu (22.04 + 24.04), adds the gh apt repo, links `fdfind`/`batcat` as `fd`/`bat`, and installs fzf (< 0.48), eza, delta, starship (→ `/usr/local/bin`) and neovim (< 0.11 → `/opt/nvim`) from GitHub releases, runs `install.py -a -y`, then `chsh` to zsh.
 2. [install.py](install.py) (click CLI) – reads [config.yaml](config.yaml) and:
    - `link_dotfiles` – symlinks `assets/*` into `$HOME`; skips correct links; backs up real files to `<dst>.bak.<YYYYmmddHHMMSS>`.
    - `ensure_gitconfig_local` – creates a commented placeholder `~/.gitconfig.local` (never overwrites).
-   - `install_fonts` – Linux only (MesloLGS NF + `fc-cache`); macOS fonts come from the Brewfile.
+   - `install_fonts` – Linux only: `nerd_fonts` archives from the latest ryanoasis/nerd-fonts release (sha256 digest checked, `.ttf` only) → `~/.local/share/fonts/NerdFonts/<name>`, then `fc-cache`; macOS fonts come from the Brewfile.
    - `clone_git_repos` – skips when `dst/.git` exists.
    - `install_go_tools` – `go install` each `go_tools` entry; skips with a warning if `go` is missing.
    - Flags: `-d` (default), `-g`, `-f`, `-t`, `-a`, `-y`, `--dry-run`. Every side effect must honor `dry_run`.
@@ -24,7 +24,7 @@ For any new GitHub-hosted binary on Ubuntu, reuse `github_release_asset` / `inst
 |---|---|
 | macOS packages / casks / fonts | [Brewfile](Brewfile) |
 | Ubuntu packages | [apt-packages.txt](apt-packages.txt) (`#` comments allowed) |
-| Dotfile symlinks, git repos to clone | [config.yaml](config.yaml) (`src` relative to repo, `dst` relative to `$HOME`) |
+| Dotfile symlinks, git repos to clone, Linux Nerd Fonts | [config.yaml](config.yaml) (`src` relative to repo, `dst` relative to `$HOME`) |
 | `install.py` tests | [tests/](tests/) (pytest; `Installer` takes `home`/`ConfigMgr` so tests use `tmp_path`, never the real `$HOME`) |
 | Python deps, ruff config | [pyproject.toml](pyproject.toml) (`uv` project, `package = false`) |
 | Python interpreter version | [.python-version](.python-version) – single source of truth; `install.sh` and CI call bare `uv python install`. Bump `requires-python` in [pyproject.toml](pyproject.toml) only if the floor changes. |
@@ -33,6 +33,7 @@ For any new GitHub-hosted binary on Ubuntu, reuse `github_release_asset` / `inst
 | CLI tool usage docs | [docs/cli-tools.md](docs/cli-tools.md) – update when tool integrations in `common.sh` change |
 | Shell formatting style | [.editorconfig](.editorconfig) (read by shfmt) |
 | Shared bash+zsh env | [assets/shell/common.sh](assets/shell/common.sh) |
+| Prompt (zsh + bash) | [assets/starship/starship.toml](assets/starship/starship.toml) |
 | bash / zsh specific | [bashrc.sh](assets/shell/bashrc.sh), [bash_profile.sh](assets/shell/bash_profile.sh), [zshrc.zsh](assets/shell/zshrc.zsh) |
 | vim + nvim (shared config, vim-plug) | [assets/editor/vimrc.vim](assets/editor/vimrc.vim) |
 | git | [assets/git/gitconfig](assets/git/gitconfig) |
@@ -44,7 +45,7 @@ Untracked, per-machine files (never commit their contents): `~/.shell_local` (e.
 ## Critical gotchas
 
 - `~/.assets` is a symlink to this repo's `assets/`, and most dotfiles in `$HOME` are symlinks into it. **Editing or deleting files under `assets/` immediately affects the user's live shell/git/vim.** Never leave them missing or broken.
-- `common.sh` is sourced by **both bash and zsh** and runs after the p10k instant prompt: keep it POSIX-ish/bash+zsh compatible and **never print output**.
+- `common.sh` is sourced by **both bash and zsh**: keep it POSIX-ish/bash+zsh compatible and **never print output** (it breaks scp and the prompt).
 - Shell integrations for optional tools (eza, fd, bat, delta, zsh plugins) must be guarded by `command -v` so a missing tool never errors or prints.
 - Never set `core.pager` / `interactive.diffFilter` to delta in `gitconfig`; `common.sh` sets `GIT_PAGER` only when delta exists.
 - Use `${HOMEBREW_PREFIX}` (set by `brew_env`) instead of hardcoded `/usr/local` or `/opt/homebrew`.
