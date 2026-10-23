@@ -193,6 +193,8 @@ Run `make` (or `make help`) to list all targets with descriptions.
 
 > Running `make` with no arguments only shows help; use `make install` explicitly to bootstrap.
 
+AI coding agents (Claude Code, GitHub Copilot): project instructions live in [AGENTS.md](AGENTS.md).
+
 Without a local `shellcheck`, run it via `uvx --from shellcheck-py shellcheck <files>`.
 
 To test `install.py` without touching your real home directory:
