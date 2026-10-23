@@ -141,10 +141,28 @@ function alias_setting() {
             ;;
     esac
 
+    # eza flags differ from ls (e.g. -t needs a field); use `command ls` for the original
     if command -v eza > /dev/null 2>&1; then
+        alias ls='eza --group-directories-first'
+        alias l='eza -F --group-directories-first'
+        alias la='eza -a --group-directories-first'
         alias ll='eza -al --git --group-directories-first'
-        alias la='eza -a'
-        alias l='eza'
+        alias lt='eza --tree --level=2 --group-directories-first'
+        alias lta='eza -a --tree --level=2 --ignore-glob=.git --group-directories-first'
+        alias lm='eza -al --git --sort=modified'
+        alias lS='eza -al --sort=size'
+        alias ld='eza -lD'
+    fi
+
+    # interactive only; bat prints plain text when piped, `command cat` for the original
+    if command -v bat > /dev/null 2>&1; then
+        alias cat='bat --paging=never'
+    fi
+
+    # zoxide's z is defined later by zoxide init / the oh-my-zsh plugin
+    if command -v zoxide > /dev/null 2>&1; then
+        alias j='z'
+        alias ji='zi'
     fi
 }
 

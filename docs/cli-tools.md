@@ -20,7 +20,9 @@ so nothing breaks on a machine that lacks one.
 
 | Integration | Effect |
 |---|---|
-| `ll`, `la`, `l` | Use eza when present (`ll` = `eza -al --git --group-directories-first`); plain `ls` is unchanged |
+| `ls` and friends | Use eza when present; see the alias table under [eza](#eza). `command ls` runs the original |
+| `cat` | `bat --paging=never` when bat is present: highlighted in a terminal, plain when piped. `command cat` runs the original |
+| `j`, `ji` | Aliases for zoxide's `z` / `zi`, so autojump habits keep working |
 | fzf `Ctrl-T` | Lists files with `fd` (including hidden files, excluding `.git`) and previews them with `bat` |
 | fzf `Alt-C` | Lists directories with `fd`, then `cd`s into the one you pick |
 | `MANPAGER` | Renders man pages through `bat` with syntax highlighting (set when bat is installed) |
@@ -39,7 +41,23 @@ eza --tree --git-ignore      # tree view without files ignored by .gitignore
 eza -l --icons               # file-type icons (needs a Nerd Font, which this repo installs)
 ```
 
-Tip: `ll` already gives you `eza -al --git --group-directories-first`.
+Aliases set by common.sh (directories are always listed first):
+
+| Alias | Command | Like |
+|---|---|---|
+| `ls` | `eza` | `ls` |
+| `l` | `eza -F` | `ls -CF` |
+| `la` | `eza -a` | `ls -A` |
+| `ll` | `eza -al --git` | `ls -alF`, plus git status |
+| `lt` | `eza --tree --level=2` | `tree -L 2` |
+| `lta` | `eza -a --tree --level=2 --ignore-glob=.git` | `tree -a -L 2 -I .git` |
+| `lm` | `eza -al --git --sort=modified` | `ls -altr` (newest last) |
+| `lS` | `eza -al --sort=size` | `ls -alSr` (largest last) |
+| `ld` | `eza -lD` | directories only |
+
+eza's flags are not fully compatible with ls. For example, `-t` takes a field name
+(`ls -lt` fails), so use `lm` instead. Scripts are unaffected because aliases apply only to
+interactive shells; run `command ls` for the original ls.
 
 ## fd
 
@@ -61,7 +79,8 @@ fd -e py -X ruff check       # run a command once with all results as arguments
 ## bat
 
 bat adds syntax highlighting, line numbers, and git change markers, and pages long files.
-When its output is piped, it prints plain text like `cat`.
+When its output is piped, it prints plain text like `cat`. In interactive shells `cat` is
+aliased to `bat --paging=never`.
 
 ```bash
 bat install.sh               # highlighted view with line numbers and git markers

@@ -107,7 +107,7 @@ Symlinks created from this repo into `$HOME`:
 - **zsh** + [oh-my-zsh](https://ohmyz.sh/) + [Powerlevel10k](https://github.com/romkatv/powerlevel10k) theme.
 - oh-my-zsh plugins: `aws`, `zoxide`, `docker`, `docker-compose`, `golang`, `tig`, `tmux`, `fzf`, `uv` (see [zshrc.zsh](./assets/shell/zshrc.zsh)).
 - Bash and zsh share environment settings via [common.sh](./assets/shell/common.sh).
-- Directory jumping uses [zoxide](https://github.com/ajeetdsouza/zoxide): `z <dir>` (replaces autojump's `j`).
+- Directory jumping uses [zoxide](https://github.com/ajeetdsouza/zoxide): `z <dir>`, or `j <dir>` (alias kept for autojump habits); `zi` / `ji` pick interactively with fzf.
 - The installer auto-runs `chsh -s $(which zsh)`. Restart your terminal afterwards.
 - The prompt uses the bundled [p10k.zsh](./assets/shell/p10k.zsh); the first-launch wizard is disabled. Run `p10k configure` to regenerate it.
 - Recommended font: **Meslo Nerd Font** (installed by the installer on both macOS and Linux). See [Powerlevel10k fonts](https://github.com/romkatv/powerlevel10k?tab=readme-ov-file#fonts).
