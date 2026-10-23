@@ -84,15 +84,17 @@ COMPLETION_WAITING_DOTS="true"
 
 plugins=(
   aws
-  zoxide
   docker
   docker-compose
   golang
-  tig
-  tmux
-  fzf
   uv
 )
+
+# These plugins print a warning at startup when their tool is missing
+for _tool in zoxide tig tmux fzf; do
+  (( $+commands[$_tool] )) && plugins+=($_tool)
+done
+unset _tool
 
 # Path to your oh-my-zsh installation
 # git clone https://github.com/ohmyzsh/ohmyzsh.git ~/.oh-my-zsh
