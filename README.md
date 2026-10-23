@@ -78,7 +78,7 @@ uv run install.py -a -y           # skip confirmation prompts
 ## What Gets Installed
 
 - **macOS**: see [Brewfile](./Brewfile) (formulae, `claude` (Claude Desktop), `claude-code`, `copilot-cli`, Meslo/Mononoki Nerd Fonts).
-- **Ubuntu**: see [apt-packages.txt](./apt-packages.txt); `neovim` comes from `ppa:neovim-ppa/stable`, `uv` from the official install script.
+- **Ubuntu**: see [apt-packages.txt](./apt-packages.txt); `neovim` comes from `ppa:neovim-ppa/stable`, `uv` from the official install script, and `fzf` from its GitHub release (apt's version is too old for shell integration).
 
 To add a package, edit the corresponding file and re-run `bash install.sh`.
 
@@ -103,8 +103,9 @@ Symlinks created from this repo into `$HOME`:
 ## Shell Setup
 
 - **zsh** + [oh-my-zsh](https://ohmyz.sh/) + [Powerlevel10k](https://github.com/romkatv/powerlevel10k) theme.
-- oh-my-zsh plugins: `aws`, `autojump`, `docker`, `docker-compose`, `golang`, `tig`, `tmux`, `fzf`, `uv` (see [zshrc.zsh](./assets/shell/zshrc.zsh)).
+- oh-my-zsh plugins: `aws`, `zoxide`, `docker`, `docker-compose`, `golang`, `tig`, `tmux`, `fzf`, `uv` (see [zshrc.zsh](./assets/shell/zshrc.zsh)).
 - Bash and zsh share environment settings via [common.sh](./assets/shell/common.sh).
+- Directory jumping uses [zoxide](https://github.com/ajeetdsouza/zoxide): `z <dir>` (replaces autojump's `j`).
 - The installer auto-runs `chsh -s $(which zsh)`. Restart your terminal afterwards.
 - The prompt uses the bundled [p10k.zsh](./assets/shell/p10k.zsh); the first-launch wizard is disabled. Run `p10k configure` to regenerate it.
 - Recommended font: **Meslo Nerd Font** (installed by the installer on both macOS and Linux). See [Powerlevel10k fonts](https://github.com/romkatv/powerlevel10k?tab=readme-ov-file#fonts).
@@ -165,7 +166,9 @@ Go versions are managed by Go's official [toolchain mechanism](https://go.dev/do
 
 Neovim and Vim share the same config (`assets/editor/vimrc.vim`), linked to `~/.vimrc` and `~/.config/nvim/init.vim`.
 
-Vim plugins are managed by [vim-plug](https://github.com/junegunn/vim-plug), which bootstraps itself and installs plugins on first launch. Included plugins: vim-colorschemes, vim-bookmarks, NERDTree, NERD Commenter, ALE, vim-easy-align, ack.vim, vim-go, vim-yaml.
+Vim plugins are managed by [vim-plug](https://github.com/junegunn/vim-plug), which bootstraps itself and installs plugins on first launch. Included plugins: molokai, vim-bookmarks, NERDTree, NERD Commenter, ALE, vim-easy-align, ack.vim, vim-go, vim-yaml.
+
+Go: on Neovim ≥ 0.11, `gopls` runs through the native LSP client (with staticcheck); on Vim and older Neovim, vim-go uses `gopls` as its metalinter. ack.vim searches with `ripgrep`.
 
 To manage plugins later:
 
@@ -187,9 +190,10 @@ Run `make` (or `make help`) to list all targets with descriptions.
 | `make install`    | Full bootstrap via `install.sh`: OS packages, Python (from `.python-version`), `install.py -a -y`, `chsh` to zsh. Uses `sudo` and modifies `$HOME`. |
 | `make sync`       | Creates/updates `.venv` with the Python deps pinned in `uv.lock` (`uv sync`).                                |
 | `make lint`       | `ruff check` + `ruff format --check`; reports issues without modifying files (same as CI).                   |
+| `make test`       | Runs `install.py` unit tests with `pytest` against a temporary `$HOME`.                                     |
 | `make format`     | `ruff check --fix` + `ruff format`; fixes lint issues and reformats Python code in place.                    |
 | `make shellcheck` | Runs `shellcheck` on `install.sh`, `common.sh`, `bashrc.sh`, `bash_profile.sh` (`shellcheck` is installed by `install.sh`). |
-| `make check`      | Pre-commit gate: `lint` + `shellcheck` + `install.py -a -y --dry-run`. Makes no changes.                     |
+| `make check`      | Pre-commit gate: `lint` + `test` + `shellcheck` + `install.py -a -y --dry-run`. Makes no changes.            |
 
 > Running `make` with no arguments only shows help; use `make install` explicitly to bootstrap.
 

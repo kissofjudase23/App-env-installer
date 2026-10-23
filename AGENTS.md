@@ -6,7 +6,7 @@ Dotfiles + dev-environment bootstrapper for **macOS** and **Ubuntu** only.
 
 Two-stage install:
 
-1. [install.sh](install.sh) (bash, `set -Eeuo pipefail`) – detects OS, installs system packages, installs Python (version from [.python-version](.python-version)) + deps via `uv`, bootstraps Go (Ubuntu: go.dev tarball → `/usr/local/go` if missing or < 1.21; macOS: Brewfile), runs `install.py -a -y`, then `chsh` to zsh.
+1. [install.sh](install.sh) (bash, `set -Eeuo pipefail`) – detects OS, installs system packages, installs Python (version from [.python-version](.python-version)) + deps via `uv`, bootstraps Go (Ubuntu: go.dev tarball → `/usr/local/go` if missing or < 1.21; macOS: Brewfile) and, on Ubuntu, fzf (GitHub release → `/usr/local/bin` if missing or < 0.48), runs `install.py -a -y`, then `chsh` to zsh.
 2. [install.py](install.py) (click CLI) – reads [config.yaml](config.yaml) and:
    - `link_dotfiles` – symlinks `assets/*` into `$HOME`; skips correct links; backs up real files to `<dst>.bak.<YYYYmmddHHMMSS>`.
    - `ensure_gitconfig_local` – creates a commented placeholder `~/.gitconfig.local` (never overwrites).
@@ -23,6 +23,7 @@ Two-stage install:
 | macOS packages / casks / fonts | [Brewfile](Brewfile) |
 | Ubuntu packages | [apt-packages.txt](apt-packages.txt) (`#` comments allowed) |
 | Dotfile symlinks, git repos to clone | [config.yaml](config.yaml) (`src` relative to repo, `dst` relative to `$HOME`) |
+| `install.py` tests | [tests/](tests/) (pytest; `Installer` takes `home`/`ConfigMgr` so tests use `tmp_path`, never the real `$HOME`) |
 | Python deps, ruff config | [pyproject.toml](pyproject.toml) (`uv` project, `package = false`) |
 | Python interpreter version | [.python-version](.python-version) – single source of truth; `install.sh` and CI call bare `uv python install`. Bump `requires-python` in [pyproject.toml](pyproject.toml) only if the floor changes. |
 | Go version | Go's official toolchain (`GOTOOLCHAIN=auto`, per-project `go.mod` `go`/`toolchain` lines). Only a bootstrap `go` is installed; no gvm/goenv. |
@@ -50,8 +51,9 @@ Untracked, per-machine files (never commit their contents): `~/.shell_local` (e.
 make sync        # uv sync
 make lint        # ruff check + ruff format --check
 make format      # ruff check --fix + ruff format
+make test        # pytest (tests/), temp $HOME, subprocess/network blocked
 make shellcheck  # needs shellcheck; or: uvx --from shellcheck-py shellcheck <files>
-make check       # lint + shellcheck + install.py -a -y --dry-run
+make check       # lint + test + shellcheck + install.py -a -y --dry-run
 ```
 
 Safe testing of `install.py` without touching the real home:
@@ -67,5 +69,6 @@ Never run `install.sh` or `make install` for testing (they use sudo, brew/apt, a
 - Docs and code comments in English; comments only for non-obvious intent, one line.
 - Python ≥ 3.15, ruff rules `E,F,I,B,UP,SIM`, line length 100.
 - Shell dotfiles start with a `# shellcheck shell=bash` directive.
-- CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs ruff and the dry run on ubuntu + macos; shellcheck runs on ubuntu only.
+- New `install.py` behavior gets a test in [tests/test_install.py](tests/test_install.py); side effects must be covered by `test_dry_run_changes_nothing`.
+- CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs ruff, pytest, and the dry run on ubuntu + macos; shellcheck runs on ubuntu only.
 - Commit messages (all agents): follow [.github/instructions/copilot-commit-message-instructions.md](.github/instructions/copilot-commit-message-instructions.md).
