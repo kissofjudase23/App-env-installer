@@ -70,13 +70,29 @@ function install_pkgs_for_ubuntu() {
 
 GO_MIN_VERSION="1.21"
 GO_ROOT="/usr/local/go"
+FZF_MIN_VERSION="0.48"
+
+# Succeeds when version $2 >= $1
+function version_at_least() {
+    [ "$(printf '%s\n%s\n' "$1" "$2" | sort -V | head -n1)" = "$1" ]
+}
+
+function ubuntu_arch() {
+    case "$(uname -m)" in
+        x86_64) echo "amd64" ;;
+        aarch64 | arm64) echo "arm64" ;;
+        *)
+            echo "Error: Unsupported architecture: $(uname -m)" >&2
+            exit 1
+            ;;
+    esac
+}
 
 function go_is_recent_enough() {
     local current
     command -v go &> /dev/null || return 1
     current="$(go env GOVERSION)"
-    current="${current#go}"
-    [ "$(printf '%s\n%s\n' "${GO_MIN_VERSION}" "${current}" | sort -V | head -n1)" = "${GO_MIN_VERSION}" ]
+    version_at_least "${GO_MIN_VERSION}" "${current#go}"
 }
 
 function install_go_for_ubuntu() {
@@ -88,15 +104,7 @@ function install_go_for_ubuntu() {
     fi
 
     local arch version tarball sha256 tmp_dir
-    case "$(uname -m)" in
-        x86_64) arch="amd64" ;;
-        aarch64 | arm64) arch="arm64" ;;
-        *)
-            echo "Error: Unsupported architecture for Go: $(uname -m)" >&2
-            exit 1
-            ;;
-    esac
-
+    arch="$(ubuntu_arch)"
     version="$(curl -fsSL 'https://go.dev/VERSION?m=text' | head -n1)"
     tarball="${version}.linux-${arch}.tar.gz"
     sha256="$(curl -fsSL 'https://go.dev/dl/?mode=json' |
@@ -112,6 +120,34 @@ function install_go_for_ubuntu() {
     echo "${sha256}  ${tmp_dir}/${tarball}" | sha256sum -c -
     sudo rm -rf "${GO_ROOT}"
     sudo tar -C "$(dirname "${GO_ROOT}")" -xzf "${tmp_dir}/${tarball}"
+    rm -rf "${tmp_dir}"
+}
+
+function install_fzf_for_ubuntu() {
+    # apt's fzf is too old for `fzf --bash` / `fzf --zsh`
+    local current
+    if command -v fzf &> /dev/null; then
+        current="$(fzf --version | cut -d' ' -f1)"
+        if version_at_least "${FZF_MIN_VERSION}" "${current}"; then
+            echo "fzf ${current} found, skip install"
+            return
+        fi
+    fi
+
+    local arch tag version tarball base_url tmp_dir
+    arch="$(ubuntu_arch)"
+    tag="$(curl -fsSL 'https://api.github.com/repos/junegunn/fzf/releases/latest' | jq -r '.tag_name')"
+    version="${tag#v}"
+    tarball="fzf-${version}-linux_${arch}.tar.gz"
+    base_url="https://github.com/junegunn/fzf/releases/download/${tag}"
+
+    echo "Installing fzf ${version} to /usr/local/bin..."
+    tmp_dir="$(mktemp -d)"
+    curl -fsSL -o "${tmp_dir}/${tarball}" "${base_url}/${tarball}"
+    curl -fsSL -o "${tmp_dir}/checksums.txt" "${base_url}/fzf_${version}_checksums.txt"
+    (cd "${tmp_dir}" && grep -F "  ${tarball}" checksums.txt | sha256sum -c -)
+    tar -C "${tmp_dir}" -xzf "${tmp_dir}/${tarball}" fzf
+    sudo install -m 0755 "${tmp_dir}/fzf" /usr/local/bin/fzf
     rm -rf "${tmp_dir}"
 }
 
@@ -150,6 +186,7 @@ function main() {
         Linux)
             install_pkgs_for_ubuntu
             install_go_for_ubuntu
+            install_fzf_for_ubuntu
             ;;
     esac
 
