@@ -75,6 +75,23 @@ function mysql_env() {
     fi
 }
 
+function cli_tools_env() {
+    if command -v fd > /dev/null 2>&1; then
+        export FZF_DEFAULT_COMMAND='fd --type f --hidden --exclude .git'
+        export FZF_CTRL_T_COMMAND="${FZF_DEFAULT_COMMAND}"
+        export FZF_ALT_C_COMMAND='fd --type d --hidden --exclude .git'
+    fi
+
+    if command -v bat > /dev/null 2>&1; then
+        export FZF_CTRL_T_OPTS="--preview 'bat --color=always --style=numbers --line-range=:300 {}'"
+    fi
+
+    # Set here rather than core.pager so git still works where delta is missing
+    if command -v delta > /dev/null 2>&1; then
+        export GIT_PAGER='delta'
+    fi
+}
+
 function network_setting() {
     if [[ "${USE_CORP_PROXY:-0}" != "1" || -z "${CORP_PROXY_URL:-}" ]]; then
         return 0
@@ -93,6 +110,7 @@ function env_setting() {
     go_env
     mysql_env
     uv_env
+    cli_tools_env
 
     case ${OS} in
         "Linux") linux_env ;;
@@ -119,6 +137,12 @@ function alias_setting() {
             alias l='ls -CF'
             ;;
     esac
+
+    if command -v eza > /dev/null 2>&1; then
+        alias ll='eza -al --git --group-directories-first'
+        alias la='eza -a'
+        alias l='eza'
+    fi
 }
 
 function term_setting() {
