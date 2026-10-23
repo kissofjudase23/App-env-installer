@@ -101,6 +101,9 @@ unset _tool
 export ZSH=$HOME/.oh-my-zsh
 source $ZSH/oh-my-zsh.sh
 
+# oh-my-zsh defines its own ll/la/l; re-apply the shared aliases from common.sh
+alias_setting
+
 # User configuration
 
 # export MANPATH="/usr/local/man:$MANPATH"
