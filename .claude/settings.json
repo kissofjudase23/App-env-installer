@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(make help)",
+      "Bash(make sync)",
+      "Bash(make lint)",
+      "Bash(make format)",
+      "Bash(make shellcheck)",
+      "Bash(make check)",
+      "Bash(uv sync)",
+      "Bash(uv run ruff:*)",
+      "Bash(uv run install.py:* --dry-run)",
+      "Bash(shellcheck:*)"
+    ],
+    "deny": [
+      "Bash(bash install.sh:*)",
+      "Bash(./install.sh:*)",
+      "Bash(make install)",
+      "Bash(chsh:*)"
+    ]
+  }
+}
