@@ -23,6 +23,7 @@ so nothing breaks on a machine that lacks one.
 | `ll`, `la`, `l` | Use eza when present (`ll` = `eza -al --git --group-directories-first`); plain `ls` is unchanged |
 | fzf `Ctrl-T` | Lists files with `fd` (including hidden files, excluding `.git`) and previews them with `bat` |
 | fzf `Alt-C` | Lists directories with `fd`, then `cd`s into the one you pick |
+| `MANPAGER` | Renders man pages through `bat` with syntax highlighting (set when bat is installed) |
 | `GIT_PAGER=delta` | Set when delta is installed, so `git diff/log/show` render through delta |
 
 ## eza
@@ -72,11 +73,9 @@ bat --diff install.sh        # only the lines changed relative to git
 bat --list-themes            # preview themes; pick one with: export BAT_THEME="..."
 ```
 
-Use bat as a colored man pager by adding this to `~/.shell_local`:
-
-```bash
-export MANPAGER="sh -c 'col -bx | bat -l man -p'"
-```
+`man` pages are already highlighted by bat: common.sh sets
+`MANPAGER="sh -c 'col -bx | bat -l man -p'"` (plus `MANROFFOPT=-c` for Linux groff).
+To turn it off for one call, run `MANPAGER=less man <page>`.
 
 ## gh
 

@@ -84,6 +84,9 @@ function cli_tools_env() {
 
     if command -v bat > /dev/null 2>&1; then
         export FZF_CTRL_T_OPTS="--preview 'bat --color=always --style=numbers --line-range=:300 {}'"
+        export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+        # groff on Linux emits SGR escapes that col cannot strip; -c restores overstrike
+        export MANROFFOPT='-c'
     fi
 
     # Set here rather than core.pager so git still works where delta is missing
