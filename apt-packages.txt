@@ -1,15 +1,15 @@
 # Installed by install.sh on Ubuntu; neovim comes from ppa:neovim-ppa/stable
-autojump
+# fzf is installed from its GitHub release (apt's version lacks `fzf --bash/--zsh`)
+btop
 curl
 fontconfig
-fzf
 git
 jq
-language-pack-en
 neovim
+ripgrep
 shellcheck
-silversearcher-ag
 tig
 tmux
 tree
+zoxide
 zsh
