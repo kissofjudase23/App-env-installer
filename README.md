@@ -78,7 +78,9 @@ uv run install.py -a -y           # skip confirmation prompts
 ## What Gets Installed
 
 - **macOS**: see [Brewfile](./Brewfile) (formulae, `claude` (Claude Desktop), `claude-code`, `copilot-cli`, Meslo/Mononoki Nerd Fonts).
-- **Ubuntu**: see [apt-packages.txt](./apt-packages.txt); `neovim` comes from `ppa:neovim-ppa/stable`, `uv` from the official install script, and `fzf` from its GitHub release (apt's version is too old for shell integration).
+- **Ubuntu** (22.04, 24.04): see [apt-packages.txt](./apt-packages.txt). `gh` comes from the official cli.github.com apt repo and `uv` from its install script. `fzf`, `neovim` (≥ 0.11, in `/opt/nvim`), `eza` and `delta` come from their GitHub releases, verified by sha256, because apt lacks them or ships versions that are too old. `fdfind`/`batcat` are linked as `fd`/`bat`.
+
+Usage of eza, fd, bat and gh, and how the shell wires them together: [docs/cli-tools.md](./docs/cli-tools.md).
 
 To add a package, edit the corresponding file and re-run `bash install.sh`.
 
@@ -192,8 +194,9 @@ Run `make` (or `make help`) to list all targets with descriptions.
 | `make lint`       | `ruff check` + `ruff format --check`; reports issues without modifying files (same as CI).                   |
 | `make test`       | Runs `install.py` unit tests with `pytest` against a temporary `$HOME`.                                     |
 | `make format`     | `ruff check --fix` + `ruff format`; fixes lint issues and reformats Python code in place.                    |
+| `make shfmt`      | Checks shell formatting with `shfmt` (style in `.editorconfig`); `make format-shell` rewrites in place.        |
 | `make shellcheck` | Runs `shellcheck` on `install.sh`, `common.sh`, `bashrc.sh`, `bash_profile.sh` (`shellcheck` is installed by `install.sh`). |
-| `make check`      | Pre-commit gate: `lint` + `test` + `shellcheck` + `install.py -a -y --dry-run`. Makes no changes.            |
+| `make check`      | Pre-commit gate: `lint` + `test` + `shellcheck` + `shfmt` + `install.py -a -y --dry-run`. Makes no changes.  |
 
 > Running `make` with no arguments only shows help; use `make install` explicitly to bootstrap.
 

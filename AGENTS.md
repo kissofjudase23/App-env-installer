@@ -6,7 +6,7 @@ Dotfiles + dev-environment bootstrapper for **macOS** and **Ubuntu** only.
 
 Two-stage install:
 
-1. [install.sh](install.sh) (bash, `set -Eeuo pipefail`) – detects OS, installs system packages, installs Python (version from [.python-version](.python-version)) + deps via `uv`, bootstraps Go (Ubuntu: go.dev tarball → `/usr/local/go` if missing or < 1.21; macOS: Brewfile) and, on Ubuntu, fzf (GitHub release → `/usr/local/bin` if missing or < 0.48), runs `install.py -a -y`, then `chsh` to zsh.
+1. [install.sh](install.sh) (bash, `set -Eeuo pipefail`) – detects OS, installs system packages, installs Python (version from [.python-version](.python-version)) + deps via `uv`, bootstraps Go (Ubuntu: go.dev tarball → `/usr/local/go` if missing or < 1.21; macOS: Brewfile) and, on Ubuntu (22.04 + 24.04), adds the gh apt repo, links `fdfind`/`batcat` as `fd`/`bat`, and installs fzf (< 0.48), eza, delta (→ `/usr/local/bin`) and neovim (< 0.11 → `/opt/nvim`) from GitHub releases, runs `install.py -a -y`, then `chsh` to zsh.
 2. [install.py](install.py) (click CLI) – reads [config.yaml](config.yaml) and:
    - `link_dotfiles` – symlinks `assets/*` into `$HOME`; skips correct links; backs up real files to `<dst>.bak.<YYYYmmddHHMMSS>`.
    - `ensure_gitconfig_local` – creates a commented placeholder `~/.gitconfig.local` (never overwrites).
@@ -15,6 +15,8 @@ Two-stage install:
    - `install_go_tools` – `go install` each `go_tools` entry; skips with a warning if `go` is missing.
    - Flags: `-d` (default), `-g`, `-f`, `-t`, `-a`, `-y`, `--dry-run`. Every side effect must honor `dry_run`.
    - All paths resolve from `ROOT = Path(__file__).resolve().parent`; never rely on cwd.
+
+For any new GitHub-hosted binary on Ubuntu, reuse `github_release_asset` / `install_github_binary` in `install.sh` (they verify the sha256 digest from the GitHub API); call them directly, not inside `$(...)`.
 
 ## Where things live
 
@@ -28,6 +30,8 @@ Two-stage install:
 | Python interpreter version | [.python-version](.python-version) – single source of truth; `install.sh` and CI call bare `uv python install`. Bump `requires-python` in [pyproject.toml](pyproject.toml) only if the floor changes. |
 | Go version | Go's official toolchain (`GOTOOLCHAIN=auto`, per-project `go.mod` `go`/`toolchain` lines). Only a bootstrap `go` is installed; no gvm/goenv. |
 | Go tools (`go install`) | `go_tools` in [config.yaml](config.yaml) |
+| CLI tool usage docs | [docs/cli-tools.md](docs/cli-tools.md) – update when tool integrations in `common.sh` change |
+| Shell formatting style | [.editorconfig](.editorconfig) (read by shfmt) |
 | Shared bash+zsh env | [assets/shell/common.sh](assets/shell/common.sh) |
 | bash / zsh specific | [bashrc.sh](assets/shell/bashrc.sh), [bash_profile.sh](assets/shell/bash_profile.sh), [zshrc.zsh](assets/shell/zshrc.zsh) |
 | vim + nvim (shared config, vim-plug) | [assets/editor/vimrc.vim](assets/editor/vimrc.vim) |
@@ -41,6 +45,8 @@ Untracked, per-machine files (never commit their contents): `~/.shell_local` (e.
 
 - `~/.assets` is a symlink to this repo's `assets/`, and most dotfiles in `$HOME` are symlinks into it. **Editing or deleting files under `assets/` immediately affects the user's live shell/git/vim.** Never leave them missing or broken.
 - `common.sh` is sourced by **both bash and zsh** and runs after the p10k instant prompt: keep it POSIX-ish/bash+zsh compatible and **never print output**.
+- Shell integrations for optional tools (eza, fd, bat, delta, zsh plugins) must be guarded by `command -v` so a missing tool never errors or prints.
+- Never set `core.pager` / `interactive.diffFilter` to delta in `gitconfig`; `common.sh` sets `GIT_PAGER` only when delta exists.
 - Use `${HOMEBREW_PREFIX}` (set by `brew_env`) instead of hardcoded `/usr/local` or `/opt/homebrew`.
 - Do not hardcode user names, home paths, emails, or proxy addresses.
 - When adding a dotfile, update both `config.yaml` and the "Dotfiles Linked" table in [README.md](README.md).
@@ -53,7 +59,8 @@ make lint        # ruff check + ruff format --check
 make format      # ruff check --fix + ruff format
 make test        # pytest (tests/), temp $HOME, subprocess/network blocked
 make shellcheck  # needs shellcheck; or: uvx --from shellcheck-py shellcheck <files>
-make check       # lint + test + shellcheck + install.py -a -y --dry-run
+make shfmt       # shfmt -d (style from .editorconfig); make format-shell to fix
+make check       # lint + test + shellcheck + shfmt + install.py -a -y --dry-run
 ```
 
 Safe testing of `install.py` without touching the real home:
@@ -70,5 +77,5 @@ Never run `install.sh` or `make install` for testing (they use sudo, brew/apt, a
 - Python ≥ 3.15, ruff rules `E,F,I,B,UP,SIM`, line length 100.
 - Shell dotfiles start with a `# shellcheck shell=bash` directive.
 - New `install.py` behavior gets a test in [tests/test_install.py](tests/test_install.py); side effects must be covered by `test_dry_run_changes_nothing`.
-- CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs ruff, pytest, and the dry run on ubuntu + macos; shellcheck runs on ubuntu only.
+- CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs ruff, pytest, and the dry run on ubuntu + macos; shellcheck and shfmt run on ubuntu only.
 - Commit messages (all agents): follow [.github/instructions/copilot-commit-message-instructions.md](.github/instructions/copilot-commit-message-instructions.md).
