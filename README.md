@@ -166,7 +166,7 @@ Go versions are managed by Go's official [toolchain mechanism](https://go.dev/do
 
 Neovim and Vim share the same config (`assets/editor/vimrc.vim`), linked to `~/.vimrc` and `~/.config/nvim/init.vim`.
 
-Vim plugins are managed by [vim-plug](https://github.com/junegunn/vim-plug), which bootstraps itself and installs plugins on first launch. Included plugins: molokai, vim-bookmarks, NERDTree, NERD Commenter, ALE, vim-easy-align, ack.vim, vim-go, vim-yaml.
+Vim plugins are managed by [vim-plug](https://github.com/junegunn/vim-plug), which bootstraps itself and installs plugins on first launch. Included plugins: molokai, NERDTree, ALE, vim-easy-align, ack.vim, vim-go, vim-yaml.
 
 Go: on Neovim ≥ 0.11, `gopls` runs through the native LSP client (with staticcheck); on Vim and older Neovim, vim-go uses `gopls` as its metalinter. ack.vim searches with `ripgrep`.
 

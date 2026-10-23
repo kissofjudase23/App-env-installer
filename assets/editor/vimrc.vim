@@ -20,9 +20,7 @@ endif
 
 call plug#begin('~/.vim/plugged')
 Plug 'tomasr/molokai'
-Plug 'MattesGroeger/vim-bookmarks'
 Plug 'preservim/nerdtree'
-Plug 'preservim/nerdcommenter'
 Plug 'dense-analysis/ale'
 Plug 'junegunn/vim-easy-align'
 Plug 'mileszs/ack.vim'
@@ -246,43 +244,6 @@ autocmd bufenter * if (winnr("$") == 1
 \&& exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" NETDCommenter
-" use ':help nerdcommenter' to get more info
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Default mapping
-"
-" [count]<leader>cc |NERDComComment|
-" Comment out the current line or text selected in visual mode.
-"
-" [count]<leader>cn |NERDComNestedComment|
-" Same as cc but forces nesting.
-"
-" [count]<leader>cu |NERDComUncommentLine|
-" Uncomments the selected line(s).
-
-" Add spaces after comment delimiters by default
-let g:NERDSpaceDelims = 1
-
-" Use compact syntax for prettified multi-line comments
-let g:NERDCompactSexyComs = 1
-
-" Allow commenting and inverting empty lines (useful when commenting a region)
-let g:NERDCommentEmptyLines = 1
-
-" Enable trimming of trailing whitespace when uncommenting
-let g:NERDTrimTrailingWhitespace = 1
-
-" Align line-wise comment delimiters flush left instead of following code
-" indentation
-"let g:NERDDefaultAlign = 'left'
-
-" Set a language to use its alternate delimiters by default
-"let g:NERDAltDelims_java = 1
-
-" Add your own custom formats or override the defaults
-"let g:NERDCustomDelimiters = { 'c': { 'left': '/**','right': '*/' } }
-
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " ale  setting (Asychronous Lint Engine)
 " https://github.com/Valloric/YouCompleteMe
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -297,60 +258,6 @@ nmap <silent> <C-j> <Plug>(ale_next_wrap)
 
 "default map leader is '\'
 let mapleader = '\'
-
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" vim-bookmarks  setting
-" https://github.com/MattesGroeger/vim-bookmarks
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" disable default key mapping
-" basic usage:
-" 1.Add/remove bookmark at current line mm  :BookmarkToggle
-" 2.Add/edit/remove annotation at current line" mi  :BookmarkAnnotate <TEXT>
-"
-" 3.Jump to next bookmark in buffer mn  :BookmarkNext
-" 4.Jump to previous bookmark in buffer mp  :BookmarkPrev
-"
-" 5.Show all bookmarks (toggle) ma  :BookmarkShowAll
-"
-" 6.Clear bookmarks in current buffer only  mc  :BookmarkClear
-" 7.Clear bookmarks in all buffers  mx  :BookmarkClearAll
-" 8.Move up bookmark at current line    mkk :BookmarkMoveUp
-" 9.Move down bookmark at current line  mjj :BookmarkMoveDown
-"
-" 10.Save all bookmarks to a file       :BookmarkSave <FILE_PATH>
-" 11.Load bookmarks from a file     :BookmarkLoad <FILE_PATH>
-"
-
-" let g:bookmark_no_default_key_mappings = 1
-" nnoremap <Leader><Leader> <Plug>BookmarkToggle
-" nnoremap <Leader>i <Plug>BookmarkAnnotate
-" nnoremap <Leader>a <Plug>BookmarkShowAll
-" nnoremap <Leader>j <Plug>BookmarkNext
-" nnoremap <Leader>k <Plug>BookmarkPrev
-" nnoremap <Leader>c <Plug>BookmarkClear
-" nnoremap <Leader>x <Plug>BookmarkClearAll
-" nnoremap <Leader>kk <Plug>BookmarkMoveUp
-" nnoremap <Leader>jj <Plug>BookmarkMoveDown
-"
-" default ⚑
-let g:bookmark_sign = '♥♥'
-
-" default ☰
-let g:bookmark_annotation_sign = '⚑♥♥'
-
-" Automatically close bookmarks split when jumping to a bookmark
-let g:bookmark_auto_close = 1
-
-" This feature allows the grouping of bookmarks per root directory. This way
-" bookmarks from other projects are not interfering. This is done by saving a
-" file called .vim-bookmarks into the current working directory (the folder
-" you opened vim from).
-" You should add the filename .vim-bookmarks to your (global) .gitignore
-" file so it doesn't get checked into version control.
-"
-let g:bookmark_save_per_working_dir = 1
-let g:bookmark_auto_save = 1
-
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " python.vim setting
