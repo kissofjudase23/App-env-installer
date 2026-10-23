@@ -26,6 +26,9 @@ jobs:
           uv run ruff check .
           uv run ruff format --check .
 
+      - name: Test
+        run: uv run pytest
+
       - name: ShellCheck
         if: runner.os == 'Linux'
         run: make shellcheck

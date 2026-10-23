@@ -1,6 +1,6 @@
 
 
-.PHONY: help install sync lint format shellcheck check
+.PHONY: help install sync lint format test shellcheck check
 
 .DEFAULT_GOAL := help
 
@@ -24,8 +24,11 @@ format: ## Auto-fix ruff lint issues and reformat Python code in place
 	uv run ruff check --fix .
 	uv run ruff format .
 
+test: ## Run install.py unit tests with pytest (uses a temp $HOME, no side effects)
+	uv run pytest
+
 shellcheck: ## Run shellcheck on install.sh and bash dotfiles (requires shellcheck in PATH)
 	shellcheck $(SHELL_SCRIPTS)
 
-check: lint shellcheck ## Pre-commit gate: lint + shellcheck + install.py -a -y --dry-run (no changes made)
+check: lint test shellcheck ## Pre-commit gate: lint + test + shellcheck + install.py -a -y --dry-run (no changes made)
 	uv run install.py -a -y --dry-run
