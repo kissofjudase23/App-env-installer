@@ -110,7 +110,7 @@ Symlinks created from this repo into `$HOME`:
 - Bash and zsh share environment settings via [common.sh](./assets/shell/common.sh).
 - Directory jumping uses [zoxide](https://github.com/ajeetdsouza/zoxide): `z <dir>`, or `j <dir>` (alias kept for autojump habits); `zi` / `ji` pick interactively with fzf.
 - The installer auto-runs `chsh -s $(which zsh)`. Restart your terminal afterwards.
-- The prompt is configured in [starship.toml](./assets/starship/starship.toml) (linked to `~/.config/starship.toml`): a two-line powerline layout with OS, directory and git on the left, and command duration, jobs, virtualenv, Go version and user@host (root/SSH only) on the right. Without starship, zsh falls back to the `robbyrussell` theme and bash to a plain prompt. See the [starship config docs](https://starship.rs/config/).
+- The prompt is configured in [starship.toml](./assets/starship/starship.toml) (linked to `~/.config/starship.toml`): the official [Tokyo Night preset](https://starship.rs/presets/#tokyo-night) plus virtualenv, command duration, jobs and user@host (root/SSH only) segments. It uses true colors, so pick a terminal with true-color support (iTerm2, VS Code, Ghostty; not macOS Terminal.app). Without starship, zsh falls back to the `robbyrussell` theme and bash to a plain prompt. See the [starship config docs](https://starship.rs/config/).
 - Recommended font: **MesloLGS Nerd Font** (installed on both macOS and Linux); the prompt icons need a Nerd Font.
 
 ### Machine-specific settings
@@ -152,6 +152,7 @@ Go versions are managed by Go's official [toolchain mechanism](https://go.dev/do
 ### iTerm2 (macOS)
 
 - **Font**: Preferences → Profiles → Text → Font → *MesloLGS Nerd Font*
+- **Transparency**: if Profiles → Window → Transparency is above 0, also tick *Keep background colors opaque*, otherwise the starship blocks look darker than their rounded/arrow edges.
 - **Color schemes** (bundled in [assets/iterm2_themes/](./assets/iterm2_themes)):
   - Tomorrow Night, Tomorrow Night Blue, Tomorrow Night Bright, Tomorrow Night Burns, Tomorrow Night Eighties
   - Import via: Preferences → Profiles → Colors → Color Presets → Import
