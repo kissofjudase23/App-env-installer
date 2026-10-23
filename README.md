@@ -105,7 +105,7 @@ Symlinks created from this repo into `$HOME`:
 ## Shell Setup
 
 - **zsh** + [oh-my-zsh](https://ohmyz.sh/) + [Powerlevel10k](https://github.com/romkatv/powerlevel10k) theme.
-- oh-my-zsh plugins: `aws`, `zoxide`, `docker`, `docker-compose`, `golang`, `tig`, `tmux`, `fzf`, `uv` (see [zshrc.zsh](./assets/shell/zshrc.zsh)).
+- oh-my-zsh plugins: `sudo`, `zsh-autosuggestions`, `zsh-syntax-highlighting`, plus `docker`, `docker-compose`, `golang`, `uv`, `gh`, `zoxide`, `tig`, `tmux`, `fzf` when their tool is installed (see [zshrc.zsh](./assets/shell/zshrc.zsh)).
 - Bash and zsh share environment settings via [common.sh](./assets/shell/common.sh).
 - Directory jumping uses [zoxide](https://github.com/ajeetdsouza/zoxide): `z <dir>`, or `j <dir>` (alias kept for autojump habits); `zi` / `ji` pick interactively with fzf.
 - The installer auto-runs `chsh -s $(which zsh)`. Restart your terminal afterwards.

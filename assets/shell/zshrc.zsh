@@ -82,23 +82,33 @@ COMPLETION_WAITING_DOTS="true"
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
 
-plugins=(
-  aws
-  docker
-  docker-compose
-  golang
-  uv
-)
-
-# These plugins print a warning at startup when their tool is missing
-for _tool in zoxide tig tmux fzf; do
-  (( $+commands[$_tool] )) && plugins+=($_tool)
-done
-unset _tool
-
 # Path to your oh-my-zsh installation
 # git clone https://github.com/ohmyzsh/ohmyzsh.git ~/.oh-my-zsh
 export ZSH=$HOME/.oh-my-zsh
+
+plugins=(sudo)
+
+# Load tool plugins only when their command exists (some warn at startup otherwise)
+for _plugin _cmd in \
+  docker docker \
+  docker-compose docker \
+  golang go \
+  uv uv \
+  gh gh \
+  zoxide zoxide \
+  tig tig \
+  tmux tmux \
+  fzf fzf; do
+  (( $+commands[$_cmd] )) && plugins+=($_plugin)
+done
+unset _plugin _cmd
+
+# Bundled with recent oh-my-zsh; zsh-syntax-highlighting must be the last plugin
+for _plugin in zsh-autosuggestions zsh-syntax-highlighting; do
+  [[ -d $ZSH/plugins/$_plugin || -d ${ZSH_CUSTOM:-$ZSH/custom}/plugins/$_plugin ]] && plugins+=($_plugin)
+done
+unset _plugin
+
 source $ZSH/oh-my-zsh.sh
 
 # oh-my-zsh defines its own ll/la/l; re-apply the shared aliases from common.sh
