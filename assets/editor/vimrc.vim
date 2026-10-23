@@ -19,7 +19,7 @@ if empty(glob(s:plug_path))
 endif
 
 call plug#begin('~/.vim/plugged')
-Plug 'flazz/vim-colorschemes'
+Plug 'tomasr/molokai'
 Plug 'MattesGroeger/vim-bookmarks'
 Plug 'preservim/nerdtree'
 Plug 'preservim/nerdcommenter'
@@ -87,7 +87,7 @@ set list                     " show invisible characters
 set autoread                 " auto read when file is changed from outside
 set history=50               " keep 50 lines of command line history
 set cursorline               " show a visual lin under the cursor's current line
-set clipboard=unnamed        " access system clipboard
+set clipboard=unnamed,unnamedplus " access system clipboard (macOS, Linux)
 set showmatch                " Cursor shows matching ) and }
 set showmode                 " Show current mode
 set backspace=2              " make backspace work like most other
@@ -153,7 +153,18 @@ let g:go_highlight_trailing_whitespace_error = 1
 let g:go_fmt_autosave = 1
 let g:go_metalinter_autosave = 1
 let g:go_list_type = "quickfix"
-let g:go_metalinter_enabled = ['vet', 'golint', 'errcheck']
+" golint is deprecated; gopls runs vet + staticcheck analyzers
+let g:go_metalinter_command = 'gopls'
+let g:go_gopls_staticcheck = 1
+
+" nvim >= 0.11: native LSP replaces vim-go's and ALE's own gopls clients
+if has('nvim-0.11')
+    let g:go_gopls_enabled = 0
+    let g:go_metalinter_autosave = 0
+    let g:ale_disable_lsp = 1
+    lua vim.lsp.config('gopls', { cmd = { 'gopls' }, filetypes = { 'go', 'gomod', 'gowork', 'gotmpl' }, root_markers = { 'go.work', 'go.mod', '.git' }, settings = { gopls = { staticcheck = true } } })
+    lua vim.lsp.enable('gopls')
+endif
 
 " install plugins
 ":GoInstallBinaries
@@ -166,8 +177,8 @@ let g:go_metalinter_enabled = ['vet', 'golint', 'errcheck']
 " Ack.vim
 " https://github.com/mileszs/ack.vim
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-if executable('ag')
-  let g:ackprg = 'ag --vimgrep '
+if executable('rg')
+  let g:ackprg = 'rg --vimgrep --smart-case'
 endif
 
 " ctrl + f to auto insert Ack
