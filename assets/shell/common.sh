@@ -9,8 +9,10 @@ if [[ -f "$HOME/.shell_local" ]]; then
 fi
 
 function linux_env() {
+    # C.UTF-8 is always available; en_US.UTF-8 needs a generated locale
     export LANG=C.UTF-8
     export LC_ALL=C.UTF-8
+    export REQUESTS_CA_BUNDLE="/etc/ssl/certs/ca-certificates.crt"
 }
 
 function darwin_env() {
@@ -48,33 +50,6 @@ function go_env() {
     fi
 
     export PATH="${PATH}:${GOBIN:-${GOPATH:-${HOME}/go}/bin}"
-}
-
-function python_env() {
-    export PYENV_ROOT="${HOME}/.pyenv"
-    if [[ -d "${PYENV_ROOT}/bin" ]]; then
-        export PATH="${PYENV_ROOT}/bin:${PATH}"
-    fi
-
-    if command -v pyenv > /dev/null 2>&1; then
-        eval "$(pyenv init -)"
-        if command -v pyenv-virtualenv-init > /dev/null 2>&1; then
-            eval "$(pyenv virtualenv-init -)"
-        fi
-        export PYENV_VIRTUALENV_DISABLE_PROMPT=1
-    fi
-
-    case ${OS} in
-        "Linux")
-            export PYTHON_CONFIGURE_OPTS="--enable-shared"
-            export REQUESTS_CA_BUNDLE="/etc/ssl/certs/ca-certificates.crt"
-            ;;
-        "Darwin")
-            export PYTHON_CONFIGURE_OPTS="--enable-framework"
-            ;;
-    esac
-
-    export PIPENV_VENV_IN_PROJECT='true'
 }
 
 function editor_env() {
@@ -115,7 +90,6 @@ function env_setting() {
 
     brew_env
     editor_env
-    python_env
     go_env
     mysql_env
     uv_env

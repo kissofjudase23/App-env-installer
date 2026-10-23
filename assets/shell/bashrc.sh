@@ -34,16 +34,15 @@ function common_bash_setting() {
     if command -v aws_completer > /dev/null 2>&1; then
         complete -C "$(command -v aws_completer)" aws
     fi
-}
 
-function linux_bash_setting() {
-    local f
-    for f in /etc/profile.d/autojump.bash /usr/share/autojump/autojump.bash; do
-        if [ -f "${f}" ]; then
-            source "${f}"
-            break
-        fi
-    done
+    if command -v zoxide > /dev/null 2>&1; then
+        eval "$(zoxide init bash)"
+    fi
+
+    # needs fzf >= 0.48; older versions fail silently
+    if command -v fzf > /dev/null 2>&1; then
+        eval "$(fzf --bash 2> /dev/null)"
+    fi
 }
 
 function darwin_bash_setting() {
@@ -53,18 +52,9 @@ function darwin_bash_setting() {
     if [ -f "${prefix}/etc/bash_completion" ]; then
         source "${prefix}/etc/bash_completion"
     fi
-
-    if [ -f "${prefix}/etc/profile.d/autojump.sh" ]; then
-        source "${prefix}/etc/profile.d/autojump.sh"
-    fi
 }
 
 common_bash_setting
-case ${OS} in
-    "Linux") linux_bash_setting ;;
-    "Darwin") darwin_bash_setting ;;
-esac
-
-if [ -f ~/.fzf.bash ]; then
-    source ~/.fzf.bash
+if [ "${OS}" = "Darwin" ]; then
+    darwin_bash_setting
 fi

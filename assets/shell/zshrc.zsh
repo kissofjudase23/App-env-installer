@@ -84,7 +84,7 @@ COMPLETION_WAITING_DOTS="true"
 
 plugins=(
   aws
-  autojump
+  zoxide
   docker
   docker-compose
   golang
