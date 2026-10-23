@@ -1,13 +1,17 @@
-# Installed by install.sh on Ubuntu; neovim comes from ppa:neovim-ppa/stable
-# fzf is installed from its GitHub release (apt's version lacks `fzf --bash/--zsh`)
+# Installed by install.sh on Ubuntu (22.04 and 24.04). gh comes from the official cli.github.com repo.
+# From GitHub releases instead of apt (missing or too old): fzf, neovim, eza, delta.
+# fd-find and bat install as fdfind/batcat; install.sh links them as fd/bat.
+bat
 btop
 curl
+fd-find
 fontconfig
+gh
 git
 jq
-neovim
 ripgrep
 shellcheck
+shfmt
 tig
 tmux
 tree
