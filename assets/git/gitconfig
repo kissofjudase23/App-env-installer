@@ -27,6 +27,10 @@
 [diff]
     tool = vimdiff
     algorithm = histogram
+[delta]
+    # used when GIT_PAGER=delta (set by common.sh if delta is installed)
+    navigate = true
+    line-numbers = true
 [difftool]
     prompt = false
 [merge]
