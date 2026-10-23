@@ -1,20 +1,13 @@
 [core]
-    # let git uses the editor set by $EDITOR or $VISUAL
-    # editor = vim
-
-    # checkout as-is, commit unix style format
+    # editor comes from $GIT_EDITOR / $VISUAL / $EDITOR
+    # checkout as-is, commit unix style line endings
     autocrlf = input
-    # for unicode-display
+    # show non-ASCII file names as-is
     quotepath = off
-    # checkou as-is, commit as-is
-    #autocrlf = false
 [color]
     ui = true
-    diff = auto
-    status = auto
-    branch = auto
-    interactive = auto
-    pager = true
+[init]
+    defaultBranch = main
 [alias]
     df = diff
     co = checkout
@@ -33,17 +26,26 @@
     lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'
 [diff]
     tool = vimdiff
+    algorithm = histogram
 [difftool]
     prompt = false
 [merge]
     tool = vimdiff
     # Even create extra merge commit when fast forward merge would be possible
     ff = false
+    # zdiff3 needs git >= 2.35; Ubuntu 22.04 ships 2.34
+    conflictStyle = diff3
 [pull]
-    # Set up pull to rebase instead of merge
-	rebase = true
+    rebase = true
+[push]
+    # git >= 2.37; older git ignores it
+    autoSetupRemote = true
+[fetch]
+    prune = true
+[rerere]
+    enabled = true
 [url "https://github.com/"]
-	insteadOf = git://github.com/
+    insteadOf = git://github.com/
 # Machine-specific settings such as [user] name/email (created by install.py)
 [include]
     path = ~/.gitconfig.local
