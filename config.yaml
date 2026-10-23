@@ -5,10 +5,6 @@ git_repos:
      src: "https://github.com/ohmyzsh/ohmyzsh.git",
      dst:  ".oh-my-zsh"}
 
-  - {name: "powerlevel10k",
-     src: "https://github.com/romkatv/powerlevel10k",
-     dst:  ".oh-my-zsh/custom/themes/powerlevel10k"}
-
 dotfiles:
   - {name: "vimrc",
      src: "assets/editor/vimrc.vim",
@@ -34,9 +30,9 @@ dotfiles:
      src: "assets/shell/zshrc.zsh",
      dst: ".zshrc"}
 
-  - {name: "p10k",
-     src: "assets/shell/p10k.zsh",
-     dst: ".p10k.zsh"}
+  - {name: "starship",
+     src: "assets/starship/starship.toml",
+     dst: ".config/starship.toml"}
 
   - {name: "gitconfig",
      src: "assets/git/gitconfig",

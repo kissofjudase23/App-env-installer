@@ -1,34 +1,12 @@
-# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
-# Initialization code that may require console input (password prompts, [y/n]
-# confirmations, etc.) must go above this block; everything else may go below.
-if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
-fi
-
-
 source ~/.assets/shell/common.sh
 
-####### powerlevel10k #######
-# Set name of the theme to load. Optionally, if you set this to "random"
-# it'll load a random theme each time that oh-my-zsh is loaded.
-# See https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
-#ZSH_THEME="robbyrussell"
-#ZSH_THEME="agnoster"
-#ZSH_THEME="avit"
-#ZSH_THEME="apple"
-#ZSH_THEME="candy"
-
-
-# https://github.com/romkatv/powerlevel10k#oh-my-zsh
-ZSH_THEME="powerlevel10k/powerlevel10k"
-POWERLEVEL9K_DISABLE_CONFIGURATION_WIZARD=true
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
-
-
-
-# do not show the context, when login user is default user
-export DEFAULT_USER="$USER"
+####### prompt #######
+# starship (assets/starship/starship.toml) draws the prompt; fall back to a built-in theme
+if (( $+commands[starship] )); then
+  ZSH_THEME=""
+else
+  ZSH_THEME="robbyrussell"
+fi
 
 
 ####### oh-my-zsh #######
@@ -113,6 +91,8 @@ source $ZSH/oh-my-zsh.sh
 
 # oh-my-zsh defines its own ll/la/l; re-apply the shared aliases from common.sh
 alias_setting
+
+(( $+commands[starship] )) && eval "$(starship init zsh)"
 
 # User configuration
 

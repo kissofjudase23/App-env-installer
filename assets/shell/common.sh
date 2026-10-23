@@ -1,5 +1,5 @@
 # shellcheck shell=bash disable=SC1090,SC1091
-# Shared environment for bash and zsh; must not print anything (p10k instant prompt).
+# Shared environment for bash and zsh; must not print anything (breaks scp and the prompt).
 
 OS=$(uname -s)
 

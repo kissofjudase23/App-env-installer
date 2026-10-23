@@ -29,7 +29,13 @@ function exitstatus {
 function common_bash_setting() {
     # don't put duplicate lines or lines starting with space in the history
     HISTCONTROL=ignoreboth
-    PROMPT_COMMAND=exitstatus
+
+    # starship (assets/starship/starship.toml) matches the zsh prompt; exitstatus is the fallback
+    if command -v starship > /dev/null 2>&1; then
+        eval "$(starship init bash)"
+    else
+        PROMPT_COMMAND=exitstatus
+    fi
 
     if command -v aws_completer > /dev/null 2>&1; then
         complete -C "$(command -v aws_completer)" aws

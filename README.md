@@ -88,19 +88,19 @@ To add a package, edit the corresponding file and re-run `bash install.sh`.
 
 Symlinks created from this repo into `$HOME`:
 
-| Source                         | Target                    |
-| ------------------------------ | ------------------------- |
-| `assets/editor/vimrc.vim`      | `~/.vimrc`                |
-| `assets/editor/vimrc.vim`      | `~/.config/nvim/init.vim` |
-| `assets/shell/bash_profile.sh` | `~/.bash_profile`         |
-| `assets/shell/bashrc.sh`       | `~/.bashrc`               |
-| `assets/shell/zshrc.zsh`       | `~/.zshrc`                |
-| `assets/shell/p10k.zsh`        | `~/.p10k.zsh`             |
-| `assets/git/gitconfig`         | `~/.gitconfig`            |
-| `assets/tmux/tmux.conf`        | `~/.tmux.conf`            |
-| `assets/tig/tigrc`             | `~/.tigrc`                |
-| `assets/screen/screenrc`       | `~/.screenrc`             |
-| `assets/`                      | `~/.assets`               |
+| Source                          | Target                    |
+| ------------------------------- | ------------------------- |
+| `assets/editor/vimrc.vim`       | `~/.vimrc`                |
+| `assets/editor/vimrc.vim`       | `~/.config/nvim/init.vim` |
+| `assets/shell/bash_profile.sh`  | `~/.bash_profile`         |
+| `assets/shell/bashrc.sh`        | `~/.bashrc`               |
+| `assets/shell/zshrc.zsh`        | `~/.zshrc`                |
+| `assets/starship/starship.toml` | `~/.config/starship.toml` |
+| `assets/git/gitconfig`          | `~/.gitconfig`            |
+| `assets/tmux/tmux.conf`         | `~/.tmux.conf`            |
+| `assets/tig/tigrc`              | `~/.tigrc`                |
+| `assets/screen/screenrc`        | `~/.screenrc`             |
+| `assets/`                       | `~/.assets`               |
 
 ## Shell Setup
 
