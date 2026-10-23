@@ -33,5 +33,12 @@ jobs:
         if: runner.os == 'Linux'
         run: make shellcheck
 
+      - name: shfmt
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shfmt
+          make shfmt
+
       - name: Dry run
         run: uv run install.py -a -y --dry-run
