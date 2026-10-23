@@ -54,6 +54,11 @@ dotfiles:
      src: "assets",
      dst: ".assets"}
 
+# Nerd Fonts release archives (<name>.tar.xz) installed on Linux; macOS uses Brewfile casks
+nerd_fonts:
+  - "Meslo"
+  - "Mononoki"
+
 # Installed with `go install`; the active toolchain follows GOTOOLCHAIN (default: auto)
 go_tools:
   - "golang.org/x/tools/gopls@latest"

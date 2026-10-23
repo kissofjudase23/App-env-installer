@@ -1,3 +1,7 @@
+import hashlib
+import io
+import json
+import tarfile
 from pathlib import Path
 
 import pytest
@@ -22,7 +26,7 @@ def no_side_effects(monkeypatch):
         raise AssertionError(f"unexpected call: {args}")
 
     monkeypatch.setattr(install.subprocess, "run", fail)
-    monkeypatch.setattr(install.urllib.request, "urlretrieve", fail)
+    monkeypatch.setattr(install.urllib.request, "urlopen", fail)
 
 
 def make_installer(
@@ -113,6 +117,89 @@ def test_install_go_tools_skips_without_go(tmp_path, home, monkeypatch):
     make_installer(tmp_path, home, go_tools=["example.com/tool@latest"]).install_go_tools()
 
 
+def make_font_archive(files: dict[str, bytes]) -> bytes:
+    buf = io.BytesIO()
+    with tarfile.open(fileobj=buf, mode="w:xz") as tar:
+        for name, data in files.items():
+            info = tarfile.TarInfo(name)
+            info.size = len(data)
+            tar.addfile(info, io.BytesIO(data))
+    return buf.getvalue()
+
+
+@pytest.fixture
+def nerd_fonts_release(monkeypatch):
+    """Serve a fake nerd-fonts release; returns (archives, fetched urls, run commands)."""
+    archives: dict[str, bytes] = {}
+    fetched: list[str] = []
+    commands: list[list[str]] = []
+
+    def fetch(url):
+        fetched.append(url)
+        if url == install.NERD_FONTS_RELEASE_API:
+            assets = [
+                {
+                    "name": name,
+                    "browser_download_url": f"https://example.com/{name}",
+                    "digest": f"sha256:{hashlib.sha256(data).hexdigest()}",
+                }
+                for name, data in archives.items()
+            ]
+            return json.dumps({"tag_name": "v0.0.0", "assets": assets}).encode()
+        return archives[url.rsplit("/", 1)[1]]
+
+    monkeypatch.setattr(install, "fetch", fetch)
+    monkeypatch.setattr(install.subprocess, "run", lambda cmd, **_: commands.append(cmd))
+    return archives, fetched, commands
+
+
+def test_install_fonts_extracts_ttf_only(tmp_path, home, nerd_fonts_release):
+    archives, _, commands = nerd_fonts_release
+    archives["Meslo.tar.xz"] = make_font_archive({"A.ttf": b"font", "LICENSE.txt": b"text"})
+
+    make_installer(tmp_path, home, system="Linux", nerd_fonts=["Meslo"]).install_fonts()
+
+    font_dir = home / ".local/share/fonts/NerdFonts"
+    assert sorted(p.name for p in (font_dir / "Meslo").iterdir()) == ["A.ttf"]
+    assert sorted(p.name for p in font_dir.iterdir()) == ["Meslo"]
+    assert commands == [["fc-cache", "-f", str(font_dir)]]
+
+
+def test_install_fonts_skips_installed(tmp_path, home, nerd_fonts_release):
+    _, fetched, commands = nerd_fonts_release
+    font = home / ".local/share/fonts/NerdFonts/Meslo/A.ttf"
+    font.parent.mkdir(parents=True)
+    font.write_bytes(b"font")
+
+    make_installer(tmp_path, home, system="Linux", nerd_fonts=["Meslo"]).install_fonts()
+
+    assert fetched == []
+    assert commands == []
+
+
+def test_install_fonts_rejects_digest_mismatch(tmp_path, home, nerd_fonts_release, monkeypatch):
+    archives, _, _ = nerd_fonts_release
+    archives["Meslo.tar.xz"] = make_font_archive({"A.ttf": b"font"})
+    fake_fetch = install.fetch
+    monkeypatch.setattr(
+        install, "fetch", lambda url: b"tampered" if url.endswith(".xz") else fake_fetch(url)
+    )
+
+    with pytest.raises(install.InstallerError, match="sha256 mismatch"):
+        make_installer(tmp_path, home, system="Linux", nerd_fonts=["Meslo"]).install_fonts()
+    assert not (home / ".local/share/fonts").exists()
+
+
+def test_install_fonts_rejects_path_traversal(tmp_path, home, nerd_fonts_release):
+    archives, _, _ = nerd_fonts_release
+    archives["Meslo.tar.xz"] = make_font_archive({"../../evil.ttf": b"font"})
+
+    with pytest.raises(install.InstallerError, match="cannot extract"):
+        make_installer(tmp_path, home, system="Linux", nerd_fonts=["Meslo"]).install_fonts()
+    assert not (home / ".local/share/fonts/NerdFonts/Meslo").exists()
+    assert list(home.parent.rglob("evil.ttf")) == []
+
+
 def test_dry_run_changes_nothing(tmp_path, home):
     (home / ".tigrc").write_text("mine")
     installer = make_installer(
@@ -126,6 +213,7 @@ def test_dry_run_changes_nothing(tmp_path, home):
         ],
         git_repos=[{"name": "repo", "src": "https://example.com/repo.git", "dst": "repo"}],
         go_tools=["example.com/tool@latest"],
+        nerd_fonts=["Meslo"],
     )
     before = snapshot(home)
 

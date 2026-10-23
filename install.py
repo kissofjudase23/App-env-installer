@@ -1,14 +1,17 @@
 # pylint: disable=missing-module-docstring, missing-class-docstring, missing-function-docstring
+import hashlib
+import io
+import json
 import os
 import platform
 import shutil
 import subprocess
 import sys
+import tarfile
 import urllib.request
 from datetime import datetime
 from enum import Enum, unique
 from pathlib import Path
-from urllib.parse import quote
 
 import click
 import distro
@@ -17,13 +20,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent
 
-MESLO_FONT_URL = "https://github.com/romkatv/powerlevel10k-media/raw/master/"
-MESLO_FONTS = (
-    "MesloLGS NF Regular.ttf",
-    "MesloLGS NF Bold.ttf",
-    "MesloLGS NF Italic.ttf",
-    "MesloLGS NF Bold Italic.ttf",
-)
+NERD_FONTS_RELEASE_API = "https://api.github.com/repos/ryanoasis/nerd-fonts/releases/latest"
 
 GITCONFIG_LOCAL_TEMPLATE = """\
 # Machine-specific git settings (not tracked). Uncomment and set your identity.
@@ -58,6 +55,27 @@ def run(cmd: list[str], *, dry_run: bool) -> None:
         subprocess.run(cmd, check=True)
 
 
+def fetch(url: str) -> bytes:
+    with urllib.request.urlopen(url, timeout=60) as resp:
+        return resp.read()
+
+
+def extract_fonts(archive: bytes, dst: Path) -> None:
+    # Extract into a sibling temp dir first so a failed run never looks installed
+    tmp = dst.with_name(f".{dst.name}.tmp")
+    shutil.rmtree(tmp, ignore_errors=True)
+    tmp.mkdir(parents=True)
+    try:
+        with tarfile.open(fileobj=io.BytesIO(archive), mode="r:xz") as tar:
+            members = [m for m in tar.getmembers() if m.isfile() and m.name.endswith(".ttf")]
+            tar.extractall(tmp, members=members, filter="data")
+    except tarfile.TarError as e:
+        shutil.rmtree(tmp)
+        raise InstallerError(f"cannot extract fonts to {dst}: {e}") from e
+    shutil.rmtree(dst, ignore_errors=True)
+    tmp.rename(dst)
+
+
 class GitAgent:
     def __init__(self, *, dry_run: bool = False):
         self.dry_run = dry_run
@@ -87,6 +105,10 @@ class ConfigMgr:
     @property
     def go_tools(self) -> list[str]:
         return self.config.get("go_tools", [])
+
+    @property
+    def nerd_fonts(self) -> list[str]:
+        return self.config.get("nerd_fonts", [])
 
 
 class Installer:
@@ -159,21 +181,40 @@ class Installer:
         if self.system != SupportedSystems.LINUX.value:
             return
 
-        font_dir = self.home / ".local/share/fonts"
-        if not self.dry_run:
-            font_dir.mkdir(parents=True, exist_ok=True)
+        font_dir = self.home / ".local/share/fonts/NerdFonts"
+        missing = []
+        for name in self.config_mgr.nerd_fonts:
+            if any((font_dir / name).glob("*.ttf")):
+                click.echo(f"skip {font_dir / name}: already installed")
+            else:
+                missing.append(name)
+        if not missing:
+            return
 
-        for name in MESLO_FONTS:
-            dst = font_dir / name
-            if dst.exists():
-                click.echo(f"skip {dst}: already exists")
+        # dry run stays offline: report the archives without resolving the release
+        assets = {} if self.dry_run else self._nerd_font_assets()
+        for name in missing:
+            archive = f"{name}.tar.xz"
+            click.echo(f"download nerd-fonts {archive} -> {font_dir / name}")
+            if self.dry_run:
                 continue
-            url = MESLO_FONT_URL + quote(name)
-            click.echo(f"download {url} -> {dst}")
-            if not self.dry_run:
-                urllib.request.urlretrieve(url, dst)
+            if archive not in assets:
+                raise InstallerError(f"nerd-fonts release has no {archive}")
+            url, digest = assets[archive]
+            data = fetch(url)
+            if f"sha256:{hashlib.sha256(data).hexdigest()}" != digest:
+                raise InstallerError(f"sha256 mismatch for {archive}")
+            extract_fonts(data, font_dir / name)
 
         run(["fc-cache", "-f", str(font_dir)], dry_run=self.dry_run)
+
+    @staticmethod
+    def _nerd_font_assets() -> dict[str, tuple[str, str]]:
+        release = json.loads(fetch(NERD_FONTS_RELEASE_API))
+        click.echo(f"nerd-fonts {release['tag_name']}")
+        return {
+            a["name"]: (a["browser_download_url"], a.get("digest") or "") for a in release["assets"]
+        }
 
     def install_go_tools(self) -> None:
         go = shutil.which("go")
