@@ -49,12 +49,35 @@ function change_default_shell_to_zsh() {
     fi
 }
 
+function add_gh_apt_repo() {
+    # Ubuntu's own gh lags far behind; the official repo keeps it current through apt
+    local keyring="/etc/apt/keyrings/githubcli-archive-keyring.gpg"
+    if [ ! -f "${keyring}" ]; then
+        sudo mkdir -p -m 755 /etc/apt/keyrings
+        curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg |
+            sudo tee "${keyring}" > /dev/null
+        sudo chmod go+r "${keyring}"
+    fi
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=${keyring}] https://cli.github.com/packages stable main" |
+        sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+}
+
+function link_debian_renamed_tools() {
+    # Debian renames fd and bat to avoid clashes; expose the upstream names
+    local pair src dst
+    for pair in fdfind:fd batcat:bat; do
+        src="${pair%%:*}"
+        dst="${pair##*:}"
+        if command -v "${src}" &> /dev/null && ! command -v "${dst}" &> /dev/null; then
+            sudo ln -sf "$(command -v "${src}")" "/usr/local/bin/${dst}"
+        fi
+    done
+}
+
 function install_pkgs_for_ubuntu() {
     echo "Installing apt packages for Ubuntu..."
 
-    sudo apt-get update -y
-    sudo apt-get install -y software-properties-common
-    sudo add-apt-repository -y ppa:neovim-ppa/stable
+    add_gh_apt_repo
     sudo apt-get update -y
 
     sed -e 's/#.*//' apt-packages.txt | xargs sudo apt-get install -y
@@ -71,21 +94,60 @@ function install_pkgs_for_ubuntu() {
 GO_MIN_VERSION="1.21"
 GO_ROOT="/usr/local/go"
 FZF_MIN_VERSION="0.48"
+NVIM_MIN_VERSION="0.11"
+NVIM_ROOT="/opt/nvim"
 
 # Succeeds when version $2 >= $1
 function version_at_least() {
     [ "$(printf '%s\n%s\n' "$1" "$2" | sort -V | head -n1)" = "$1" ]
 }
 
+# $1: arch naming used by the release assets: go (amd64), rust (x86_64/aarch64), nvim (x86_64/arm64)
 function ubuntu_arch() {
-    case "$(uname -m)" in
-        x86_64) echo "amd64" ;;
-        aarch64 | arm64) echo "arm64" ;;
+    case "$1:$(uname -m)" in
+        go:x86_64) echo "amd64" ;;
+        go:aarch64 | go:arm64 | nvim:aarch64 | nvim:arm64) echo "arm64" ;;
+        rust:x86_64 | nvim:x86_64) echo "x86_64" ;;
+        rust:aarch64 | rust:arm64) echo "aarch64" ;;
         *)
-            echo "Error: Unsupported architecture: $(uname -m)" >&2
+            echo "Error: Unsupported architecture for $1: $(uname -m)" >&2
             exit 1
             ;;
     esac
+}
+
+# Download the latest release asset of GitHub repo $1 whose name matches regex $2 to file $3,
+# verified against the sha256 digest GitHub publishes; sets RELEASE_TAG.
+# Call it directly, not in $(...), so RELEASE_TAG reaches the caller.
+function github_release_asset() {
+    local repo="$1" pattern="$2" out="$3" release asset digest
+    release="$(curl -fsSL "https://api.github.com/repos/${repo}/releases/latest")" || return 1
+    asset="$(jq -c --arg p "${pattern}" '[.assets[] | select(.name | test($p))] | first // empty' <<< "${release}")"
+    if [ -z "${asset}" ]; then
+        echo "Error: No ${repo} release asset matches ${pattern}" >&2
+        return 1
+    fi
+
+    digest="$(jq -r '.digest // empty' <<< "${asset}")"
+    if [[ "${digest}" != sha256:* ]]; then
+        echo "Error: No sha256 digest for $(jq -r '.name' <<< "${asset}")" >&2
+        return 1
+    fi
+
+    curl -fsSL -o "${out}" "$(jq -r '.browser_download_url' <<< "${asset}")" || return 1
+    echo "${digest#sha256:}  ${out}" | sha256sum -c --quiet - || return 1
+    RELEASE_TAG="$(jq -r '.tag_name' <<< "${release}")"
+}
+
+# Install executable $3 from the tar.gz release asset of GitHub repo $1 matching regex $2
+function install_github_binary() {
+    local repo="$1" pattern="$2" binary="$3" tmp_dir
+    tmp_dir="$(mktemp -d)"
+    github_release_asset "${repo}" "${pattern}" "${tmp_dir}/asset.tar.gz"
+    echo "Installing ${binary} ${RELEASE_TAG} to /usr/local/bin..."
+    tar -C "${tmp_dir}" -xzf "${tmp_dir}/asset.tar.gz"
+    sudo install -m 0755 "$(find "${tmp_dir}" -type f -name "${binary}" | head -n1)" "/usr/local/bin/${binary}"
+    rm -rf "${tmp_dir}"
 }
 
 function go_is_recent_enough() {
@@ -104,7 +166,7 @@ function install_go_for_ubuntu() {
     fi
 
     local arch version tarball sha256 tmp_dir
-    arch="$(ubuntu_arch)"
+    arch="$(ubuntu_arch go)"
     version="$(curl -fsSL 'https://go.dev/VERSION?m=text' | head -n1)"
     tarball="${version}.linux-${arch}.tar.gz"
     sha256="$(curl -fsSL 'https://go.dev/dl/?mode=json' |
@@ -123,31 +185,51 @@ function install_go_for_ubuntu() {
     rm -rf "${tmp_dir}"
 }
 
-function install_fzf_for_ubuntu() {
+function install_release_tools_for_ubuntu() {
+    local arch rust_arch current
+    arch="$(ubuntu_arch go)"
+    rust_arch="$(ubuntu_arch rust)"
+
     # apt's fzf is too old for `fzf --bash` / `fzf --zsh`
-    local current
-    if command -v fzf &> /dev/null; then
-        current="$(fzf --version | cut -d' ' -f1)"
-        if version_at_least "${FZF_MIN_VERSION}" "${current}"; then
-            echo "fzf ${current} found, skip install"
-            return
-        fi
+    current="$(command -v fzf &> /dev/null && fzf --version | cut -d' ' -f1 || echo 0)"
+    if version_at_least "${FZF_MIN_VERSION}" "${current}"; then
+        echo "fzf ${current} found, skip install"
+    else
+        install_github_binary junegunn/fzf "^fzf-.*-linux_${arch}\\.tar\\.gz$" fzf
     fi
 
-    local arch tag version tarball base_url tmp_dir
-    arch="$(ubuntu_arch)"
-    tag="$(curl -fsSL 'https://api.github.com/repos/junegunn/fzf/releases/latest' | jq -r '.tag_name')"
-    version="${tag#v}"
-    tarball="fzf-${version}-linux_${arch}.tar.gz"
-    base_url="https://github.com/junegunn/fzf/releases/download/${tag}"
+    # eza and delta are not packaged on Ubuntu 22.04
+    if command -v eza &> /dev/null; then
+        echo "eza found, skip install"
+    else
+        install_github_binary eza-community/eza "^eza_${rust_arch}-unknown-linux-gnu\\.tar\\.gz$" eza
+    fi
 
-    echo "Installing fzf ${version} to /usr/local/bin..."
+    if command -v delta &> /dev/null; then
+        echo "delta found, skip install"
+    else
+        install_github_binary dandavison/delta "^delta-.*-${rust_arch}-unknown-linux-gnu\\.tar\\.gz$" delta
+    fi
+}
+
+function install_neovim_for_ubuntu() {
+    # apt has 0.6 (22.04) / 0.9 (24.04); the vimrc's native LSP setup needs 0.11
+    local current tmp_dir arch
+    current="$(command -v nvim &> /dev/null && nvim --version | head -n1 || echo 0)"
+    current="${current#NVIM v}"
+    if version_at_least "${NVIM_MIN_VERSION}" "${current}"; then
+        echo "Neovim ${current} found, skip install"
+        return
+    fi
+
+    arch="$(ubuntu_arch nvim)"
     tmp_dir="$(mktemp -d)"
-    curl -fsSL -o "${tmp_dir}/${tarball}" "${base_url}/${tarball}"
-    curl -fsSL -o "${tmp_dir}/checksums.txt" "${base_url}/fzf_${version}_checksums.txt"
-    (cd "${tmp_dir}" && grep -F "  ${tarball}" checksums.txt | sha256sum -c -)
-    tar -C "${tmp_dir}" -xzf "${tmp_dir}/${tarball}" fzf
-    sudo install -m 0755 "${tmp_dir}/fzf" /usr/local/bin/fzf
+    github_release_asset neovim/neovim "^nvim-linux-${arch}\\.tar\\.gz$" "${tmp_dir}/nvim.tar.gz"
+    echo "Installing Neovim ${RELEASE_TAG} to ${NVIM_ROOT}..."
+    sudo rm -rf "${NVIM_ROOT}"
+    sudo mkdir -p "${NVIM_ROOT}"
+    sudo tar -C "${NVIM_ROOT}" --strip-components=1 -xzf "${tmp_dir}/nvim.tar.gz"
+    sudo ln -sf "${NVIM_ROOT}/bin/nvim" /usr/local/bin/nvim
     rm -rf "${tmp_dir}"
 }
 
@@ -185,8 +267,10 @@ function main() {
         Darwin) install_pkgs_for_darwin ;;
         Linux)
             install_pkgs_for_ubuntu
+            link_debian_renamed_tools
             install_go_for_ubuntu
-            install_fzf_for_ubuntu
+            install_release_tools_for_ubuntu
+            install_neovim_for_ubuntu
             ;;
     esac
 
