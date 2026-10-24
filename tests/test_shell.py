@@ -131,3 +131,103 @@ def test_github_api_without_token(home):
     assert result.stdout.splitlines() == [
         "args: -fsSL https://api.github.com/repos/o/r/releases/latest"
     ], result.stderr
+
+
+@pytest.mark.parametrize(("args", "upgrade"), [([], "0"), (["--upgrade"], "1")])
+def test_parse_args(home, args, upgrade):
+    script = 'source "$1"; shift; parse_args "$@"; echo "UPGRADE=${UPGRADE}"'
+    result = run_shell("bash", script, home, str(INSTALL_SH), *args)
+    assert (result.returncode, result.stdout) == (0, f"UPGRADE={upgrade}\n"), result.stderr
+
+
+@pytest.mark.parametrize("flag", ["-h", "--help"])
+def test_parse_args_help(home, flag):
+    result = run_shell("bash", 'source "$1"; parse_args "$2"', home, str(INSTALL_SH), flag)
+    assert result.returncode == 0
+    assert result.stdout.startswith("Usage: bash install.sh [--upgrade]")
+    assert result.stderr == ""
+
+
+def test_parse_args_rejects_unknown_argument(home):
+    result = run_shell("bash", 'source "$1"; parse_args --bogus', home, str(INSTALL_SH))
+    assert result.returncode == 2
+    assert result.stdout == ""
+    assert result.stderr.startswith("Error: Unknown argument: --bogus\nUsage:")
+
+
+# Stubs replace downloads and sudo; PATH holds only the coreutils the checks need,
+# so fzf, delta and nvim exist (as stub functions) while eza and starship are missing.
+RELEASE_TOOLS_SCRIPT = """
+source "$1"
+PATH="$2"
+FZF_VERSION="$3"
+shift 3
+WORK_DIR=/nonexistent
+ubuntu_arch() { echo x; }
+mktemp() { echo "${WORK_DIR}"; }
+sudo() { :; }
+install_github_binary() { echo "install $3"; }
+github_release_asset() { RELEASE_TAG=v9.9.9; }
+fzf() { echo "${FZF_VERSION} (stub)"; }
+delta() { :; }
+nvim() { echo "NVIM v0.12.1"; }
+parse_args "$@"
+install_release_tools_for_ubuntu
+install_neovim_for_ubuntu
+"""
+KEEP = "found, skip install (--upgrade to update)"
+
+
+@pytest.fixture
+def coreutils_path(tmp_path: Path) -> str:
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    for tool in ("sort", "head", "cut"):
+        (bin_dir / tool).symlink_to(shutil.which(tool))
+    return str(bin_dir)
+
+
+@pytest.mark.parametrize(
+    ("fzf_version", "args", "expected"),
+    [
+        (
+            "0.56.3",
+            [],
+            [
+                f"fzf 0.56.3 {KEEP}",
+                "install eza",
+                f"delta {KEEP}",
+                "install starship",
+                f"Neovim 0.12.1 {KEEP}",
+            ],
+        ),
+        (
+            "0.29.0",
+            [],
+            [
+                "install fzf",
+                "install eza",
+                f"delta {KEEP}",
+                "install starship",
+                f"Neovim 0.12.1 {KEEP}",
+            ],
+        ),
+        (
+            "0.56.3",
+            ["--upgrade"],
+            [
+                "install fzf",
+                "install eza",
+                "install delta",
+                "install starship",
+                "Installing Neovim v9.9.9 to /opt/nvim...",
+            ],
+        ),
+    ],
+    ids=["keep", "fzf-too-old", "upgrade"],
+)
+def test_release_tools_upgrade(home, coreutils_path, fzf_version, args, expected):
+    result = run_shell(
+        "bash", RELEASE_TOOLS_SCRIPT, home, str(INSTALL_SH), coreutils_path, fzf_version, *args
+    )
+    assert result.stdout.splitlines() == expected, result.stderr

@@ -6,7 +6,7 @@ Dotfiles + dev-environment bootstrapper for **macOS** and **Ubuntu** only.
 
 Two-stage install:
 
-1. [install.sh](install.sh) (bash, `set -Eeuo pipefail`) – detects OS, installs system packages, installs Python (version from [.python-version](.python-version)) + deps via `uv`, bootstraps Go (Ubuntu: go.dev tarball → `/usr/local/go` if missing or < 1.21; macOS: Brewfile) and, on Ubuntu (22.04 + 24.04), adds the gh apt repo, links `fdfind`/`batcat` as `fd`/`bat`, and installs fzf (< 0.48), eza, delta, starship (→ `/usr/local/bin`) and neovim (< 0.11 → `/opt/nvim`) from GitHub releases, runs `install.py -a -y`, then `chsh` to zsh.
+1. [install.sh](install.sh) (bash, `set -Eeuo pipefail`) – detects OS, installs system packages, installs Python (version from [.python-version](.python-version)) + deps via `uv`, bootstraps Go (Ubuntu: go.dev tarball → `/usr/local/go` if missing or < 1.21; macOS: Brewfile) and, on Ubuntu (22.04 + 24.04), adds the gh apt repo, links `fdfind`/`batcat` as `fd`/`bat`, and installs fzf (< 0.48), eza, delta, starship (→ `/usr/local/bin`) and neovim (< 0.11 → `/opt/nvim`) from GitHub releases (`--upgrade` reinstalls them even when present), runs `install.py -a -y`, then `chsh` to zsh.
 2. [install.py](install.py) (click CLI) – reads [config.yaml](config.yaml) (validated on load: unknown keys, missing dotfile `src`, `dst` outside `$HOME` or duplicated → `InstallerError`) and:
    - `link_dotfiles` – symlinks `assets/*` into `$HOME`; skips correct links; backs up real files to `<dst>.bak.<YYYYmmddHHMMSS>`.
    - `ensure_gitconfig_local` – creates a commented placeholder `~/.gitconfig.local` (never overwrites).
@@ -16,7 +16,7 @@ Two-stage install:
    - Flags: `-d` (default), `-g`, `-f`, `-t`, `-a`, `-y`, `--dry-run`. Every side effect must honor `dry_run`.
    - All paths resolve from `ROOT = Path(__file__).resolve().parent`; never rely on cwd.
 
-For any new GitHub-hosted binary on Ubuntu, reuse `github_release_asset` / `install_github_binary` in `install.sh` (they verify the sha256 digest from the GitHub API); call them directly, not inside `$(...)`. GitHub API calls go through `github_api` (shell) / `fetch` (Python), which add `GITHUB_TOKEN`/`GH_TOKEN` for `api.github.com` only; never print or log the token. `install.sh` runs `main` only when executed, so tests can `source` it.
+For any new GitHub-hosted binary on Ubuntu, reuse `github_release_asset` / `install_github_binary` in `install.sh` (they verify the sha256 digest from the GitHub API); call them directly, not inside `$(...)`, and guard them with `keep_installed` so `--upgrade` works. GitHub API calls go through `github_api` (shell) / `fetch` (Python), which add `GITHUB_TOKEN`/`GH_TOKEN` for `api.github.com` only; never print or log the token. `install.sh` runs `main` only when executed, so tests can `source` it.
 
 ## Where things live
 
@@ -71,7 +71,7 @@ Safe testing of `install.py` without touching the real home:
 T=$(mktemp -d) && HOME=$T uv run install.py -d -y && ls -la $T; rm -rf $T
 ```
 
-Never run `install.sh` or `make install` for testing (they use sudo, brew/apt, and chsh).
+Never run `install.sh`, `make install` or `make upgrade` for testing (they use sudo, brew/apt, and chsh).
 
 ## Conventions
 

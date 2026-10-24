@@ -7,6 +7,48 @@ function on_error() {
 }
 trap 'on_error $? ${LINENO}' ERR
 
+UPGRADE=0
+
+function usage() {
+    cat << 'USAGE'
+Usage: bash install.sh [--upgrade]
+
+Bootstrap packages, Python, dotfiles and Go tools on macOS or Ubuntu.
+
+Options:
+  --upgrade   Ubuntu: reinstall the latest fzf, eza, delta, starship and
+              Neovim releases even when already installed
+              (macOS: brew bundle already upgrades)
+  -h, --help  Show this help and exit
+USAGE
+}
+
+function parse_args() {
+    while (($# > 0)); do
+        case "$1" in
+            --upgrade) UPGRADE=1 ;;
+            -h | --help)
+                usage
+                exit 0
+                ;;
+            *)
+                echo "Error: Unknown argument: $1" >&2
+                usage >&2
+                exit 2
+                ;;
+        esac
+        shift
+    done
+}
+
+# Succeeds (and says so) when installed tool $1 should be kept, i.e. without --upgrade
+function keep_installed() {
+    if ((UPGRADE == 1)); then
+        return 1
+    fi
+    echo "$1 found, skip install (--upgrade to update)"
+}
+
 function detect_os() {
     local os_type
     os_type="$(uname -s)"
@@ -204,29 +246,21 @@ function install_release_tools_for_ubuntu() {
 
     # apt's fzf is too old for `fzf --bash` / `fzf --zsh`
     current="$(command -v fzf &> /dev/null && fzf --version | cut -d' ' -f1 || echo 0)"
-    if version_at_least "${FZF_MIN_VERSION}" "${current}"; then
-        echo "fzf ${current} found, skip install"
-    else
+    if ! version_at_least "${FZF_MIN_VERSION}" "${current}" || ! keep_installed "fzf ${current}"; then
         install_github_binary junegunn/fzf "^fzf-.*-linux_${arch}\\.tar\\.gz$" fzf
     fi
 
     # eza and delta are not packaged on Ubuntu 22.04
-    if command -v eza &> /dev/null; then
-        echo "eza found, skip install"
-    else
+    if ! command -v eza &> /dev/null || ! keep_installed eza; then
         install_github_binary eza-community/eza "^eza_${rust_arch}-unknown-linux-gnu\\.tar\\.gz$" eza
     fi
 
-    if command -v delta &> /dev/null; then
-        echo "delta found, skip install"
-    else
+    if ! command -v delta &> /dev/null || ! keep_installed delta; then
         install_github_binary dandavison/delta "^delta-.*-${rust_arch}-unknown-linux-gnu\\.tar\\.gz$" delta
     fi
 
     # starship publishes aarch64 builds for musl only; the static binary runs on any Ubuntu
-    if command -v starship &> /dev/null; then
-        echo "starship found, skip install"
-    else
+    if ! command -v starship &> /dev/null || ! keep_installed starship; then
         install_github_binary starship/starship "^starship-${rust_arch}-unknown-linux-musl\\.tar\\.gz$" starship
     fi
 }
@@ -236,8 +270,7 @@ function install_neovim_for_ubuntu() {
     local current tmp_dir arch
     current="$(command -v nvim &> /dev/null && nvim --version | head -n1 || echo 0)"
     current="${current#NVIM v}"
-    if version_at_least "${NVIM_MIN_VERSION}" "${current}"; then
-        echo "Neovim ${current} found, skip install"
+    if version_at_least "${NVIM_MIN_VERSION}" "${current}" && keep_installed "Neovim ${current}"; then
         return
     fi
 
@@ -281,6 +314,7 @@ function setup_python() {
 }
 
 function main() {
+    parse_args "$@"
     cd "$(dirname "${BASH_SOURCE[0]}")"
     WORK_DIR="$(mktemp -d)"
     trap 'rm -rf "${WORK_DIR}"' EXIT

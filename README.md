@@ -37,6 +37,7 @@ Python (the version pinned in [.python-version](./.python-version)) is installed
 git clone <this-repo> App-env-installer
 cd App-env-installer
 bash install.sh   # or: make install
+bash install.sh --help
 ```
 
 GitHub's API allows 60 anonymous requests per hour per IP, which a shared office NAT can exhaust. If `GITHUB_TOKEN` or `GH_TOKEN` is set, `install.sh` and `install.py` send it to `api.github.com` only (never to download hosts), e.g. `GH_TOKEN=$(gh auth token) bash install.sh`.
@@ -86,6 +87,8 @@ uv run install.py -a -y           # skip confirmation prompts
 Usage of eza, fd, bat and gh, and how the shell wires them together: [docs/cli-tools.md](./docs/cli-tools.md).
 
 To add a package, edit the corresponding file and re-run `bash install.sh`.
+
+Re-running `install.sh` skips GitHub-release tools that are already installed (and recent enough). To update them on Ubuntu, run `bash install.sh --upgrade` (or `make upgrade`), which reinstalls the latest fzf, eza, delta, starship and Neovim releases. On macOS, `brew bundle` already upgrades outdated packages, so `--upgrade` changes nothing there.
 
 ## Dotfiles Linked
 

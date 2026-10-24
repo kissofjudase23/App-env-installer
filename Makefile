@@ -1,6 +1,6 @@
 
 
-.PHONY: help install sync lint format test shellcheck shfmt format-shell check
+.PHONY: help install upgrade sync lint format test shellcheck shfmt format-shell check
 
 .DEFAULT_GOAL := help
 
@@ -12,6 +12,9 @@ help: ## Show available targets and their descriptions (default target)
 
 install: ## Full bootstrap: OS packages (brew/apt), Python via uv (.python-version), install.py -a -y, chsh to zsh (uses sudo, modifies $HOME)
 	bash install.sh
+
+upgrade: ## Like install, but also update fzf, eza, delta, starship, nvim on Ubuntu (bash install.sh --upgrade)
+	bash install.sh --upgrade
 
 sync: ## Create/update .venv with Python deps pinned in uv.lock (uv sync)
 	uv sync

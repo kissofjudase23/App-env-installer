@@ -16,6 +16,7 @@
       "Bash(bash install.sh:*)",
       "Bash(./install.sh:*)",
       "Bash(make install)",
+      "Bash(make upgrade)",
       "Bash(chsh:*)"
     ]
   }

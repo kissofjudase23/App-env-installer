@@ -4,4 +4,4 @@
 ## Claude Code notes
 
 - Shared project instructions live in AGENTS.md; put project facts there, not here.
-- Run `make check` before reporting work as done; never run `install.sh` or `make install`.
+- Run `make check` before reporting work as done; never run `install.sh`, `make install` or `make upgrade`.
