@@ -7,8 +7,6 @@ function on_error() {
 }
 trap 'on_error $? ${LINENO}' ERR
 
-cd "$(dirname "$0")"
-
 function detect_os() {
     local os_type
     os_type="$(uname -s)"
@@ -121,12 +119,23 @@ function ubuntu_arch() {
     esac
 }
 
+# GET api.github.com/$1; GITHUB_TOKEN/GH_TOKEN lifts the 60 requests/hour anonymous limit.
+# The header goes through stdin so the token never shows up in ps.
+function github_api() {
+    local token="${GITHUB_TOKEN:-${GH_TOKEN:-}}"
+    if [[ -n "${token}" ]]; then
+        curl -fsSL -H @- "https://api.github.com/$1" <<< "Authorization: Bearer ${token}"
+    else
+        curl -fsSL "https://api.github.com/$1"
+    fi
+}
+
 # Download the latest release asset of GitHub repo $1 whose name matches regex $2 to file $3,
 # verified against the sha256 digest GitHub publishes; sets RELEASE_TAG.
 # Call it directly, not in $(...), so RELEASE_TAG reaches the caller.
 function github_release_asset() {
     local repo="$1" pattern="$2" out="$3" release asset digest
-    release="$(curl -fsSL "https://api.github.com/repos/${repo}/releases/latest")" || return 1
+    release="$(github_api "repos/${repo}/releases/latest")" || return 1
     asset="$(jq -c --arg p "${pattern}" '[.assets[] | select(.name | test($p))] | first // empty' <<< "${release}")"
     if [ -z "${asset}" ]; then
         echo "Error: No ${repo} release asset matches ${pattern}" >&2
@@ -272,6 +281,7 @@ function setup_python() {
 }
 
 function main() {
+    cd "$(dirname "${BASH_SOURCE[0]}")"
     WORK_DIR="$(mktemp -d)"
     trap 'rm -rf "${WORK_DIR}"' EXIT
 
@@ -292,4 +302,7 @@ function main() {
     change_default_shell_to_zsh
 }
 
-main "$@"
+# Sourcing only defines the functions (tests/test_shell.py)
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+    main "$@"
+fi

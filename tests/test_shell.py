@@ -8,6 +8,7 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent
 SHELL_DIR = ROOT / "assets/shell"
 COMMON = SHELL_DIR / "common.sh"
+INSTALL_SH = ROOT / "install.sh"
 PROXY = "http://proxy.example.com:8080"
 
 # Clean shells: no system or user rc files, only what the test sources
@@ -24,10 +25,12 @@ def home(tmp_path: Path) -> Path:
     return path
 
 
-def run_shell(shell: str, script: str, home: Path, *args: str) -> subprocess.CompletedProcess:
+def run_shell(
+    shell: str, script: str, home: Path, *args: str, env: dict[str, str] | None = None
+) -> subprocess.CompletedProcess:
     if shutil.which(shell) is None:
         pytest.skip(f"{shell} is not installed")
-    env = {"HOME": str(home), "PATH": os.environ["PATH"], "TERM": "xterm-256color"}
+    env = {"HOME": str(home), "PATH": os.environ["PATH"], "TERM": "xterm-256color", **(env or {})}
     return subprocess.run(
         [*SHELLS[shell], script, shell, *args],
         env=env,
@@ -41,7 +44,7 @@ def run_shell(shell: str, script: str, home: Path, *args: str) -> subprocess.Com
 @pytest.mark.parametrize(
     ("shell", "path"),
     [
-        ("bash", ROOT / "install.sh"),
+        ("bash", INSTALL_SH),
         ("bash", COMMON),
         ("bash", SHELL_DIR / "bashrc.sh"),
         ("bash", SHELL_DIR / "bash_profile.sh"),
@@ -82,3 +85,49 @@ def test_non_interactive_bash_login_prints_nothing(home):
     # ssh host cmd / scp: bash_profile -> bashrc -> common.sh must stay silent
     result = run_shell("bash", "source ~/.bash_profile; declare -F", home)
     assert (result.returncode, result.stdout, result.stderr) == (0, "", "")
+
+
+# install.sh only runs main when executed, so sourcing it exposes its functions
+@pytest.mark.parametrize(
+    ("minimum", "current", "ok"),
+    [
+        ("0.48", "0.48", True),
+        ("0.48", "0.56.3", True),
+        ("0.48", "0.9", False),
+        ("0.11", "0", False),
+    ],
+)
+def test_version_at_least(home, minimum, current, ok):
+    script = 'source "$1"; if version_at_least "$2" "$3"; then echo yes; else echo no; fi'
+    result = run_shell("bash", script, home, str(INSTALL_SH), minimum, current)
+    assert result.stdout == ("yes\n" if ok else "no\n"), result.stderr
+
+
+# A function shadows curl and echoes its args plus any header read from stdin
+GITHUB_API_SCRIPT = """
+source "$1"
+curl() {
+    printf 'args: %s\\n' "$*"
+    case " $* " in *" @- "*) printf 'stdin: %s\\n' "$(cat)" ;; esac
+}
+github_api repos/o/r/releases/latest
+"""
+
+
+@pytest.mark.parametrize("token_var", ["GITHUB_TOKEN", "GH_TOKEN"])
+def test_github_api_sends_token_via_stdin(home, token_var):
+    env = {token_var: "s3cret"}
+    result = run_shell("bash", GITHUB_API_SCRIPT, home, str(INSTALL_SH), env=env)
+
+    assert result.stdout.splitlines() == [
+        "args: -fsSL -H @- https://api.github.com/repos/o/r/releases/latest",
+        "stdin: Authorization: Bearer s3cret",
+    ], result.stderr
+
+
+def test_github_api_without_token(home):
+    result = run_shell("bash", GITHUB_API_SCRIPT, home, str(INSTALL_SH))
+
+    assert result.stdout.splitlines() == [
+        "args: -fsSL https://api.github.com/repos/o/r/releases/latest"
+    ], result.stderr

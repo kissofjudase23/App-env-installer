@@ -39,6 +39,8 @@ cd App-env-installer
 bash install.sh   # or: make install
 ```
 
+GitHub's API allows 60 anonymous requests per hour per IP, which a shared office NAT can exhaust. If `GITHUB_TOKEN` or `GH_TOKEN` is set, `install.sh` and `install.py` send it to `api.github.com` only (never to download hosts), e.g. `GH_TOKEN=$(gh auth token) bash install.sh`.
+
 `install.sh` will:
 1. Detect OS (macOS / Ubuntu).
 2. macOS: install Homebrew (if missing) and run `brew bundle` with the [Brewfile](./Brewfile) (includes Nerd Fonts).
