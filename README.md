@@ -34,7 +34,7 @@ Python (the version pinned in [.python-version](./.python-version)) is installed
 ## Installation
 
 ```bash
-git clone <this-repo> App-env-installer
+git clone https://github.com/kissofjudase23/App-env-installer.git
 cd App-env-installer
 bash install.sh   # or: make install
 bash install.sh --help
@@ -218,4 +218,4 @@ To test `install.py` without touching your real home directory:
 T=$(mktemp -d) && HOME=$T uv run install.py -d -y && ls -la $T; rm -rf $T
 ```
 
-Python deps and tool config live in [pyproject.toml](./pyproject.toml); `uv.lock` pins versions. CI ([.github/workflows/ci.yml](./.github/workflows/ci.yml)) runs ruff, pytest and an `install.py` dry run on Ubuntu and macOS, plus shellcheck and shfmt on Ubuntu.
+Python deps and tool config live in [pyproject.toml](./pyproject.toml); `uv.lock` pins versions. CI ([.github/workflows/ci.yml](./.github/workflows/ci.yml)) runs ruff, pytest and an `install.py` dry run on Ubuntu and macOS, plus shellcheck and shfmt on Ubuntu. [install-ubuntu.yml](./.github/workflows/install-ubuntu.yml) runs the real `install.sh` and `install.sh --upgrade` in fresh Ubuntu 22.04 and 24.04 containers weekly, on demand, and on PRs that touch the install path. Dependabot ([.github/dependabot.yml](./.github/dependabot.yml)) keeps the actions and `uv.lock` current.
