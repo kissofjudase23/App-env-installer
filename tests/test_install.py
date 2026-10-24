@@ -241,6 +241,35 @@ def test_cli_reports_errors_with_exit_code(cli_home, monkeypatch):
     assert "error: does not support Plan9" in result.output
 
 
+@pytest.mark.parametrize(
+    ("env", "url", "auth"),
+    [
+        ({"GH_TOKEN": "t0k"}, install.NERD_FONTS_RELEASE_API, "Bearer t0k"),
+        ({"GITHUB_TOKEN": "t1k", "GH_TOKEN": "t0k"}, install.NERD_FONTS_RELEASE_API, "Bearer t1k"),
+        ({"GH_TOKEN": "t0k"}, "https://github.com/o/r/releases/download/v1/a.tar.xz", None),
+        ({}, install.NERD_FONTS_RELEASE_API, None),
+    ],
+)
+def test_fetch_sends_token_only_to_github_api(monkeypatch, env, url, auth):
+    requests = []
+
+    def urlopen(req, timeout):
+        requests.append(req)
+        return io.BytesIO(b"ok")
+
+    monkeypatch.setattr(install.urllib.request, "urlopen", urlopen)
+    for name in ("GITHUB_TOKEN", "GH_TOKEN"):
+        monkeypatch.delenv(name, raising=False)
+    for name, value in env.items():
+        monkeypatch.setenv(name, value)
+
+    assert install.fetch(url) == b"ok"
+    [req] = requests
+    assert req.get_header("Authorization") == auth
+    # never forwarded to a redirect target
+    assert "Authorization" not in req.headers
+
+
 def make_font_archive(files: dict[str, bytes]) -> bytes:
     buf = io.BytesIO()
     with tarfile.open(fileobj=buf, mode="w:xz") as tar:

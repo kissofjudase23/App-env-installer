@@ -19,7 +19,8 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent
 
-NERD_FONTS_RELEASE_API = "https://api.github.com/repos/ryanoasis/nerd-fonts/releases/latest"
+GITHUB_API = "https://api.github.com/"
+NERD_FONTS_RELEASE_API = f"{GITHUB_API}repos/ryanoasis/nerd-fonts/releases/latest"
 
 GITCONFIG_LOCAL_TEMPLATE = """\
 # Machine-specific git settings (not tracked). Uncomment and set your identity.
@@ -56,7 +57,12 @@ def run(cmd: list[str], *, dry_run: bool) -> None:
 
 
 def fetch(url: str) -> bytes:
-    with urllib.request.urlopen(url, timeout=60) as resp:
+    req = urllib.request.Request(url)
+    # A token lifts GitHub's anonymous rate limit; unredirected so downloads never receive it
+    token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
+    if token and url.startswith(GITHUB_API):
+        req.add_unredirected_header("Authorization", f"Bearer {token}")
+    with urllib.request.urlopen(req, timeout=60) as resp:
         return resp.read()
 
 
