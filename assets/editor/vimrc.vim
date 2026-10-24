@@ -159,9 +159,18 @@ let g:go_gopls_staticcheck = 1
 if has('nvim-0.11')
     let g:go_gopls_enabled = 0
     let g:go_metalinter_autosave = 0
+    " these vim-go features call gopls; native LSP provides K, <C-]>, omnifunc and gr* maps
+    let g:go_auto_type_info = 0
+    let g:go_def_mapping_enabled = 0
+    let g:go_doc_keywordprg_enabled = 0
+    let g:go_code_completion_enabled = 0
     let g:ale_disable_lsp = 1
     lua vim.lsp.config('gopls', { cmd = { 'gopls' }, filetypes = { 'go', 'gomod', 'gowork', 'gotmpl' }, root_markers = { 'go.work', 'go.mod', '.git' }, settings = { gopls = { staticcheck = true } } })
     lua vim.lsp.enable('gopls')
+    augroup vimrc_lsp
+        autocmd!
+        autocmd LspAttach * nnoremap <buffer> <silent> gd <Cmd>lua vim.lsp.buf.definition()<CR>
+    augroup END
 endif
 
 " install plugins
