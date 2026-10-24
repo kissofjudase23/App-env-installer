@@ -66,6 +66,13 @@ function go_env() {
     path_append "${GOBIN:-${GOPATH:-${HOME}/go}/bin}"
 }
 
+function docker_env() {
+    # Docker Desktop CLI tools
+    if [[ -d "$HOME/.docker/bin" ]]; then
+        path_append "$HOME/.docker/bin"
+    fi
+}
+
 function editor_env() {
     if command -v nvim > /dev/null 2>&1; then
         export VISUAL='nvim'
@@ -125,6 +132,7 @@ function env_setting() {
     brew_env
     editor_env
     go_env
+    docker_env
     mysql_env
     uv_env
     cli_tools_env

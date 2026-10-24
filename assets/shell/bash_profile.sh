@@ -1,9 +1,5 @@
 # shellcheck shell=bash disable=SC1090
-# Docker Desktop CLI tools
-if [ -d "$HOME/.docker/bin" ]; then
-    export PATH="$PATH:$HOME/.docker/bin"
-fi
-
+# Login bash does not read ~/.bashrc; everything lives there and in common.sh.
 if [ -f ~/.bashrc ]; then
     source ~/.bashrc
 fi

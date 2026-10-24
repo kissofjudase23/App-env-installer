@@ -15,7 +15,7 @@ dotfiles:
      src: "assets/editor/vimrc.vim",
      dst: ".config/nvim/init.vim"}
 
-  # bash (mac)
+  # bash login shells (macOS terminals, ssh)
   - {name: "bash_profile",
      src: "assets/shell/bash_profile.sh",
      dst: ".bash_profile"}
