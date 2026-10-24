@@ -1,5 +1,8 @@
 # App-env-installer
 
+[![CI](https://github.com/kissofjudase23/App-env-installer/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/kissofjudase23/App-env-installer/actions/workflows/ci.yml)
+[![Install (Ubuntu)](https://github.com/kissofjudase23/App-env-installer/actions/workflows/install-ubuntu.yml/badge.svg?branch=master)](https://github.com/kissofjudase23/App-env-installer/actions/workflows/install-ubuntu.yml)
+
 Automated development environment setup for **macOS** and **Ubuntu**. Installs CLI tools, links dotfiles, clones supporting git repos (oh-my-zsh), and configures shell/editor/terminal.
 
 ## Table of Contents
