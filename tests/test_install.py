@@ -1,11 +1,13 @@
 import hashlib
 import io
 import json
+import re
 import tarfile
 from pathlib import Path
 
 import pytest
 import yaml
+from click.testing import CliRunner
 
 import install
 
@@ -44,6 +46,13 @@ def make_installer(
         assume_yes=True,
         dry_run=dry_run,
     )
+
+
+@pytest.fixture
+def commands(monkeypatch) -> list[list[str]]:
+    recorded: list[list[str]] = []
+    monkeypatch.setattr(install.subprocess, "run", lambda cmd, **_: recorded.append(cmd))
+    return recorded
 
 
 def snapshot(home: Path) -> dict[str, str]:
@@ -96,6 +105,17 @@ def test_link_dotfiles_is_idempotent(tmp_path, home):
     assert snapshot(home) == before
 
 
+def test_link_dotfiles_backs_up_existing_directory(tmp_path, home):
+    (home / ".assets").mkdir()
+    (home / ".assets/mine").write_text("mine")
+    dotfiles = [{"name": "assets", "src": "assets", "dst": ".assets"}]
+    make_installer(tmp_path, home, dotfiles=dotfiles).link_dotfiles()
+
+    assert (home / ".assets").resolve() == (install.ROOT / "assets").resolve()
+    [backup] = backups(home, ".assets")
+    assert (backup / "mine").read_text() == "mine"
+
+
 def test_ensure_gitconfig_local_keeps_existing(tmp_path, home):
     installer = make_installer(tmp_path, home)
     installer.ensure_gitconfig_local()
@@ -144,15 +164,81 @@ def test_config_rejects_invalid(tmp_path, config, error):
         load_config(tmp_path, config)
 
 
+def test_repo_config_is_valid():
+    config = install.ConfigMgr()
+    assert config.dotfiles
+    assert config.git_repos
+
+
+def test_readme_dotfiles_table_matches_config():
+    readme = (install.ROOT / "README.md").read_text(encoding="utf-8")
+    section = readme.split("## Dotfiles Linked", 1)[1].split("\n## ", 1)[0]
+    rows = re.findall(r"^\| `([^`]+)`\s*\| `~/([^`]+)`\s*\|$", section, re.MULTILINE)
+    expected = [(f["src"], f["dst"]) for f in install.ConfigMgr().dotfiles]
+    assert sorted((src.rstrip("/"), dst) for src, dst in rows) == sorted(expected)
+
+
+def test_clone_git_repos_runs_git_clone(tmp_path, home, commands):
+    git_repos = [{"name": "repo", "src": "https://example.com/repo.git", "dst": "src/repo"}]
+    make_installer(tmp_path, home, git_repos=git_repos).clone_git_repos()
+
+    dst = str(home / "src/repo")
+    assert commands == [["git", "clone", "--recurse-submodules", git_repos[0]["src"], dst]]
+    assert (home / "src").is_dir()
+
+
 def test_clone_skips_existing_repo(tmp_path, home):
     (home / "repo/.git").mkdir(parents=True)
     git_repos = [{"name": "repo", "src": "https://example.com/repo.git", "dst": "repo"}]
     make_installer(tmp_path, home, git_repos=git_repos).clone_git_repos()
 
 
+def test_install_go_tools_runs_go_install(tmp_path, home, monkeypatch, commands):
+    monkeypatch.setattr(install.shutil, "which", lambda _: "/usr/bin/go")
+    tools = ["example.com/a@latest", "example.com/b@v1"]
+    make_installer(tmp_path, home, go_tools=tools).install_go_tools()
+
+    assert commands == [["/usr/bin/go", "install", tool] for tool in tools]
+
+
 def test_install_go_tools_skips_without_go(tmp_path, home, monkeypatch):
     monkeypatch.setattr(install.shutil, "which", lambda _: None)
     make_installer(tmp_path, home, go_tools=["example.com/tool@latest"]).install_go_tools()
+
+
+@pytest.fixture
+def cli_home(home, monkeypatch) -> Path:
+    monkeypatch.setattr(install.Path, "home", lambda: home)
+    monkeypatch.setattr(install, "check_supported", lambda: "Darwin")
+    return home
+
+
+def test_cli_links_dotfiles_by_default(cli_home):
+    result = CliRunner().invoke(install.cli, ["-y"])
+
+    assert result.exit_code == 0, result.output
+    assert (cli_home / ".tigrc").resolve() == TIGRC.resolve()
+    assert (cli_home / ".gitconfig.local").is_file()
+    assert not (cli_home / ".oh-my-zsh").exists()
+
+
+def test_cli_dry_run_all_changes_nothing(cli_home):
+    result = CliRunner().invoke(install.cli, ["-a", "-y", "--dry-run"])
+
+    assert result.exit_code == 0, result.output
+    assert "git clone" in result.output
+    assert list(cli_home.iterdir()) == []
+
+
+def test_cli_reports_errors_with_exit_code(cli_home, monkeypatch):
+    def unsupported():
+        raise install.NotSupportError("does not support Plan9")
+
+    monkeypatch.setattr(install, "check_supported", unsupported)
+    result = CliRunner().invoke(install.cli, ["-y"])
+
+    assert result.exit_code == 1
+    assert "error: does not support Plan9" in result.output
 
 
 def make_font_archive(files: dict[str, bytes]) -> bytes:
