@@ -6,11 +6,17 @@
       "Bash(make lint)",
       "Bash(make format)",
       "Bash(make shellcheck)",
+      "Bash(make test)",
+      "Bash(make shfmt)",
+      "Bash(make format-shell)",
       "Bash(make check)",
       "Bash(uv sync)",
       "Bash(uv run ruff:*)",
-      "Bash(uv run install.py:* --dry-run)",
-      "Bash(shellcheck:*)"
+      "Bash(shellcheck:*)",
+      "Bash(uv run pytest *)",
+      "Bash(uv run install.py --help)",
+      "Bash(uv run install.py --dry-run *)",
+      "Bash(uv run install.py * --dry-run)"
     ],
     "deny": [
       "Bash(bash install.sh:*)",

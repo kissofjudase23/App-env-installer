@@ -38,6 +38,7 @@ For any new GitHub-hosted binary on Ubuntu, reuse `github_release_asset` / `inst
 | bash / zsh specific | [bashrc.sh](assets/shell/bashrc.sh), [bash_profile.sh](assets/shell/bash_profile.sh), [zshrc.zsh](assets/shell/zshrc.zsh) |
 | vim + nvim (shared config, vim-plug) | [assets/editor/vimrc.vim](assets/editor/vimrc.vim) |
 | git | [assets/git/gitconfig](assets/git/gitconfig) |
+| tmux (must work on tmux 3.2, Ubuntu 22.04) | [assets/tmux/tmux.conf](assets/tmux/tmux.conf) |
 | Agent instructions (all tools) | this file, [AGENTS.md](AGENTS.md) |
 | Tool-specific agent config | [CLAUDE.md](CLAUDE.md) + [.claude/settings.json](.claude/settings.json) (Claude Code), [.vscode/settings.json](.vscode/settings.json) (Copilot in VS Code) |
 
@@ -45,7 +46,7 @@ Untracked, per-machine files (never commit their contents): `~/.shell_local` (e.
 
 ## Critical gotchas
 
-- `~/.assets` is a symlink to this repo's `assets/`, and most dotfiles in `$HOME` are symlinks into it. **Editing or deleting files under `assets/` immediately affects the user's live shell/git/vim.** Never leave them missing or broken.
+- `~/.assets` is a symlink to this repo's `assets/`, and most dotfiles in `$HOME` are symlinks into it. **Editing or deleting files under `assets/` immediately affects the user's live shell/git/vim.** Never leave them missing or broken. Installers (e.g. Docker Desktop) may append machine-specific lines to `~/.bash_profile`/`~/.zshrc` through these symlinks; never commit them (revert, or move them to `~/.shell_local`).
 - `common.sh` is sourced by **both bash and zsh**: keep it POSIX-ish/bash+zsh compatible and **never print output** (it breaks scp and the prompt).
 - Shell integrations for optional tools (eza, fd, bat, delta, zsh plugins) must be guarded by `command -v` so a missing tool never errors or prints.
 - Never set `core.pager` / `interactive.diffFilter` to delta in `gitconfig`; `common.sh` sets `GIT_PAGER` only when delta exists.
@@ -79,5 +80,5 @@ Never run `install.sh`, `make install` or `make upgrade` for testing (they use s
 - Python ≥ 3.15, ruff rules `E,F,I,B,UP,SIM`, line length 100.
 - Shell dotfiles start with a `# shellcheck shell=bash` directive.
 - New `install.py` behavior gets a test in [tests/test_install.py](tests/test_install.py); side effects must be covered by `test_dry_run_changes_nothing`.
-- CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs ruff, pytest, and the dry run on ubuntu + macos; shellcheck and shfmt run on ubuntu only.
+- CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs ruff, pytest, and the dry run on ubuntu + macos; shellcheck and shfmt run on ubuntu only. [install-ubuntu.yml](.github/workflows/install-ubuntu.yml) runs the real `install.sh` (+ `--upgrade`) in Ubuntu 22.04/24.04 containers – the only place `install.sh` is executed; keep its path filter in sync with files that affect installation.
 - Commit messages (all agents): follow [.github/instructions/copilot-commit-message-instructions.md](.github/instructions/copilot-commit-message-instructions.md).
