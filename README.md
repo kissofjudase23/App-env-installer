@@ -175,11 +175,13 @@ Go versions are managed by Go's official [toolchain mechanism](https://go.dev/do
 
 Neovim and Vim share the same config (`assets/editor/vimrc.vim`), linked to `~/.vimrc` and `~/.config/nvim/init.vim`.
 
-Vim plugins are managed by [vim-plug](https://github.com/junegunn/vim-plug), which bootstraps itself and installs plugins on first launch. Included plugins: molokai, NERDTree, ALE, vim-easy-align, ack.vim, vim-go, vim-yaml.
+Vim plugins are managed by [vim-plug](https://github.com/junegunn/vim-plug), which bootstraps itself and installs plugins on first launch. Included plugins: molokai, NERDTree, ALE, vim-easy-align, ack.vim, vim-go.
 
 Go: on Neovim ≥ 0.11, `gopls` runs through the native LSP client (with staticcheck); on Vim and older Neovim, vim-go uses `gopls` as its metalinter. ack.vim searches with `ripgrep`.
 
-To manage plugins later:
+Keys: `Ctrl-h/j/k/l` move between splits, `[e` / `]e` jump between ALE problems, `F5` toggles NERDTree, `Ctrl-f` starts `:Ack`. Undo history persists across sessions (Vim: `~/.vim/undo`, Neovim: its state dir). Search is case-insensitive unless the pattern has capitals.
+
+To manage plugins later (`:PlugClean` removes plugins dropped from the vimrc, e.g. vim-yaml):
 
 ```vim
 :PlugInstall
