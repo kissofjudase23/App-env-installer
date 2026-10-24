@@ -1,8 +1,6 @@
 # shellcheck shell=bash disable=SC1090,SC1091
 # Shared environment for bash and zsh; must not print anything (breaks scp and the prompt).
 
-OS=$(uname -s)
-
 # Untracked machine-specific overrides, e.g. USE_CORP_PROXY=1 and CORP_PROXY_URL
 if [[ -f "$HOME/.shell_local" ]]; then
     source "$HOME/.shell_local"
@@ -137,17 +135,17 @@ function env_setting() {
     uv_env
     cli_tools_env
 
-    case ${OS} in
-        "Linux") linux_env ;;
-        "Darwin") darwin_env ;;
+    case "${OSTYPE}" in
+        linux*) linux_env ;;
+        darwin*) darwin_env ;;
     esac
 }
 
 function alias_setting() {
     alias tree='tree -C'
 
-    case ${OS} in
-        "Linux")
+    case "${OSTYPE}" in
+        linux*)
             alias grep='grep --color=auto'
             alias fgrep='fgrep --color=auto'
             alias egrep='egrep --color=auto'
@@ -156,7 +154,7 @@ function alias_setting() {
             alias la='ls -A --color=auto'
             alias l='ls -CF --color=auto'
             ;;
-        "Darwin")
+        darwin*)
             alias ll='ls -alF'
             alias la='ls -A'
             alias l='ls -CF'

@@ -70,8 +70,7 @@ function linux_bash_setting() {
 }
 
 common_bash_setting
-if [ "${OS}" = "Darwin" ]; then
-    darwin_bash_setting
-else
-    linux_bash_setting
-fi
+case "${OSTYPE}" in
+    darwin*) darwin_bash_setting ;;
+    *) linux_bash_setting ;;
+esac
