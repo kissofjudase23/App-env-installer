@@ -238,6 +238,40 @@ def test_install_fonts_rejects_path_traversal(tmp_path, home, nerd_fonts_release
     assert list(home.parent.rglob("evil.ttf")) == []
 
 
+def test_install_fonts_rejects_missing_digest(tmp_path, home, nerd_fonts_release, monkeypatch):
+    _, fetched, _ = nerd_fonts_release
+    assets = {"Meslo.tar.xz": ("https://example.com/Meslo.tar.xz", "")}
+    monkeypatch.setattr(install.Installer, "_nerd_font_assets", staticmethod(lambda: assets))
+
+    with pytest.raises(install.InstallerError, match="no sha256 digest for Meslo.tar.xz"):
+        make_installer(tmp_path, home, system="Linux", nerd_fonts=["Meslo"]).install_fonts()
+    assert fetched == []
+
+
+def os_release_error():
+    raise FileNotFoundError("/etc/os-release")
+
+
+@pytest.mark.parametrize(
+    ("system", "os_release", "error"),
+    [
+        ("Darwin", None, None),
+        ("Linux", lambda: {"ID": "ubuntu", "VERSION_ID": "24.04"}, None),
+        ("Linux", lambda: {"ID": "fedora"}, "does not support fedora"),
+        ("Linux", os_release_error, "cannot determine Linux distribution"),
+        ("Windows", None, "does not support Windows"),
+    ],
+)
+def test_check_supported(monkeypatch, system, os_release, error):
+    monkeypatch.setattr(install.platform, "system", lambda: system)
+    monkeypatch.setattr(install.platform, "freedesktop_os_release", os_release)
+    if error is None:
+        assert install.check_supported() == system
+    else:
+        with pytest.raises(install.NotSupportError, match=error):
+            install.check_supported()
+
+
 def test_dry_run_changes_nothing(tmp_path, home):
     (home / ".tigrc").write_text("mine")
     installer = make_installer(

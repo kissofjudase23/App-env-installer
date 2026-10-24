@@ -1,4 +1,3 @@
-# pylint: disable=missing-module-docstring, missing-class-docstring, missing-function-docstring
 import hashlib
 import io
 import json
@@ -15,7 +14,6 @@ from pathlib import Path
 from typing import NoReturn
 
 import click
-import distro
 import prettytable as pt
 import yaml
 
@@ -45,9 +43,10 @@ class SupportedSystems(Enum):
     LINUX = "Linux"
 
 
+# /etc/os-release ID values
 @unique
 class LinuxDistributions(Enum):
-    UBUNTU = "Ubuntu"
+    UBUNTU = "ubuntu"
 
 
 def run(cmd: list[str], *, dry_run: bool) -> None:
@@ -244,6 +243,8 @@ class Installer:
             if archive not in assets:
                 raise InstallerError(f"nerd-fonts release has no {archive}")
             url, digest = assets[archive]
+            if not digest.startswith("sha256:"):
+                raise InstallerError(f"nerd-fonts release has no sha256 digest for {archive}")
             data = fetch(url)
             if f"sha256:{hashlib.sha256(data).hexdigest()}" != digest:
                 raise InstallerError(f"sha256 mismatch for {archive}")
@@ -285,10 +286,14 @@ def check_supported() -> str:
         raise NotSupportError(f"does not support {system}")
 
     if system == SupportedSystems.LINUX.value:
-        distrib_name = distro.name()
-        click.echo(f"Linux distribution is {distrib_name}:{distro.version()}")
-        if distrib_name not in {d.value for d in LinuxDistributions}:
-            raise NotSupportError(f"does not support {distrib_name}")
+        try:
+            os_release = platform.freedesktop_os_release()
+        except OSError as e:
+            raise NotSupportError(f"cannot determine Linux distribution: {e}") from e
+        distro_id = os_release.get("ID", "unknown")
+        click.echo(f"Linux distribution is {distro_id}:{os_release.get('VERSION_ID', '')}")
+        if distro_id not in {d.value for d in LinuxDistributions}:
+            raise NotSupportError(f"does not support {distro_id}")
 
     return system
 
