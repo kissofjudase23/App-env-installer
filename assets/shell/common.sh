@@ -198,3 +198,7 @@ env_setting
 alias_setting
 term_setting
 network_setting
+
+# zshrc re-runs alias_setting after oh-my-zsh, then unsets it
+unset -f path_prepend path_append linux_env darwin_env brew_env uv_env go_env docker_env \
+    editor_env cli_tools_env network_setting env_setting term_setting

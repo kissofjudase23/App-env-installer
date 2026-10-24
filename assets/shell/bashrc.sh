@@ -1,5 +1,6 @@
 # shellcheck shell=bash disable=SC1090,SC1091
 source ~/.assets/shell/common.sh
+unset -f alias_setting
 
 # Non-interactive shells (ssh host cmd, scp) only need the environment above
 [[ $- == *i* ]] || return 0
@@ -61,3 +62,4 @@ case "${OSTYPE}" in
     darwin*) darwin_bash_setting ;;
     *) linux_bash_setting ;;
 esac
+unset -f common_bash_setting darwin_bash_setting linux_bash_setting

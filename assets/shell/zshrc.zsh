@@ -41,5 +41,6 @@ source $ZSH/oh-my-zsh.sh
 
 # oh-my-zsh defines its own ll/la/l; re-apply the shared aliases from common.sh
 alias_setting
+unset -f alias_setting
 
 (( $+commands[starship] )) && eval "$(starship init zsh)"
