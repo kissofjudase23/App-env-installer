@@ -77,7 +77,7 @@ Never run `install.sh`, `make install` or `make upgrade` for testing (they use s
 ## Conventions
 
 - Docs and code comments in English; comments only for non-obvious intent, one line.
-- Python ≥ 3.15, ruff rules `E,F,I,B,UP,SIM`, line length 100.
+- Python ≥ 3.14 (Dependabot supports up to 3.14), ruff rules `E,F,I,B,UP,SIM`, line length 100.
 - Shell dotfiles start with a `# shellcheck shell=bash` directive.
 - New `install.py` behavior gets a test in [tests/test_install.py](tests/test_install.py); side effects must be covered by `test_dry_run_changes_nothing`.
 - CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs ruff, pytest, and the dry run on ubuntu + macos; shellcheck and shfmt run on ubuntu only. [install-ubuntu.yml](.github/workflows/install-ubuntu.yml) runs the real `install.sh` (+ `--upgrade`) in Ubuntu 22.04/24.04 containers – the only place `install.sh` is executed; it runs weekly, and on push to `master` / PRs only when its `paths` filters match, so keep both lists in sync with files that affect installation.
