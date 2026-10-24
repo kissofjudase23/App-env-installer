@@ -123,7 +123,7 @@ export USE_CORP_PROXY=1
 export CORP_PROXY_URL="http://proxy.example.com:8080"
 ```
 
-The proxy variables (`HTTP_PROXY`, `HTTPS_PROXY`, `no_proxy`) are only set when `USE_CORP_PROXY=1` and `CORP_PROXY_URL` is non-empty.
+The proxy variables (`HTTP_PROXY`, `HTTPS_PROXY`, `NO_PROXY`, in both upper and lower case) are only set when `USE_CORP_PROXY=1` and `CORP_PROXY_URL` is non-empty.
 
 ### Git identity
 

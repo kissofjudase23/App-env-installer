@@ -23,13 +23,13 @@ function path_append() {
 function linux_env() {
     # C.UTF-8 is always available; en_US.UTF-8 needs a generated locale
     export LANG=C.UTF-8
+    # override LC_CTYPE=UTF-8 forwarded by macOS ssh clients, which Linux lacks
     export LC_ALL=C.UTF-8
     export REQUESTS_CA_BUNDLE="/etc/ssl/certs/ca-certificates.crt"
 }
 
 function darwin_env() {
     export LANG=en_US.UTF-8
-    export LC_ALL=en_US.UTF-8
     export CLICOLOR='true'
     export LSCOLORS="gxfxcxdxcxegedabagacad"
 
@@ -112,9 +112,10 @@ function network_setting() {
         return 0
     fi
 
-    export HTTPS_PROXY="${CORP_PROXY_URL}"
-    export HTTP_PROXY="${CORP_PROXY_URL}"
-    export no_proxy="127.0.0.1,localhost"
+    # curl reads lowercase http_proxy only; most other tools accept both cases
+    export HTTP_PROXY="${CORP_PROXY_URL}" http_proxy="${CORP_PROXY_URL}"
+    export HTTPS_PROXY="${CORP_PROXY_URL}" https_proxy="${CORP_PROXY_URL}"
+    export NO_PROXY="127.0.0.1,localhost" no_proxy="127.0.0.1,localhost"
 }
 
 function env_setting() {
