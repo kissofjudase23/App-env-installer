@@ -1,0 +1,71 @@
+name: Install (Ubuntu)
+
+# Runs the real install.sh in fresh containers; ci.yml only covers install.py and linting
+on:
+  schedule:
+    - cron: "0 3 * * 1"
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - install.sh
+      - install.py
+      - apt-packages.txt
+      - config.yaml
+      - .python-version
+      - uv.lock
+      - assets/shell/**
+      - .github/workflows/install-ubuntu.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  install:
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ["ubuntu:22.04", "ubuntu:24.04"]
+    runs-on: ubuntu-latest
+    container: ${{ matrix.image }}
+    timeout-minutes: 30
+    env:
+      # Container jobs default HOME to /github/home, which root does not own
+      HOME: /root
+      # Lifts the GitHub API rate limit shared by all runners
+      GH_TOKEN: ${{ github.token }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      # sudo resets DEBIAN_FRONTEND, so make debconf noninteractive system-wide
+      - name: Install prerequisites
+        run: |
+          echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
+          apt-get update
+          apt-get install -y --no-install-recommends ca-certificates curl git sudo
+
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Install
+        run: bash install.sh
+
+      - name: Re-run with --upgrade
+        run: bash install.sh --upgrade
+
+      - name: Verify
+        run: |
+          source install.sh
+          [[ "$(getent passwd root | cut -d: -f7)" == "$(command -v zsh)" ]]
+          zsh -i -c 'for tool in bat delta eza fd fzf gh go nvim starship uv zoxide; do
+            command -v "${tool}" > /dev/null || { echo "${tool} not on PATH" >&2; exit 1; }
+          done'
+          nvim_version="$(zsh -i -c 'nvim --version | head -n1')"
+          version_at_least "${NVIM_MIN_VERSION}" "${nvim_version#NVIM v}"
+          # common.sh must stay silent for scp / ssh host cmd
+          [[ -z "$(bash -c 'source ~/.bash_profile' 2>&1)" ]]
