@@ -1,7 +1,5 @@
 # shellcheck shell=bash disable=SC1090,SC1091
 source ~/.assets/shell/common.sh
-source ~/.assets/git/git-prompt.sh
-source ~/.assets/git/git-completion.bash
 
 function exitstatus {
     local exit_code="$?"
@@ -9,13 +7,12 @@ function exitstatus {
     local RCol='\e[0m'
     local Bold='\e[1m'
     local Yel='\e[0;33m'
-    local Pur='\e[0;35m'
     local IBla='\e[0;90m'
     local On_IBla='\e[0;100m'
     local BGre='\e[1;32m'
     local BRed='\e[1;31m'
 
-    local prompt="${RCol}${On_IBla}[\d \t]${RCol} ${IBla}\u@\h${RCol}:${Yel}\w${RCol}${Pur}\$(__git_ps1)${RCol}"
+    local prompt="${RCol}${On_IBla}[\d \t]${RCol} ${IBla}\u@\h${RCol}:${Yel}\w${RCol}${RCol}"
 
     if [ "${exit_code}" -eq 0 ]; then
         PS1="${prompt} ${BGre}:)${RCol}\n\$ "
@@ -60,7 +57,15 @@ function darwin_bash_setting() {
     fi
 }
 
+function linux_bash_setting() {
+    if [ -r /usr/share/bash-completion/bash_completion ]; then
+        source /usr/share/bash-completion/bash_completion
+    fi
+}
+
 common_bash_setting
 if [ "${OS}" = "Darwin" ]; then
     darwin_bash_setting
+else
+    linux_bash_setting
 fi

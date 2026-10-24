@@ -2,6 +2,7 @@
 # From GitHub releases instead of apt (missing or too old): fzf, neovim, eza, delta, starship.
 # fd-find and bat install as fdfind/batcat; install.sh links them as fd/bat.
 bat
+bash-completion
 btop
 curl
 fd-find
