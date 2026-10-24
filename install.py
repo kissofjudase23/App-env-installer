@@ -12,6 +12,7 @@ import urllib.request
 from datetime import datetime
 from enum import Enum, unique
 from pathlib import Path
+from typing import NoReturn
 
 import click
 import distro
@@ -90,25 +91,67 @@ class GitAgent:
 
 
 class ConfigMgr:
+    LISTS = ("dotfiles", "git_repos", "nerd_fonts", "go_tools")
+
     def __init__(self, config_path: Path = ROOT / "config.yaml"):
-        with open(config_path, encoding="utf-8") as fd:
-            self.config = yaml.safe_load(fd)
+        try:
+            with open(config_path, encoding="utf-8") as fd:
+                self.config = yaml.safe_load(fd) or {}
+        except yaml.YAMLError as e:
+            raise InstallerError(f"cannot parse {config_path}: {e}") from e
+        self._validate(config_path)
+
+    def _validate(self, path: Path) -> None:
+        def fail(msg: str) -> NoReturn:
+            raise InstallerError(f"{path}: {msg}")
+
+        if not isinstance(self.config, dict):
+            fail("top level must be a mapping")
+        if unknown := sorted(set(self.config) - set(self.LISTS)):
+            fail(f"unknown keys {unknown}")
+        for key in self.LISTS:
+            if not isinstance(self.config.get(key) or [], list):
+                fail(f"{key} must be a list")
+
+        dsts: set[str] = set()
+        for key in ("dotfiles", "git_repos"):
+            for entry in self._list(key):
+                valid = isinstance(entry, dict) and all(
+                    isinstance(entry.get(k), str) for k in ("src", "dst")
+                )
+                if not valid:
+                    fail(f"{key} entry needs string src and dst: {entry}")
+                dst = Path(entry["dst"])
+                if dst.is_absolute() or ".." in dst.parts or not dst.parts:
+                    fail(f"{key} dst must be a path inside $HOME: {entry['dst']!r}")
+                if str(dst) in dsts:
+                    fail(f"duplicate dst: {dst}")
+                dsts.add(str(dst))
+                if key == "dotfiles" and not (ROOT / entry["src"]).exists():
+                    fail(f"dotfile src not found: {entry['src']}")
+
+        for key in ("nerd_fonts", "go_tools"):
+            if not all(isinstance(item, str) for item in self._list(key)):
+                fail(f"{key} entries must be strings")
+
+    def _list(self, key: str) -> list:
+        return self.config.get(key) or []
 
     @property
     def dotfiles(self) -> list[dict]:
-        return self.config["dotfiles"]
+        return self._list("dotfiles")
 
     @property
     def git_repos(self) -> list[dict]:
-        return self.config["git_repos"]
+        return self._list("git_repos")
 
     @property
     def go_tools(self) -> list[str]:
-        return self.config.get("go_tools", [])
+        return self._list("go_tools")
 
     @property
     def nerd_fonts(self) -> list[str]:
-        return self.config.get("nerd_fonts", [])
+        return self._list("nerd_fonts")
 
 
 class Installer:

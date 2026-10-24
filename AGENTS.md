@@ -7,7 +7,7 @@ Dotfiles + dev-environment bootstrapper for **macOS** and **Ubuntu** only.
 Two-stage install:
 
 1. [install.sh](install.sh) (bash, `set -Eeuo pipefail`) – detects OS, installs system packages, installs Python (version from [.python-version](.python-version)) + deps via `uv`, bootstraps Go (Ubuntu: go.dev tarball → `/usr/local/go` if missing or < 1.21; macOS: Brewfile) and, on Ubuntu (22.04 + 24.04), adds the gh apt repo, links `fdfind`/`batcat` as `fd`/`bat`, and installs fzf (< 0.48), eza, delta, starship (→ `/usr/local/bin`) and neovim (< 0.11 → `/opt/nvim`) from GitHub releases, runs `install.py -a -y`, then `chsh` to zsh.
-2. [install.py](install.py) (click CLI) – reads [config.yaml](config.yaml) and:
+2. [install.py](install.py) (click CLI) – reads [config.yaml](config.yaml) (validated on load: unknown keys, missing dotfile `src`, `dst` outside `$HOME` or duplicated → `InstallerError`) and:
    - `link_dotfiles` – symlinks `assets/*` into `$HOME`; skips correct links; backs up real files to `<dst>.bak.<YYYYmmddHHMMSS>`.
    - `ensure_gitconfig_local` – creates a commented placeholder `~/.gitconfig.local` (never overwrites).
    - `install_fonts` – Linux only: `nerd_fonts` archives from the latest ryanoasis/nerd-fonts release (sha256 digest checked, `.ttf` only) → `~/.local/share/fonts/NerdFonts/<name>`, then `fc-cache`; macOS fonts come from the Brewfile.

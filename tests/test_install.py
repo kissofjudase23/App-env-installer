@@ -106,6 +106,44 @@ def test_ensure_gitconfig_local_keeps_existing(tmp_path, home):
     assert (home / ".gitconfig.local").read_text() == "custom"
 
 
+def load_config(tmp_path: Path, config) -> install.ConfigMgr:
+    path = tmp_path / "config.yaml"
+    path.write_text(config if isinstance(config, str) else yaml.safe_dump(config), encoding="utf-8")
+    return install.ConfigMgr(path)
+
+
+def test_config_defaults_missing_lists_to_empty(tmp_path):
+    config = load_config(tmp_path, "nerd_fonts:\n")
+    assert config.dotfiles == config.git_repos == config.go_tools == config.nerd_fonts == []
+
+
+@pytest.mark.parametrize(
+    ("config", "error"),
+    [
+        ("dotfiles: [", "cannot parse"),
+        ("- a\n", "top level must be a mapping"),
+        ({"dotfile": []}, "unknown keys"),
+        ({"go_tools": "gopls"}, "go_tools must be a list"),
+        ({"dotfiles": [{"src": "assets/tig/tigrc"}]}, "needs string src and dst"),
+        ({"dotfiles": [{"src": "assets/nope", "dst": ".nope"}]}, "dotfile src not found"),
+        ({"git_repos": [{"src": "https://example.com/r.git", "dst": "/tmp/r"}]}, "inside \\$HOME"),
+        ({"git_repos": [{"src": "https://example.com/r.git", "dst": "a/../../r"}]}, "inside"),
+        ({"dotfiles": [{"src": "assets", "dst": "."}]}, "inside \\$HOME"),
+        ({"nerd_fonts": [{"name": "Meslo"}]}, "nerd_fonts entries must be strings"),
+        (
+            {
+                "dotfiles": [{"src": "assets/tig/tigrc", "dst": ".tigrc"}],
+                "git_repos": [{"src": "https://example.com/r.git", "dst": "./.tigrc"}],
+            },
+            "duplicate dst: .tigrc",
+        ),
+    ],
+)
+def test_config_rejects_invalid(tmp_path, config, error):
+    with pytest.raises(install.InstallerError, match=error):
+        load_config(tmp_path, config)
+
+
 def test_clone_skips_existing_repo(tmp_path, home):
     (home / "repo/.git").mkdir(parents=True)
     git_repos = [{"name": "repo", "src": "https://example.com/repo.git", "dst": "repo"}]
