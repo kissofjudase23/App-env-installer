@@ -2,24 +2,37 @@ name: CI
 
 on:
   push:
+    branches: [master]
   pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   check:
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
-      - uses: astral-sh/setup-uv@v6
+      # setup-uv publishes no floating major tag; Dependabot bumps the pin
+      - uses: astral-sh/setup-uv@v10.3.2
 
       - name: Install Python
         run: uv python install
 
       - name: Sync dependencies
-        run: uv sync
+        run: uv sync --locked
 
       - name: Ruff
         run: |
