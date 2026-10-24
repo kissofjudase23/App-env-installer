@@ -4,26 +4,13 @@ source ~/.assets/shell/common.sh
 # Non-interactive shells (ssh host cmd, scp) only need the environment above
 [[ $- == *i* ]] || return 0
 
+# Fallback prompt when starship is missing; \[ \] keeps line wrapping correct
 function exitstatus {
-    local exit_code="$?"
-
-    local RCol='\e[0m'
-    local Bold='\e[1m'
-    local Yel='\e[0;33m'
-    local IBla='\e[0;90m'
-    local On_IBla='\e[0;100m'
-    local BGre='\e[1;32m'
-    local BRed='\e[1;31m'
-
-    local prompt="${RCol}${On_IBla}[\d \t]${RCol} ${IBla}\u@\h${RCol}:${Yel}\w${RCol}${RCol}"
-
-    if [ "${exit_code}" -eq 0 ]; then
-        PS1="${prompt} ${BGre}:)${RCol}\n\$ "
-    else
-        PS1="${prompt} ${BRed}:(${RCol}\n\$ "
-    fi
-
-    PS2="${Bold}>${RCol} "
+    local code=$?
+    local reset='\[\e[0m\]' grey='\[\e[0;90m\]' yellow='\[\e[0;33m\]'
+    local mark='\[\e[1;32m\]:)'
+    [ "${code}" -eq 0 ] || mark='\[\e[1;31m\]:('
+    PS1="${grey}\u@\h${reset}:${yellow}\w${reset} ${mark}${reset}\n\$ "
 }
 
 function common_bash_setting() {

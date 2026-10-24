@@ -87,13 +87,6 @@ function editor_env() {
     fi
 }
 
-function mysql_env() {
-    local mysql_bin="${HOMEBREW_PREFIX:-}/opt/mysql-client/bin"
-    if [[ -n "${HOMEBREW_PREFIX:-}" && -d "${mysql_bin}" ]]; then
-        path_prepend "${mysql_bin}"
-    fi
-}
-
 function cli_tools_env() {
     if command -v fd > /dev/null 2>&1; then
         export FZF_DEFAULT_COMMAND='fd --type f --hidden --exclude .git'
@@ -131,7 +124,6 @@ function env_setting() {
     editor_env
     go_env
     docker_env
-    mysql_env
     uv_env
     cli_tools_env
 
