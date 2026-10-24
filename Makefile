@@ -24,7 +24,7 @@ format: ## Auto-fix ruff lint issues and reformat Python code in place
 	uv run ruff check --fix .
 	uv run ruff format .
 
-test: ## Run install.py unit tests with pytest (uses a temp $HOME, no side effects)
+test: ## Run pytest: install.py unit tests and shell dotfile smoke tests (temp $HOME, no side effects)
 	uv run pytest
 
 shellcheck: ## Run shellcheck on install.sh and bash dotfiles (requires shellcheck in PATH)

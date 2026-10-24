@@ -194,7 +194,7 @@ Run `make` (or `make help`) to list all targets with descriptions.
 | `make install`    | Full bootstrap via `install.sh`: OS packages, Python (from `.python-version`), `install.py -a -y`, `chsh` to zsh. Uses `sudo` and modifies `$HOME`. |
 | `make sync`       | Creates/updates `.venv` with the Python deps pinned in `uv.lock` (`uv sync`).                                |
 | `make lint`       | `ruff check` + `ruff format --check`; reports issues without modifying files (same as CI).                   |
-| `make test`       | Runs `install.py` unit tests with `pytest` against a temporary `$HOME`.                                     |
+| `make test`       | Runs `pytest` against a temporary `$HOME`: `install.py` unit tests, plus shell smoke tests (syntax, and `common.sh` / non-interactive bash must print nothing). |
 | `make format`     | `ruff check --fix` + `ruff format`; fixes lint issues and reformats Python code in place.                    |
 | `make shfmt`      | Checks shell formatting with `shfmt` (style in `.editorconfig`); `make format-shell` rewrites in place.        |
 | `make shellcheck` | Runs `shellcheck` on `install.sh`, `common.sh`, `bashrc.sh`, `bash_profile.sh` (`shellcheck` is installed by `install.sh`). |

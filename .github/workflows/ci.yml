@@ -39,6 +39,13 @@ jobs:
           uv run ruff check .
           uv run ruff format --check .
 
+      # zsh for tests/test_shell.py (macOS ships it)
+      - name: Install shell tools
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shfmt zsh
+
       - name: Test
         run: uv run pytest
 
@@ -48,10 +55,7 @@ jobs:
 
       - name: shfmt
         if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y shfmt
-          make shfmt
+        run: make shfmt
 
       - name: Dry run
         run: uv run install.py -a -y --dry-run

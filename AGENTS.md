@@ -26,6 +26,7 @@ For any new GitHub-hosted binary on Ubuntu, reuse `github_release_asset` / `inst
 | Ubuntu packages | [apt-packages.txt](apt-packages.txt) (`#` comments allowed) |
 | Dotfile symlinks, git repos to clone, Linux Nerd Fonts | [config.yaml](config.yaml) (`src` relative to repo, `dst` relative to `$HOME`) |
 | `install.py` tests | [tests/](tests/) (pytest; `Installer` takes `home`/`ConfigMgr` so tests use `tmp_path`, never the real `$HOME`) |
+| Shell dotfile smoke tests | [tests/test_shell.py](tests/test_shell.py) (clean `bash --norc` / `zsh -f`, temp `$HOME`; skipped when the shell is missing) |
 | Python deps, ruff config | [pyproject.toml](pyproject.toml) (`uv` project, `package = false`) |
 | Python interpreter version | [.python-version](.python-version) – single source of truth; `install.sh` and CI call bare `uv python install`. Bump `requires-python` in [pyproject.toml](pyproject.toml) only if the floor changes. |
 | Go version | Go's official toolchain (`GOTOOLCHAIN=auto`, per-project `go.mod` `go`/`toolchain` lines). Only a bootstrap `go` is installed; no gvm/goenv. |
@@ -58,7 +59,7 @@ Untracked, per-machine files (never commit their contents): `~/.shell_local` (e.
 make sync        # uv sync
 make lint        # ruff check + ruff format --check
 make format      # ruff check --fix + ruff format
-make test        # pytest (tests/), temp $HOME, subprocess/network blocked
+make test        # pytest (tests/): install.py on a temp $HOME with subprocess/network blocked; shell dotfiles in clean bash/zsh (syntax, no output)
 make shellcheck  # needs shellcheck; or: uvx --from shellcheck-py shellcheck <files>
 make shfmt       # shfmt -d (style from .editorconfig); make format-shell to fix
 make check       # lint + test + shellcheck + shfmt + install.py -a -y --dry-run
