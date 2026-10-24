@@ -105,7 +105,6 @@ Symlinks created from this repo into `$HOME`:
 | `assets/git/gitconfig`          | `~/.gitconfig`            |
 | `assets/tmux/tmux.conf`         | `~/.tmux.conf`            |
 | `assets/tig/tigrc`              | `~/.tigrc`                |
-| `assets/screen/screenrc`        | `~/.screenrc`             |
 | `assets/`                       | `~/.assets`               |
 
 ## Shell Setup

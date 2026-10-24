@@ -46,10 +46,6 @@ dotfiles:
      src: "assets/tig/tigrc",
      dst: ".tigrc"}
 
-  - {name: "screenrc",
-     src: "assets/screen/screenrc",
-     dst: ".screenrc"}
-
   - {name: "assets",
      src: "assets",
      dst: ".assets"}
