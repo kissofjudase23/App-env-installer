@@ -1,6 +1,9 @@
 # shellcheck shell=bash disable=SC1090,SC1091
 source ~/.assets/shell/common.sh
 
+# Non-interactive shells (ssh host cmd, scp) only need the environment above
+[[ $- == *i* ]] || return 0
+
 function exitstatus {
     local exit_code="$?"
 
@@ -26,6 +29,9 @@ function exitstatus {
 function common_bash_setting() {
     # don't put duplicate lines or lines starting with space in the history
     HISTCONTROL=ignoreboth
+    HISTSIZE=10000
+    HISTFILESIZE=20000
+    shopt -s histappend checkwinsize
 
     # starship (assets/starship/starship.toml) matches the zsh prompt; exitstatus is the fallback
     if command -v starship > /dev/null 2>&1; then
