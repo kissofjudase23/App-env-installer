@@ -230,6 +230,7 @@ auth, and `--jq` filters the result the same way jq does.
   `tig status` stages hunks, `tig blame <file>`, `tig <branch>..<branch>`.
 - **tmux**: terminal multiplexer, configured by [tmux.conf](../assets/tmux/tmux.conf). The prefix
   is `Ctrl-a` (screen-like): `prefix c` new window, `prefix n`/`p` next/previous,
-  `prefix |` / `prefix -` split, `prefix h/j/k/l` move between panes,
+  `prefix |` / `prefix -` split (new panes and windows keep the current directory),
+  `prefix h/j/k/l` move between panes, `prefix [` enters vi copy mode (`v` select, `y` copy),
   `prefix R` reloads the config, `prefix d` detaches, `tmux a` reattaches.
 - **starship**: the prompt; see the README for the preset and how to update it.
