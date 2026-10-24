@@ -212,4 +212,4 @@ To test `install.py` without touching your real home directory:
 T=$(mktemp -d) && HOME=$T uv run install.py -d -y && ls -la $T; rm -rf $T
 ```
 
-Python deps and tool config live in [pyproject.toml](./pyproject.toml); `uv.lock` pins versions. CI ([.github/workflows/ci.yml](./.github/workflows/ci.yml)) runs ruff and an `install.py` dry run on Ubuntu and macOS, plus shellcheck on Ubuntu.
+Python deps and tool config live in [pyproject.toml](./pyproject.toml); `uv.lock` pins versions. CI ([.github/workflows/ci.yml](./.github/workflows/ci.yml)) runs ruff, pytest and an `install.py` dry run on Ubuntu and macOS, plus shellcheck and shfmt on Ubuntu.

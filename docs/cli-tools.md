@@ -35,7 +35,6 @@ so nothing breaks on a machine that lacks one.
 | `j`, `ji` | Aliases for zoxide's `z` / `zi`, so autojump habits keep working |
 | fzf `Ctrl-T` | Lists files with `fd` (including hidden files, excluding `.git`) and previews them with `bat` |
 | fzf `Alt-C` | Lists directories with `fd`, then `cd`s into the one you pick |
-| `MANPAGER` | Renders man pages through `bat` with syntax highlighting (set when bat is installed) |
 | fzf `Ctrl-R` | Fuzzy-searches shell history |
 | `MANPAGER` | Renders man pages through `bat` with syntax highlighting (set when bat is installed) |
 | `GIT_PAGER=delta` | Set when delta is installed, so `git diff/log/show` render through delta |
