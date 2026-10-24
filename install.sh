@@ -2,6 +2,11 @@
 
 set -Eeuo pipefail
 
+function on_error() {
+    echo "Error: '${BASH_COMMAND}' failed with exit code $1 (install.sh line $2)" >&2
+}
+trap 'on_error $? ${LINENO}' ERR
+
 cd "$(dirname "$0")"
 
 function detect_os() {
@@ -142,12 +147,11 @@ function github_release_asset() {
 # Install executable $3 from the tar.gz release asset of GitHub repo $1 matching regex $2
 function install_github_binary() {
     local repo="$1" pattern="$2" binary="$3" tmp_dir
-    tmp_dir="$(mktemp -d)"
+    tmp_dir="$(mktemp -d "${WORK_DIR}/XXXXXX")"
     github_release_asset "${repo}" "${pattern}" "${tmp_dir}/asset.tar.gz"
     echo "Installing ${binary} ${RELEASE_TAG} to /usr/local/bin..."
     tar -C "${tmp_dir}" -xzf "${tmp_dir}/asset.tar.gz"
     sudo install -m 0755 "$(find "${tmp_dir}" -type f -name "${binary}" | head -n1)" "/usr/local/bin/${binary}"
-    rm -rf "${tmp_dir}"
 }
 
 function go_is_recent_enough() {
@@ -177,12 +181,11 @@ function install_go_for_ubuntu() {
     fi
 
     echo "Installing ${version} to ${GO_ROOT}..."
-    tmp_dir="$(mktemp -d)"
+    tmp_dir="$(mktemp -d "${WORK_DIR}/XXXXXX")"
     curl -fsSL -o "${tmp_dir}/${tarball}" "https://go.dev/dl/${tarball}"
     echo "${sha256}  ${tmp_dir}/${tarball}" | sha256sum -c -
     sudo rm -rf "${GO_ROOT}"
     sudo tar -C "$(dirname "${GO_ROOT}")" -xzf "${tmp_dir}/${tarball}"
-    rm -rf "${tmp_dir}"
 }
 
 function install_release_tools_for_ubuntu() {
@@ -230,14 +233,13 @@ function install_neovim_for_ubuntu() {
     fi
 
     arch="$(ubuntu_arch nvim)"
-    tmp_dir="$(mktemp -d)"
+    tmp_dir="$(mktemp -d "${WORK_DIR}/XXXXXX")"
     github_release_asset neovim/neovim "^nvim-linux-${arch}\\.tar\\.gz$" "${tmp_dir}/nvim.tar.gz"
     echo "Installing Neovim ${RELEASE_TAG} to ${NVIM_ROOT}..."
     sudo rm -rf "${NVIM_ROOT}"
     sudo mkdir -p "${NVIM_ROOT}"
     sudo tar -C "${NVIM_ROOT}" --strip-components=1 -xzf "${tmp_dir}/nvim.tar.gz"
     sudo ln -sf "${NVIM_ROOT}/bin/nvim" /usr/local/bin/nvim
-    rm -rf "${tmp_dir}"
 }
 
 function load_brew_env() {
@@ -251,6 +253,8 @@ function load_brew_env() {
 }
 
 function install_pkgs_for_darwin() {
+    # brew may be installed but not on PATH yet (e.g. /opt/homebrew on a fresh shell)
+    load_brew_env
     if ! command -v brew &> /dev/null; then
         echo "Homebrew not found, installing..."
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -268,6 +272,9 @@ function setup_python() {
 }
 
 function main() {
+    WORK_DIR="$(mktemp -d)"
+    trap 'rm -rf "${WORK_DIR}"' EXIT
+
     detect_os
 
     case "${DETECTED_OS}" in
