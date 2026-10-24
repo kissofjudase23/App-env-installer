@@ -8,6 +8,20 @@ if [[ -f "$HOME/.shell_local" ]]; then
     source "$HOME/.shell_local"
 fi
 
+function path_prepend() {
+    case ":${PATH}:" in
+        *":$1:"*) ;;
+        *) export PATH="$1:${PATH}" ;;
+    esac
+}
+
+function path_append() {
+    case ":${PATH}:" in
+        *":$1:"*) ;;
+        *) export PATH="${PATH}:$1" ;;
+    esac
+}
+
 function linux_env() {
     # C.UTF-8 is always available; en_US.UTF-8 needs a generated locale
     export LANG=C.UTF-8
@@ -46,10 +60,10 @@ function uv_env() {
 function go_env() {
     # Bootstrap go only; GOTOOLCHAIN=auto (default) switches per go.mod go/toolchain lines
     if [[ -d /usr/local/go/bin ]]; then
-        export PATH="/usr/local/go/bin:${PATH}"
+        path_prepend /usr/local/go/bin
     fi
 
-    export PATH="${PATH}:${GOBIN:-${GOPATH:-${HOME}/go}/bin}"
+    path_append "${GOBIN:-${GOPATH:-${HOME}/go}/bin}"
 }
 
 function editor_env() {
@@ -71,7 +85,7 @@ function editor_env() {
 function mysql_env() {
     local mysql_bin="${HOMEBREW_PREFIX:-}/opt/mysql-client/bin"
     if [[ -n "${HOMEBREW_PREFIX:-}" && -d "${mysql_bin}" ]]; then
-        export PATH="${mysql_bin}:${PATH}"
+        path_prepend "${mysql_bin}"
     fi
 }
 
@@ -106,7 +120,7 @@ function network_setting() {
 }
 
 function env_setting() {
-    export PATH="$HOME/bin:${PATH}"
+    path_prepend "$HOME/bin"
 
     brew_env
     editor_env
