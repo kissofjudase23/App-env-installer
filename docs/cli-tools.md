@@ -8,7 +8,17 @@ them together. Each tool has full docs at `<tool> --help` and on its project pag
 | [eza](https://github.com/eza-community/eza) | `ls`, `tree` | Brewfile | GitHub release → `/usr/local/bin/eza` |
 | [fd](https://github.com/sharkdp/fd) | `find` | Brewfile | apt `fd-find`, linked as `fd` |
 | [bat](https://github.com/sharkdp/bat) | `cat`, `less` | Brewfile | apt `bat`, linked as `bat` |
+| [ripgrep](https://github.com/BurntSushi/ripgrep) (`rg`) | `grep -r` | Brewfile | apt |
+| [fzf](https://github.com/junegunn/fzf) | history/file search | Brewfile | GitHub release → `/usr/local/bin/fzf` |
+| [zoxide](https://github.com/ajeetdsouza/zoxide) | `cd`, autojump | Brewfile | apt |
+| [delta](https://github.com/dandavison/delta) | git's `less` pager | Brewfile `git-delta` | GitHub release → `/usr/local/bin/delta` |
+| [jq](https://jqlang.org/) | JSON processing | Brewfile | apt |
+| [gron](https://github.com/tomnomnom/gron) | grepping JSON | Brewfile | — (macOS only) |
 | [gh](https://cli.github.com/) | GitHub web UI | Brewfile | official apt repo |
+| [btop](https://github.com/aristocratos/btop) | `top`, `htop` | Brewfile | apt |
+| [tig](https://jonas.github.io/tig/) | `git log` browsing | Brewfile | apt |
+| [tmux](https://github.com/tmux/tmux) | `screen` | Brewfile | apt |
+| [starship](https://starship.rs/) | shell prompt | Brewfile | GitHub release → `/usr/local/bin/starship` |
 
 Debian and Ubuntu ship fd as `fdfind` and bat as `batcat`. `install.sh` links them as `fd` and
 `bat` in `/usr/local/bin`, so the same commands work on both platforms.
@@ -26,7 +36,10 @@ so nothing breaks on a machine that lacks one.
 | fzf `Ctrl-T` | Lists files with `fd` (including hidden files, excluding `.git`) and previews them with `bat` |
 | fzf `Alt-C` | Lists directories with `fd`, then `cd`s into the one you pick |
 | `MANPAGER` | Renders man pages through `bat` with syntax highlighting (set when bat is installed) |
+| fzf `Ctrl-R` | Fuzzy-searches shell history |
+| `MANPAGER` | Renders man pages through `bat` with syntax highlighting (set when bat is installed) |
 | `GIT_PAGER=delta` | Set when delta is installed, so `git diff/log/show` render through delta |
+| Prompt | starship, configured in [starship.toml](../assets/starship/starship.toml), for bash and zsh |
 
 ## eza
 
@@ -96,6 +109,79 @@ bat --list-themes            # preview themes; pick one with: export BAT_THEME="
 `MANPAGER="sh -c 'col -bx | bat -l man -p'"` (plus `MANROFFOPT=-c` for Linux groff).
 To turn it off for one call, run `MANPAGER=less man <page>`.
 
+## ripgrep
+
+rg searches file contents recursively and, like fd, skips hidden files and respects `.gitignore`.
+
+```bash
+rg TODO                      # regex search from the current dir
+rg -F 'a.b(c)'               # fixed string, no regex
+rg -w path                   # whole words only
+rg -i proxy assets/          # case-insensitive, under a directory
+rg -t py import              # only Python files (rg --type-list shows all types)
+rg -g '*.sh' -g '!install*'  # include/exclude by glob
+rg -l HOMEBREW               # file names only
+rg -C 2 alias                # 2 lines of context
+rg -uu secret                # include hidden and ignored files
+```
+
+## fzf
+
+```bash
+Ctrl-R                       # search shell history
+Ctrl-T                       # insert files (fd + bat preview, see above)
+Alt-C                        # cd into a directory
+vim **<Tab>                  # fuzzy completion for paths; also kill -9 **<Tab>, ssh **<Tab>
+git branch | fzf             # pick from any list
+```
+
+Inside fzf, type space-separated terms; `'word` matches exactly, `^start`, `end$`, `!exclude`.
+`Tab` multi-selects where supported.
+
+## zoxide
+
+zoxide remembers the directories you `cd` into and ranks them by frequency and recency.
+
+```bash
+z proj                       # jump to the best match for "proj"
+z app inst                   # all terms must match, in order
+z -                          # previous directory
+zi                           # pick interactively with fzf (alias ji)
+zoxide query -ls             # list entries with scores
+zoxide remove <dir>          # forget a directory
+```
+
+## delta
+
+delta renders git diffs with syntax highlighting. [gitconfig](../assets/git/gitconfig) enables
+`navigate` and `line-numbers`; it is used only when `GIT_PAGER=delta` is set.
+
+```bash
+git diff                     # n / N jump between files in the pager
+git -c delta.side-by-side=true diff  # side-by-side once
+git show HEAD                # also used for log -p, show, stash show -p, blame
+delta file_a file_b          # diff two files without git
+GIT_PAGER=less git diff      # plain pager for one call
+```
+
+## jq and gron
+
+```bash
+jq . data.json               # pretty-print
+jq -r '.items[].name' data.json        # raw strings, one per line
+jq '.items[] | select(.ok) | {id, name}' data.json
+jq -s 'length' *.json        # slurp multiple files into one array
+curl -s URL | jq -c '.[]'    # one compact object per line
+```
+
+gron (macOS only) flattens JSON into greppable `path = value` lines, which helps find where a
+field lives:
+
+```bash
+gron data.json | rg email    # json.users[3].email = "..."
+gron data.json | rg email | gron -u   # back to JSON with only matching paths
+```
+
 ## gh
 
 Sign in once per machine. Auth is stored per user and is never committed to this repo.
@@ -136,3 +222,15 @@ gh run view --log-failed     # logs of the failed steps only
 
 Scripting: `gh api repos/{owner}/{repo}/pulls --jq '.[].title'` calls the REST API with your
 auth, and `--jq` filters the result the same way jq does.
+
+## Other tools
+
+- **btop**: interactive process, CPU, memory, disk and network monitor. `q` quits, `f` filters,
+  `k` kills the selected process.
+- **tig**: text UI for git, configured by [tigrc](../assets/tig/tigrc). `tig` browses the log,
+  `tig status` stages hunks, `tig blame <file>`, `tig <branch>..<branch>`.
+- **tmux**: terminal multiplexer, configured by [tmux.conf](../assets/tmux/tmux.conf). The prefix
+  is `Ctrl-a` (screen-like): `prefix c` new window, `prefix n`/`p` next/previous,
+  `prefix |` / `prefix -` split, `prefix h/j/k/l` move between panes,
+  `prefix R` reloads the config, `prefix d` detaches, `tmux a` reattaches.
+- **starship**: the prompt; see the README for the preset and how to update it.
