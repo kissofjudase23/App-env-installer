@@ -6,6 +6,11 @@
 
 set nocompatible
 
+" Every autocmd joins this group so re-sourcing the vimrc does not duplicate them
+augroup vimrc
+    autocmd!
+augroup END
+
 " vim and nvim keep autoload in different dirs
 let s:plug_path = has('nvim')
     \ ? stdpath('data') . '/site/autoload/plug.vim'
@@ -15,7 +20,7 @@ if empty(glob(s:plug_path))
         \ . 'https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
     " autoload dirs created after startup are not on the runtimepath yet
     execute 'source ' . fnameescape(s:plug_path)
-    autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+    autocmd vimrc VimEnter * PlugInstall --sync | source $MYVIMRC
 endif
 
 call plug#begin('~/.vim/plugged')
@@ -77,7 +82,7 @@ set shiftwidth=4             " the number of space characters inserted for
 "http://vi.stackexchange.com/questions/4244/what-is-softtabstop-used-for
 "set softtabstop=4
 
-autocmd FileType yaml setlocal ts=2 sts=2 sw=2 expandtab
+autocmd vimrc FileType yaml setlocal ts=2 sts=2 sw=2 expandtab
 
 
 set listchars=tab:>-,trail:~
@@ -167,10 +172,7 @@ if has('nvim-0.11')
     let g:ale_disable_lsp = 1
     lua vim.lsp.config('gopls', { cmd = { 'gopls' }, filetypes = { 'go', 'gomod', 'gowork', 'gotmpl' }, root_markers = { 'go.work', 'go.mod', '.git' }, settings = { gopls = { staticcheck = true } } })
     lua vim.lsp.enable('gopls')
-    augroup vimrc_lsp
-        autocmd!
-        autocmd LspAttach * nnoremap <buffer> <silent> gd <Cmd>lua vim.lsp.buf.definition()<CR>
-    augroup END
+    autocmd vimrc LspAttach * nnoremap <buffer> <silent> gd <Cmd>lua vim.lsp.buf.definition()<CR>
 endif
 
 " install plugins
@@ -249,7 +251,7 @@ let g:NERDTreeShowHidden=1
 "autocmd StdinReadPre * let s:std_in=1
 "autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
 "Close Vim if the NETDTree is the only window
-autocmd bufenter * if (winnr("$") == 1
+autocmd vimrc BufEnter * if (winnr("$") == 1
 \&& exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -262,8 +264,9 @@ let g:ale_echo_msg_error_str = 'E'
 let g:ale_echo_msg_warning_str = 'W'
 let g:ale_echo_msg_format = '[%linter%] %s [%severity%]'
 
-nmap <silent> <C-k> <Plug>(ale_previous_wrap)
-nmap <silent> <C-j> <Plug>(ale_next_wrap)
+" [e / ]e jump between ALE problems; <C-h/j/k/l> stay on split navigation
+nmap <silent> [e <Plug>(ale_previous_wrap)
+nmap <silent> ]e <Plug>(ale_next_wrap)
 
 "default map leader is '\'
 let mapleader = '\'
