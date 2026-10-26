@@ -40,7 +40,7 @@ For any new GitHub-hosted binary on Ubuntu, reuse `github_release_asset` / `inst
 | git | [assets/git/gitconfig](assets/git/gitconfig) |
 | tmux (must work on tmux 3.2, Ubuntu 22.04) | [assets/tmux/tmux.conf](assets/tmux/tmux.conf) |
 | Agent instructions (all tools) | this file, [AGENTS.md](AGENTS.md) |
-| Tool-specific agent config | [CLAUDE.md](CLAUDE.md) + [.claude/settings.json](.claude/settings.json) (Claude Code), [.vscode/settings.json](.vscode/settings.json) (Copilot in VS Code) |
+| Tool-specific agent config | [CLAUDE.md](CLAUDE.md) + [.claude/settings.json](.claude/settings.json) + [.claude/skills/](.claude/skills/) (Claude Code), [.vscode/settings.json](.vscode/settings.json) (Copilot in VS Code) |
 
 Untracked, per-machine files (never commit their contents): `~/.shell_local` (e.g. `USE_CORP_PROXY=1`, `CORP_PROXY_URL`), `~/.gitconfig.local` (git `[user]`).
 
