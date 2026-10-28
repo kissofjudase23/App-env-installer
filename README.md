@@ -2,8 +2,9 @@
 
 [![CI](https://github.com/kissofjudase23/App-env-installer/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/kissofjudase23/App-env-installer/actions/workflows/ci.yml)
 [![Install (Ubuntu)](https://github.com/kissofjudase23/App-env-installer/actions/workflows/install-ubuntu.yml/badge.svg?branch=master)](https://github.com/kissofjudase23/App-env-installer/actions/workflows/install-ubuntu.yml)
+[![Install (Windows)](https://github.com/kissofjudase23/App-env-installer/actions/workflows/install-windows.yml/badge.svg?branch=master)](https://github.com/kissofjudase23/App-env-installer/actions/workflows/install-windows.yml)
 
-Automated development environment setup for **macOS** and **Ubuntu**. Installs CLI tools, links dotfiles, clones supporting git repos (oh-my-zsh), and configures shell/editor/terminal.
+Automated development environment setup for **macOS**, **Ubuntu** and **Windows** (native PowerShell, or Ubuntu on WSL2). Installs CLI tools, links dotfiles, clones supporting git repos (oh-my-zsh), and configures shell/editor/terminal.
 
 ## Table of Contents
 - [Overview](#overview)
@@ -23,14 +24,15 @@ Automated development environment setup for **macOS** and **Ubuntu**. Installs C
 The installer is split into two stages:
 
 1. **`install.sh`** – Detects the OS, installs system packages ([Brewfile](./Brewfile) on macOS, [apt-packages.txt](./apt-packages.txt) on Ubuntu), installs Python (version from [.python-version](./.python-version)) and dependencies with [`uv`](https://github.com/astral-sh/uv), bootstraps Go, runs `install.py`, and changes the default shell to `zsh`.
-2. **`install.py`** – Reads [config.yaml](./config.yaml) to symlink dotfiles into `$HOME`, clone git repositories, install fonts, and install Go tools.
+   On Windows, **`install.ps1`** does the same with [winget](./winget-packages.json) instead (no `chsh`).
+2. **`install.py`** – Reads [config.yaml](./config.yaml) to link dotfiles into `$HOME` (symlinks on macOS/Linux, stub files on Windows), clone git repositories, install fonts, and install Go tools.
 
 Both scripts are idempotent and can be re-run safely.
 
 ## Prerequisites
 
-- `git`, `curl`
-- `bash` / `sudo` (for Ubuntu apt installs and `/etc/shells`)
+- macOS / Ubuntu: `git`, `curl`, `bash` / `sudo` (for Ubuntu apt installs and `/etc/shells`)
+- Windows 10/11: `winget` ("App Installer", preinstalled on Windows 11) and `git` to clone this repo (`winget install Git.Git`). No admin rights or Developer Mode are required, though some winget installers ask for UAC consent.
 
 Python (the version pinned in [.python-version](./.python-version)) is installed by `uv`; no system Python is required.
 
@@ -58,13 +60,41 @@ GitHub's API allows 60 anonymous requests per hour per IP, which a shared office
    - Installs Go tools with `go install`.
 5. Add `zsh` to `/etc/shells` if needed and switch your default shell to it.
 
+### Windows
+
+```powershell
+git clone https://github.com/kissofjudase23/App-env-installer.git
+cd App-env-installer
+powershell -ExecutionPolicy Bypass -File .\install.ps1            # first run; later: make install
+powershell -ExecutionPolicy Bypass -File .\install.ps1 -Upgrade   # also upgrade installed packages (make upgrade)
+```
+
+`-Upgrade` skips PowerShell 7 itself while any `pwsh` window is open, because its installer cannot replace a running `pwsh`; close them and run `winget upgrade Microsoft.PowerShell` from `cmd` or Windows PowerShell.
+
+`install.ps1` runs on the built-in Windows PowerShell 5.1 and will:
+1. Run `winget import` with [winget-packages.json](./winget-packages.json): Git, PowerShell 7, GNU make, uv, Go, starship, fzf, fd, bat, delta, eza, zoxide, ripgrep, gh, jq, shfmt, shellcheck. Neovim/Vim are not installed or configured on Windows.
+2. Install the PSScriptAnalyzer (for `make pslint`) and PSFzf PowerShell modules for the current user.
+3. Run `uv python install`, `uv sync` and `uv run install.py -a -y`, which writes the `~/.gitconfig` and PowerShell `$PROFILE` stubs (see [Dotfiles Linked](#dotfiles-linked)), creates `~/.gitconfig.local`, installs the Meslo and Mononoki Nerd Fonts for the current user (`%LOCALAPPDATA%\Microsoft\Windows\Fonts`) and runs `go install` for the Go tools.
+
+An existing `~/.gitconfig` is backed up as `~/.gitconfig.bak.<timestamp>`; move your `[user]` section from it into `~/.gitconfig.local`. Afterwards, set Windows Terminal's default profile to PowerShell 7 and its font to *MesloLGS Nerd Font*.
+
+### WSL2
+
+Ubuntu on WSL2 is a regular Ubuntu install, so the Linux steps apply unchanged:
+
+```powershell
+wsl --install -d Ubuntu-24.04
+```
+
+Then, inside Ubuntu, clone the repo into the Linux file system (e.g. `~/App-env-installer`, not under `/mnt/c`, which is slow and has no Unix permissions) and run `bash install.sh`. `install.py` detects WSL and skips the Linux font install, because Windows Terminal renders with fonts installed on the Windows side (run the native Windows install, or `uv run install.py -f` on Windows, to get them).
+
 ### Manual `install.py` usage
 
 ```bash
 uv run install.py --help
 uv run install.py                 # link dotfiles (default)
 uv run install.py -g              # only clone git repositories
-uv run install.py -f              # only install fonts (Linux)
+uv run install.py -f              # only install fonts (Linux, Windows)
 uv run install.py -t              # only install Go tools (go install)
 uv run install.py -a              # all actions
 uv run install.py -a --dry-run    # print what would happen
@@ -78,13 +108,22 @@ uv run install.py -a -y           # skip confirmation prompts
 | Key          | Description                                                  |
 | ------------ | ------------------------------------------------------------ |
 | `git_repos`  | Repositories to clone (oh-my-zsh)                            |
-| `dotfiles`   | Files in `assets/` to symlink into `$HOME`                   |
-| `nerd_fonts` | Nerd Fonts release archives installed on Linux (Meslo, Mononoki) |
+| `dotfiles`   | Files in `assets/` to link into `$HOME`                      |
+| `nerd_fonts` | Nerd Fonts release archives installed on Linux and Windows (Meslo, Mononoki) |
 | `go_tools`   | Packages installed with `go install` (gopls, goimports, dlv) |
+
+`dotfiles` and `git_repos` entries take `src` and `dst` plus optional keys:
+
+| Key    | Description                                                                                  |
+| ------ | -------------------------------------------------------------------------------------------- |
+| `os`   | Subset of `[darwin, linux, windows]` the entry applies to; all when omitted                  |
+| `base` | `home` (default) or `documents` (the Windows Documents folder); `dst` is relative to it      |
+| `stub` | Dotfiles only: `gitconfig` or `powershell` writes a file that includes `src` instead of a symlink |
 
 ## What Gets Installed
 
 - **macOS**: see [Brewfile](./Brewfile) (formulae, `claude` (Claude Desktop), `claude-code`, `copilot-cli`, Meslo/Mononoki Nerd Fonts).
+- **Windows**: see [winget-packages.json](./winget-packages.json).
 - **Ubuntu** (22.04, 24.04): see [apt-packages.txt](./apt-packages.txt). `gh` comes from the official cli.github.com apt repo and `uv` from its install script. `fzf`, `neovim` (≥ 0.11, in `/opt/nvim`), `eza`, `delta` and `starship` come from their GitHub releases, verified by sha256, because apt lacks them or ships versions that are too old. `fdfind`/`batcat` are linked as `fd`/`bat`.
 
 Usage of eza, fd, bat and gh, and how the shell wires them together: [docs/cli-tools.md](./docs/cli-tools.md).
@@ -95,26 +134,31 @@ Re-running `install.sh` skips GitHub-release tools that are already installed (a
 
 ## Dotfiles Linked
 
-Symlinks created from this repo into `$HOME`:
+On macOS and Linux, symlinks are created from this repo into `$HOME`. On Windows, `install.py` writes small **stub files** instead, which include the repo file (gitconfig `[include]`, PowerShell dot-source), so no Developer Mode or admin rights are needed and edits in the repo still apply immediately. `Documents/` is the Windows Documents folder (follows OneDrive redirection).
 
-| Source                          | Target                    |
-| ------------------------------- | ------------------------- |
-| `assets/editor/vimrc.vim`       | `~/.vimrc`                |
-| `assets/editor/vimrc.vim`       | `~/.config/nvim/init.vim` |
-| `assets/shell/bash_profile.sh`  | `~/.bash_profile`         |
-| `assets/shell/bashrc.sh`        | `~/.bashrc`               |
-| `assets/shell/zshrc.zsh`        | `~/.zshrc`                |
-| `assets/starship/starship.toml` | `~/.config/starship.toml` |
-| `assets/git/gitconfig`          | `~/.gitconfig`            |
-| `assets/tmux/tmux.conf`         | `~/.tmux.conf`            |
-| `assets/tig/tigrc`              | `~/.tigrc`                |
-| `assets/`                       | `~/.assets`               |
+| Source                          | Target                                                   | OS            |
+| ------------------------------- | -------------------------------------------------------- | ------------- |
+| `assets/editor/vimrc.vim`       | `~/.vimrc`                                               | darwin, linux |
+| `assets/editor/vimrc.vim`       | `~/.config/nvim/init.vim`                                | darwin, linux |
+| `assets/shell/bash_profile.sh`  | `~/.bash_profile`                                        | darwin, linux |
+| `assets/shell/bashrc.sh`        | `~/.bashrc`                                              | darwin, linux |
+| `assets/shell/zshrc.zsh`        | `~/.zshrc`                                               | darwin, linux |
+| `assets/starship/starship.toml` | `~/.config/starship.toml`                                | darwin, linux |
+| `assets/git/gitconfig`          | `~/.gitconfig`                                           | darwin, linux |
+| `assets/git/gitconfig`          | `~/.gitconfig`                                           | windows       |
+| `assets/shell/profile.ps1`      | `Documents/PowerShell/Microsoft.PowerShell_profile.ps1` | windows       |
+| `assets/tmux/tmux.conf`         | `~/.tmux.conf`                                           | darwin, linux |
+| `assets/tig/tigrc`              | `~/.tigrc`                                               | darwin, linux |
+| `assets/`                       | `~/.assets`                                              | darwin, linux |
+
+On Windows, starship reads `assets/starship/starship.toml` through `STARSHIP_CONFIG`, set by `profile.ps1`.
 
 ## Shell Setup
 
 - **zsh** + [oh-my-zsh](https://ohmyz.sh/), with the [starship](https://starship.rs/) prompt (also used by bash).
 - oh-my-zsh plugins: `sudo`, `zsh-autosuggestions`, `zsh-syntax-highlighting`, plus `docker`, `docker-compose`, `golang`, `uv`, `gh`, `zoxide`, `tig`, `tmux`, `fzf` when their tool is installed (see [zshrc.zsh](./assets/shell/zshrc.zsh)).
 - Bash and zsh share environment settings via [common.sh](./assets/shell/common.sh).
+- Windows: PowerShell 7 loads [profile.ps1](./assets/shell/profile.ps1) through its `$PROFILE` stub. It mirrors `common.sh`: the same eza/bat aliases (as functions), fzf with fd/bat, `GIT_PAGER=delta`, zoxide (`z`, `j`), starship, PSReadLine history prediction, and PSFzf's `Ctrl-T` / `Ctrl-R` when installed.
 - Directory jumping uses [zoxide](https://github.com/ajeetdsouza/zoxide): `z <dir>`, or `j <dir>` (alias kept for autojump habits); `zi` / `ji` pick interactively with fzf.
 - The installer auto-runs `chsh -s $(which zsh)`. Restart your terminal afterwards.
 - The prompt is configured in [starship.toml](./assets/starship/starship.toml) (linked to `~/.config/starship.toml`): the [starship-p10k-rainbow](https://github.com/carlosplanchon/starship-p10k-rainbow) preset with a silver OS icon (Powerlevel10k Rainbow style: one line, ANSI-256 palette; left OS · directory · git, right exit status, duration, jobs, direnv, language versions and user@host on SSH/root). To update it, copy the upstream `starship.toml` over this file, re-apply the local change noted in its header and bump the commit. bash has no right prompt unless [ble.sh](https://github.com/akinomyoga/ble.sh) is installed. Without starship, zsh falls back to the `robbyrussell` theme and bash to a plain prompt. See the [starship config docs](https://starship.rs/config/).
@@ -131,6 +175,14 @@ export CORP_PROXY_URL="http://proxy.example.com:8080"
 ```
 
 The proxy variables (`HTTP_PROXY`, `HTTPS_PROXY`, `NO_PROXY`, in both upper and lower case) are only set when `USE_CORP_PROXY=1` and `CORP_PROXY_URL` is non-empty.
+
+On Windows, `profile.ps1` dot-sources `~/.shell_local.ps1` instead:
+
+```powershell
+# ~/.shell_local.ps1
+$env:USE_CORP_PROXY = '1'
+$env:CORP_PROXY_URL = 'http://proxy.example.com:8080'
+```
 
 ### Git identity
 
@@ -169,13 +221,13 @@ Go versions are managed by Go's official [toolchain mechanism](https://go.dev/do
 
 ### Windows Terminal
 
-- Install Nerd Fonts via [chocolatey](https://github.com/ryanoasis/nerd-fonts?tab=readme-ov-file#option-3-unofficial-chocolatey-or-scoop-repositories) or [manual](https://medium.com/@vedantkadam541/beautify-your-windows-terminal-using-nerd-fonts-and-oh-my-posh-4f4393f097)
-- Settings → Profile → Appearance → Font Face
+- **Font**: the native Windows install puts the Nerd Fonts in place; Settings → Profiles → Defaults → Appearance → Font face → *MesloLGS Nerd Font*
+- **Default profile**: Settings → Startup → Default profile → PowerShell (7, not Windows PowerShell)
 - [Color schemes for Windows Terminal](https://github.com/mbadolato/iTerm2-Color-Schemes/tree/master/windowsterminal)
 
 ## Editor
 
-Neovim and Vim share the same config (`assets/editor/vimrc.vim`), linked to `~/.vimrc` and `~/.config/nvim/init.vim`.
+Neovim and Vim share the same config (`assets/editor/vimrc.vim`), linked to `~/.vimrc` and `~/.config/nvim/init.vim` on macOS and Linux. Windows does not install or configure them.
 
 Vim plugins are managed by [vim-plug](https://github.com/junegunn/vim-plug), which bootstraps itself and installs plugins on first launch. Included plugins: molokai, NERDTree, ALE, vim-easy-align, ack.vim, vim-go.
 
@@ -195,19 +247,20 @@ To manage plugins later (`:PlugClean` removes plugins dropped from the vimrc, e.
 
 This project uses `uv` for Python dependency management.
 
-Run `make` (or `make help`) to list all targets with descriptions.
+Run `make` (or `make help`) to list all targets with descriptions. On Windows, `make` (installed by `install.ps1`) runs its recipes in PowerShell 7, and `install`/`upgrade`/`check` use the Windows variants.
 
 | Target            | Description                                                                                                  |
 | ----------------- | ------------------------------------------------------------------------------------------------------------ |
 | `make help`       | Default target. Lists all targets and their descriptions.                                                    |
-| `make install`    | Full bootstrap via `install.sh`: OS packages, Python (from `.python-version`), `install.py -a -y`, `chsh` to zsh. Uses `sudo` and modifies `$HOME`. |
+| `make install`    | Full bootstrap via `install.sh` (Windows: `install.ps1`): OS packages, Python (from `.python-version`), `install.py -a -y`, `chsh` to zsh. Uses `sudo` and modifies `$HOME`. |
 | `make sync`       | Creates/updates `.venv` with the Python deps pinned in `uv.lock` (`uv sync`).                                |
 | `make lint`       | `ruff check` + `ruff format --check`; reports issues without modifying files (same as CI).                   |
-| `make test`       | Runs `pytest` against a temporary `$HOME`: `install.py` unit tests, plus shell smoke tests (syntax, and `common.sh` / non-interactive bash must print nothing). |
+| `make test`       | Runs `pytest` against a temporary `$HOME`: `install.py` unit tests, plus shell smoke tests (syntax, and `common.sh` / non-interactive bash must print nothing; skipped on Windows) and PowerShell smoke tests (`profile.ps1` must print nothing; skipped without `pwsh`). |
 | `make format`     | `ruff check --fix` + `ruff format`; fixes lint issues and reformats Python code in place.                    |
 | `make shfmt`      | Checks shell formatting with `shfmt` (style in `.editorconfig`); `make format-shell` rewrites in place.        |
 | `make shellcheck` | Runs `shellcheck` on `install.sh`, `common.sh`, `bashrc.sh`, `bash_profile.sh` (`shellcheck` is installed by `install.sh`). |
-| `make check`      | Pre-commit gate: `lint` + `test` + `shellcheck` + `shfmt` + `install.py -a -y --dry-run`. Makes no changes.  |
+| `make pslint`     | Runs PSScriptAnalyzer on `install.ps1` and `profile.ps1` (settings in `PSScriptAnalyzerSettings.psd1`).      |
+| `make check`      | Pre-commit gate: `lint` + `test` + `shellcheck` + `shfmt` + `install.py -a -y --dry-run` (Windows: plus `pslint`). Makes no changes. |
 
 > Running `make` with no arguments only shows help; use `make install` explicitly to bootstrap.
 
@@ -221,4 +274,4 @@ To test `install.py` without touching your real home directory:
 T=$(mktemp -d) && HOME=$T uv run install.py -d -y && ls -la $T; rm -rf $T
 ```
 
-Python deps and tool config live in [pyproject.toml](./pyproject.toml); `uv.lock` pins versions. CI ([.github/workflows/ci.yml](./.github/workflows/ci.yml)) runs ruff, pytest and an `install.py` dry run on Ubuntu and macOS, plus shellcheck and shfmt on Ubuntu. [install-ubuntu.yml](./.github/workflows/install-ubuntu.yml) runs the real `install.sh` and `install.sh --upgrade` in fresh Ubuntu 22.04 and 24.04 containers weekly, on pushes to `master` and PRs that touch the install path, or on demand (Actions → Install (Ubuntu) → Run workflow). Dependabot ([.github/dependabot.yml](./.github/dependabot.yml)) keeps the actions and `uv.lock` current.
+Python deps and tool config live in [pyproject.toml](./pyproject.toml); `uv.lock` pins versions. CI ([.github/workflows/ci.yml](./.github/workflows/ci.yml)) runs ruff, pytest and an `install.py` dry run on Ubuntu, macOS and Windows, plus shellcheck and shfmt on Ubuntu and PSScriptAnalyzer on Windows. [install-windows.yml](./.github/workflows/install-windows.yml) runs the real `install.ps1` and `install.ps1 -Upgrade` on a fresh Windows runner, followed by `make check`, on the same schedule and triggers as the Ubuntu one. [install-ubuntu.yml](./.github/workflows/install-ubuntu.yml) runs the real `install.sh` and `install.sh --upgrade` in fresh Ubuntu 22.04 and 24.04 containers weekly, on pushes to `master` and PRs that touch the install path, or on demand (Actions → Install (Ubuntu) → Run workflow). Dependabot ([.github/dependabot.yml](./.github/dependabot.yml)) keeps the actions and `uv.lock` current.

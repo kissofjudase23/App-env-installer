@@ -3,6 +3,7 @@ import io
 import json
 import re
 import tarfile
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -12,6 +13,21 @@ from click.testing import CliRunner
 import install
 
 TIGRC = install.ROOT / "assets/tig/tigrc"
+GITCONFIG = install.ROOT / "assets/git/gitconfig"
+GITCONFIG_STUB = {"src": "assets/git/gitconfig", "dst": ".gitconfig", "stub": "gitconfig"}
+
+
+def can_symlink() -> bool:
+    with tempfile.TemporaryDirectory() as tmp:
+        try:
+            (Path(tmp) / "link").symlink_to(tmp)
+        except OSError:
+            return False
+    return True
+
+
+# Windows needs Developer Mode or admin for symlinks; CI runners have it
+requires_symlinks = pytest.mark.skipif(not can_symlink(), reason="cannot create symlinks")
 
 
 @pytest.fixture
@@ -29,6 +45,13 @@ def no_side_effects(monkeypatch):
 
     monkeypatch.setattr(install.subprocess, "run", fail)
     monkeypatch.setattr(install.urllib.request, "urlopen", fail)
+    monkeypatch.setattr(install, "register_windows_font", fail)
+    monkeypatch.setattr(install, "windows_documents", fail)
+    monkeypatch.setattr(install, "is_wsl", lambda: False)
+
+
+def base_dirs(home: Path) -> dict[str, Path]:
+    return {"home": home, "documents": home / "Documents", "local_app_data": home / "AppData/Local"}
 
 
 def make_installer(
@@ -43,6 +66,7 @@ def make_installer(
         system=system,
         git_agent=install.GitAgent(dry_run=dry_run),
         config_mgr=install.ConfigMgr(config_path),
+        base_dirs=base_dirs(home),
         assume_yes=True,
         dry_run=dry_run,
     )
@@ -67,6 +91,7 @@ def backups(home: Path, name: str) -> list[Path]:
     return list(home.glob(f"{name}.bak.*"))
 
 
+@requires_symlinks
 def test_link_dotfiles_creates_symlink_and_parents(tmp_path, home):
     dotfiles = [{"name": "tigrc", "src": "assets/tig/tigrc", "dst": ".config/tig/tigrc"}]
     make_installer(tmp_path, home, dotfiles=dotfiles).link_dotfiles()
@@ -76,6 +101,7 @@ def test_link_dotfiles_creates_symlink_and_parents(tmp_path, home):
     assert dst.resolve() == TIGRC.resolve()
 
 
+@requires_symlinks
 def test_link_dotfiles_backs_up_existing_file(tmp_path, home):
     (home / ".tigrc").write_text("mine")
     dotfiles = [{"name": "tigrc", "src": "assets/tig/tigrc", "dst": ".tigrc"}]
@@ -86,6 +112,7 @@ def test_link_dotfiles_backs_up_existing_file(tmp_path, home):
     assert backup.read_text() == "mine"
 
 
+@requires_symlinks
 def test_link_dotfiles_replaces_stale_symlink_without_backup(tmp_path, home):
     (home / ".tigrc").symlink_to(tmp_path / "elsewhere")
     dotfiles = [{"name": "tigrc", "src": "assets/tig/tigrc", "dst": ".tigrc"}]
@@ -95,6 +122,7 @@ def test_link_dotfiles_replaces_stale_symlink_without_backup(tmp_path, home):
     assert backups(home, ".tigrc") == []
 
 
+@requires_symlinks
 def test_link_dotfiles_is_idempotent(tmp_path, home):
     dotfiles = [{"name": "tigrc", "src": "assets/tig/tigrc", "dst": ".tigrc"}]
     installer = make_installer(tmp_path, home, dotfiles=dotfiles)
@@ -105,6 +133,7 @@ def test_link_dotfiles_is_idempotent(tmp_path, home):
     assert snapshot(home) == before
 
 
+@requires_symlinks
 def test_link_dotfiles_backs_up_existing_directory(tmp_path, home):
     (home / ".assets").mkdir()
     (home / ".assets/mine").write_text("mine")
@@ -114,6 +143,94 @@ def test_link_dotfiles_backs_up_existing_directory(tmp_path, home):
     assert (home / ".assets").resolve() == (install.ROOT / "assets").resolve()
     [backup] = backups(home, ".assets")
     assert (backup / "mine").read_text() == "mine"
+
+
+def test_link_dotfiles_writes_gitconfig_stub(tmp_path, home):
+    make_installer(tmp_path, home, system="Windows", dotfiles=[GITCONFIG_STUB]).link_dotfiles()
+
+    dst = home / ".gitconfig"
+    assert not dst.is_symlink()
+    assert dst.read_bytes().decode() == (
+        f"# Managed by App-env-installer; edit {GITCONFIG.as_posix()} instead\n"
+        f'[include]\n    path = "{GITCONFIG.as_posix()}"\n'
+    )
+
+
+def test_powershell_stub_quotes_path():
+    src = Path("C:/it's here/profile.ps1")
+    quoted = str(src).replace("'", "''")
+    assert install.STUBS["powershell"](src).splitlines()[-1] == f". '{quoted}'"
+
+
+def test_link_dotfiles_stub_uses_base_dir(tmp_path, home):
+    profile = {
+        "src": "assets/shell/profile.ps1",
+        "dst": "PowerShell/profile.ps1",
+        "base": "documents",
+        "stub": "powershell",
+    }
+    make_installer(tmp_path, home, system="Windows", dotfiles=[profile]).link_dotfiles()
+
+    content = (home / "Documents/PowerShell/profile.ps1").read_text()
+    assert content.endswith(f". '{install.ROOT / 'assets/shell/profile.ps1'}'\n")
+
+
+def test_link_dotfiles_stub_is_idempotent(tmp_path, home):
+    installer = make_installer(tmp_path, home, system="Windows", dotfiles=[GITCONFIG_STUB])
+    installer.link_dotfiles()
+    before = snapshot(home)
+    installer.link_dotfiles()
+
+    assert snapshot(home) == before
+    assert backups(home, ".gitconfig") == []
+
+
+def test_link_dotfiles_stub_backs_up_different_file(tmp_path, home):
+    (home / ".gitconfig").write_text("mine")
+    make_installer(tmp_path, home, system="Windows", dotfiles=[GITCONFIG_STUB]).link_dotfiles()
+
+    assert "[include]" in (home / ".gitconfig").read_text()
+    [backup] = backups(home, ".gitconfig")
+    assert backup.read_text() == "mine"
+
+
+@requires_symlinks
+def test_link_dotfiles_stub_replaces_symlink(tmp_path, home):
+    (home / ".gitconfig").symlink_to(GITCONFIG)
+    make_installer(tmp_path, home, system="Windows", dotfiles=[GITCONFIG_STUB]).link_dotfiles()
+
+    assert not (home / ".gitconfig").is_symlink()
+    assert "[include]" in (home / ".gitconfig").read_text()
+    assert GITCONFIG.read_text().startswith("[core]")
+
+
+def test_link_dotfiles_filters_by_os(tmp_path, home):
+    dotfiles = [
+        {"src": "assets/tig/tigrc", "dst": ".tigrc", "os": ["darwin", "linux"]},
+        {**GITCONFIG_STUB, "os": ["windows"]},
+    ]
+    git_repos = [{"src": "https://example.com/r.git", "dst": "r", "os": ["linux"]}]
+    installer = make_installer(
+        tmp_path, home, system="Windows", dotfiles=dotfiles, git_repos=git_repos
+    )
+    installer.link_dotfiles()
+    installer.clone_git_repos()
+
+    assert sorted(p.name for p in home.iterdir()) == [".gitconfig"]
+
+
+def test_link_dotfiles_explains_missing_symlink_privilege(tmp_path, home, monkeypatch):
+    # OSError only takes a winerror argument on Windows
+    class PrivilegeNotHeld(OSError):
+        winerror = property(lambda self: install.ERROR_PRIVILEGE_NOT_HELD)
+
+    def symlink_to(self, target):
+        raise PrivilegeNotHeld("privilege not held")
+
+    monkeypatch.setattr(install.Path, "symlink_to", symlink_to)
+    dotfiles = [{"src": "assets/tig/tigrc", "dst": ".tigrc"}]
+    with pytest.raises(install.InstallerError, match="give the entry a stub"):
+        make_installer(tmp_path, home, system="Windows", dotfiles=dotfiles).link_dotfiles()
 
 
 def test_ensure_gitconfig_local_keeps_existing(tmp_path, home):
@@ -150,6 +267,23 @@ def test_config_defaults_missing_lists_to_empty(tmp_path):
         ({"git_repos": [{"src": "https://example.com/r.git", "dst": "a/../../r"}]}, "inside"),
         ({"dotfiles": [{"src": "assets", "dst": "."}]}, "inside \\$HOME"),
         ({"nerd_fonts": [{"name": "Meslo"}]}, "nerd_fonts entries must be strings"),
+        ({"dotfiles": [{**GITCONFIG_STUB, "os": ["beos"]}]}, "os must be a non-empty list"),
+        ({"dotfiles": [{**GITCONFIG_STUB, "os": []}]}, "os must be a non-empty list"),
+        ({"dotfiles": [{**GITCONFIG_STUB, "base": "desktop"}]}, "base must be one of"),
+        ({"dotfiles": [{**GITCONFIG_STUB, "stub": "zshrc"}]}, "stub must be a dotfile"),
+        (
+            {"git_repos": [{"src": "https://example.com/r.git", "dst": "r", "stub": "gitconfig"}]},
+            "stub must be a dotfile",
+        ),
+        (
+            {
+                "dotfiles": [
+                    {"src": "assets/git/gitconfig", "dst": ".gitconfig", "os": ["linux"]},
+                    {**GITCONFIG_STUB, "os": ["linux", "windows"]},
+                ]
+            },
+            "duplicate dst: .gitconfig",
+        ),
         (
             {
                 "dotfiles": [{"src": "assets/tig/tigrc", "dst": ".tigrc"}],
@@ -170,12 +304,38 @@ def test_repo_config_is_valid():
     assert config.git_repos
 
 
+def test_config_allows_same_dst_for_disjoint_os(tmp_path):
+    dotfiles = [
+        {"src": "assets/git/gitconfig", "dst": ".gitconfig", "os": ["darwin", "linux"]},
+        {**GITCONFIG_STUB, "os": ["windows"]},
+    ]
+    assert len(load_config(tmp_path, {"dotfiles": dotfiles}).dotfiles) == 2
+
+
+def test_repo_config_windows_uses_only_stubs(home):
+    installer = install.Installer(
+        home=home,
+        system="Windows",
+        git_agent=install.GitAgent(),
+        config_mgr=install.ConfigMgr(),
+        base_dirs=base_dirs(home),
+    )
+    entries = installer._entries("dotfiles")
+    assert sorted(e["name"] for e in entries) == ["gitconfig_stub", "powershell_profile"]
+    assert all("stub" in e for e in entries)
+    assert installer._entries("git_repos") == []
+
+
 def test_readme_dotfiles_table_matches_config():
     readme = (install.ROOT / "README.md").read_text(encoding="utf-8")
     section = readme.split("## Dotfiles Linked", 1)[1].split("\n## ", 1)[0]
-    rows = re.findall(r"^\| `([^`]+)`\s*\| `~/([^`]+)`\s*\|$", section, re.MULTILINE)
-    expected = [(f["src"], f["dst"]) for f in install.ConfigMgr().dotfiles]
-    assert sorted((src.rstrip("/"), dst) for src, dst in rows) == sorted(expected)
+    rows = re.findall(r"^\| `([^`]+)`\s*\| `([^`]+)`\s*\| ([a-z, ]+?)\s*\|$", section, re.MULTILINE)
+    prefixes = {"home": "~/", "documents": "Documents/"}
+    expected = [
+        (f["src"], prefixes[f.get("base", "home")] + f["dst"], ", ".join(f["os"]))
+        for f in install.ConfigMgr().dotfiles
+    ]
+    assert sorted((src.rstrip("/"), dst, os) for src, dst, os in rows) == sorted(expected)
 
 
 def test_clone_git_repos_runs_git_clone(tmp_path, home, commands):
@@ -213,6 +373,7 @@ def cli_home(home, monkeypatch) -> Path:
     return home
 
 
+@requires_symlinks
 def test_cli_links_dotfiles_by_default(cli_home):
     result = CliRunner().invoke(install.cli, ["-y"])
 
@@ -318,6 +479,28 @@ def test_install_fonts_extracts_ttf_only(tmp_path, home, nerd_fonts_release):
     assert commands == [["fc-cache", "-f", str(font_dir)]]
 
 
+def test_install_fonts_registers_windows_fonts(tmp_path, home, nerd_fonts_release, monkeypatch):
+    archives, _, commands = nerd_fonts_release
+    archives["Meslo.tar.xz"] = make_font_archive({"A.ttf": b"font", "B.ttf": b"font"})
+    registered: list[Path] = []
+    monkeypatch.setattr(install, "register_windows_font", registered.append)
+
+    make_installer(tmp_path, home, system="Windows", nerd_fonts=["Meslo"]).install_fonts()
+
+    font_dir = home / "AppData/Local/Microsoft/Windows/Fonts/NerdFonts/Meslo"
+    assert registered == [font_dir / "A.ttf", font_dir / "B.ttf"]
+    assert commands == []
+
+
+def test_install_fonts_skips_wsl(tmp_path, home, nerd_fonts_release, monkeypatch):
+    _, fetched, commands = nerd_fonts_release
+    monkeypatch.setattr(install, "is_wsl", lambda: True)
+
+    make_installer(tmp_path, home, system="Linux", nerd_fonts=["Meslo"]).install_fonts()
+
+    assert (fetched, commands) == ([], [])
+
+
 def test_install_fonts_skips_installed(tmp_path, home, nerd_fonts_release):
     _, fetched, commands = nerd_fonts_release
     font = home / ".local/share/fonts/NerdFonts/Meslo/A.ttf"
@@ -374,7 +557,8 @@ def os_release_error():
         ("Linux", lambda: {"ID": "ubuntu", "VERSION_ID": "24.04"}, None),
         ("Linux", lambda: {"ID": "fedora"}, "does not support fedora"),
         ("Linux", os_release_error, "cannot determine Linux distribution"),
-        ("Windows", None, "does not support Windows"),
+        ("Windows", None, None),
+        ("Plan9", None, "does not support Plan9"),
     ],
 )
 def test_check_supported(monkeypatch, system, os_release, error):
@@ -387,16 +571,18 @@ def test_check_supported(monkeypatch, system, os_release, error):
             install.check_supported()
 
 
-def test_dry_run_changes_nothing(tmp_path, home):
+@pytest.mark.parametrize("system", ["Linux", "Windows"])
+def test_dry_run_changes_nothing(tmp_path, home, system):
     (home / ".tigrc").write_text("mine")
     installer = make_installer(
         tmp_path,
         home,
         dry_run=True,
-        system="Linux",
+        system=system,
         dotfiles=[
             {"name": "tigrc", "src": "assets/tig/tigrc", "dst": ".tigrc"},
             {"name": "tmux", "src": "assets/tmux/tmux.conf", "dst": ".config/tmux/tmux.conf"},
+            {**GITCONFIG_STUB, "dst": "PowerShell/profile.ps1", "base": "documents"},
         ],
         git_repos=[{"name": "repo", "src": "https://example.com/repo.git", "dst": "repo"}],
         go_tools=["example.com/tool@latest"],

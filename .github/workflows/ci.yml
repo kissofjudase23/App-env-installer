@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
@@ -46,6 +46,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y shfmt zsh
 
+      # pwsh for tests/test_powershell.py ships on all runners
       - name: Test
         run: uv run pytest
 
@@ -56,6 +57,17 @@ jobs:
       - name: shfmt
         if: runner.os == 'Linux'
         run: make shfmt
+
+      # make runs its recipes in pwsh on Windows; install.ps1 installs make on real machines
+      - name: PSScriptAnalyzer
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          if (-not (Get-Module -ListAvailable PSScriptAnalyzer)) {
+            Install-PSResource PSScriptAnalyzer -TrustRepository -Quiet
+          }
+          choco install make -y --no-progress
+          make pslint
 
       - name: Dry run
         run: uv run install.py -a -y --dry-run
