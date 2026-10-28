@@ -95,20 +95,24 @@ Re-running `install.sh` skips GitHub-release tools that are already installed (a
 
 ## Dotfiles Linked
 
-Symlinks created from this repo into `$HOME`:
+On macOS and Linux, symlinks are created from this repo into `$HOME`. On Windows, `install.py` writes small **stub files** instead, which include the repo file (gitconfig `[include]`, PowerShell dot-source), so no Developer Mode or admin rights are needed and edits in the repo still apply immediately. `Documents/` is the Windows Documents folder (follows OneDrive redirection).
 
-| Source                          | Target                    |
-| ------------------------------- | ------------------------- |
-| `assets/editor/vimrc.vim`       | `~/.vimrc`                |
-| `assets/editor/vimrc.vim`       | `~/.config/nvim/init.vim` |
-| `assets/shell/bash_profile.sh`  | `~/.bash_profile`         |
-| `assets/shell/bashrc.sh`        | `~/.bashrc`               |
-| `assets/shell/zshrc.zsh`        | `~/.zshrc`                |
-| `assets/starship/starship.toml` | `~/.config/starship.toml` |
-| `assets/git/gitconfig`          | `~/.gitconfig`            |
-| `assets/tmux/tmux.conf`         | `~/.tmux.conf`            |
-| `assets/tig/tigrc`              | `~/.tigrc`                |
-| `assets/`                       | `~/.assets`               |
+| Source                          | Target                                                   | OS            |
+| ------------------------------- | -------------------------------------------------------- | ------------- |
+| `assets/editor/vimrc.vim`       | `~/.vimrc`                                               | darwin, linux |
+| `assets/editor/vimrc.vim`       | `~/.config/nvim/init.vim`                                | darwin, linux |
+| `assets/shell/bash_profile.sh`  | `~/.bash_profile`                                        | darwin, linux |
+| `assets/shell/bashrc.sh`        | `~/.bashrc`                                              | darwin, linux |
+| `assets/shell/zshrc.zsh`        | `~/.zshrc`                                               | darwin, linux |
+| `assets/starship/starship.toml` | `~/.config/starship.toml`                                | darwin, linux |
+| `assets/git/gitconfig`          | `~/.gitconfig`                                           | darwin, linux |
+| `assets/git/gitconfig`          | `~/.gitconfig`                                           | windows       |
+| `assets/shell/profile.ps1`      | `Documents/PowerShell/Microsoft.PowerShell_profile.ps1` | windows       |
+| `assets/tmux/tmux.conf`         | `~/.tmux.conf`                                           | darwin, linux |
+| `assets/tig/tigrc`              | `~/.tigrc`                                               | darwin, linux |
+| `assets/`                       | `~/.assets`                                              | darwin, linux |
+
+On Windows, starship reads `assets/starship/starship.toml` through `STARSHIP_CONFIG`, set by `profile.ps1`.
 
 ## Shell Setup
 

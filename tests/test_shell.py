@@ -1,9 +1,13 @@
 import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
+
+# Git Bash on Windows is not a target: these dotfiles are linked on macOS and Linux only
+pytestmark = pytest.mark.skipif(sys.platform == "win32", reason="bash/zsh dotfiles are Unix-only")
 
 ROOT = Path(__file__).resolve().parent.parent
 SHELL_DIR = ROOT / "assets/shell"

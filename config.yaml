@@ -1,56 +1,86 @@
 
+# Entry keys: src (repo-relative), dst (relative to base), optional
+#   os:   [darwin, linux, windows] subset; omitted = all
+#   base: home (default) | documents (Windows known folder, follows OneDrive redirection)
+#   stub: gitconfig | powershell – write a file that includes src instead of a symlink
 
 git_repos:
   - {name: "oh-my-zsh",
      src: "https://github.com/ohmyzsh/ohmyzsh.git",
-     dst:  ".oh-my-zsh"}
+     dst:  ".oh-my-zsh",
+     os: [darwin, linux]}
 
 dotfiles:
   - {name: "vimrc",
      src: "assets/editor/vimrc.vim",
-     dst: ".vimrc"}
+     dst: ".vimrc",
+     os: [darwin, linux]}
 
   # nvim and vim use the same config
   - {name: "nvim_init",
      src: "assets/editor/vimrc.vim",
-     dst: ".config/nvim/init.vim"}
+     dst: ".config/nvim/init.vim",
+     os: [darwin, linux]}
 
   # bash login shells (macOS terminals, ssh)
   - {name: "bash_profile",
      src: "assets/shell/bash_profile.sh",
-     dst: ".bash_profile"}
+     dst: ".bash_profile",
+     os: [darwin, linux]}
 
   # bash
   - {name: "bashrc",
      src: "assets/shell/bashrc.sh",
-     dst: ".bashrc"}
+     dst: ".bashrc",
+     os: [darwin, linux]}
 
   # zsh
   - {name: "zshrc",
      src: "assets/shell/zshrc.zsh",
-     dst: ".zshrc"}
+     dst: ".zshrc",
+     os: [darwin, linux]}
 
+  # Windows: profile.ps1 points STARSHIP_CONFIG at the repo file instead
   - {name: "starship",
      src: "assets/starship/starship.toml",
-     dst: ".config/starship.toml"}
+     dst: ".config/starship.toml",
+     os: [darwin, linux]}
 
   - {name: "gitconfig",
      src: "assets/git/gitconfig",
-     dst: ".gitconfig"}
+     dst: ".gitconfig",
+     os: [darwin, linux]}
+
+  - {name: "gitconfig_stub",
+     src: "assets/git/gitconfig",
+     dst: ".gitconfig",
+     os: [windows],
+     stub: gitconfig}
+
+  # PowerShell 7 $PROFILE (CurrentUserCurrentHost)
+  - {name: "powershell_profile",
+     src: "assets/shell/profile.ps1",
+     dst: "PowerShell/Microsoft.PowerShell_profile.ps1",
+     os: [windows],
+     base: documents,
+     stub: powershell}
 
   - {name: "tmux",
      src: "assets/tmux/tmux.conf",
-     dst: ".tmux.conf"}
+     dst: ".tmux.conf",
+     os: [darwin, linux]}
 
   - {name: "tigrc",
      src: "assets/tig/tigrc",
-     dst: ".tigrc"}
+     dst: ".tigrc",
+     os: [darwin, linux]}
 
   - {name: "assets",
      src: "assets",
-     dst: ".assets"}
+     dst: ".assets",
+     os: [darwin, linux]}
 
-# Nerd Fonts release archives (<name>.tar.xz) installed on Linux; macOS uses Brewfile casks
+# Nerd Fonts release archives (<name>.tar.xz) installed on Linux and Windows; macOS uses Brewfile casks
 nerd_fonts:
   - "Meslo"
   - "Mononoki"

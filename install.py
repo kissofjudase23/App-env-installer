@@ -8,6 +8,7 @@ import subprocess
 import sys
 import tarfile
 import urllib.request
+import uuid
 from datetime import datetime
 from enum import Enum, unique
 from pathlib import Path
@@ -21,6 +22,12 @@ ROOT = Path(__file__).resolve().parent
 
 GITHUB_API = "https://api.github.com/"
 NERD_FONTS_RELEASE_API = f"{GITHUB_API}repos/ryanoasis/nerd-fonts/releases/latest"
+
+WINDOWS_FONTS_KEY = r"Software\Microsoft\Windows NT\CurrentVersion\Fonts"
+# Known folder API follows OneDrive/GPO redirection, unlike ~/Documents
+FOLDERID_DOCUMENTS = uuid.UUID("FDD39AD0-238F-46AF-ADB4-6C85480369C7")
+# winerror when creating a symlink without Developer Mode or admin rights
+ERROR_PRIVILEGE_NOT_HELD = 1314
 
 GITCONFIG_LOCAL_TEMPLATE = """\
 # Machine-specific git settings (not tracked). Uncomment and set your identity.
@@ -42,12 +49,34 @@ class NotSupportError(InstallerError):
 class SupportedSystems(Enum):
     DARWIN = "Darwin"
     LINUX = "Linux"
+    WINDOWS = "Windows"
+
+
+# config.yaml `os` values are the lowercase platform.system() names
+OS_NAMES = frozenset(s.value.lower() for s in SupportedSystems)
+# config.yaml `base` values: the directory a dst is relative to
+BASES = ("home", "documents")
 
 
 # /etc/os-release ID values
 @unique
 class LinuxDistributions(Enum):
     UBUNTU = "ubuntu"
+
+
+def _stub_header(src: Path) -> str:
+    return f"# Managed by App-env-installer; edit {src.as_posix()} instead\n"
+
+
+def _ps_quote(value: str) -> str:
+    return "'" + value.replace("'", "''") + "'"
+
+
+# Windows dotfiles are small files that include the repo file, so no symlink privilege is needed
+STUBS = {
+    "gitconfig": lambda src: f'{_stub_header(src)}[include]\n    path = "{src.as_posix()}"\n',
+    "powershell": lambda src: f"{_stub_header(src)}. {_ps_quote(str(src))}\n",
+}
 
 
 def run(cmd: list[str], *, dry_run: bool) -> None:
@@ -80,6 +109,43 @@ def extract_fonts(archive: bytes, dst: Path) -> None:
         raise InstallerError(f"cannot extract fonts to {dst}: {e}") from e
     shutil.rmtree(dst, ignore_errors=True)
     tmp.rename(dst)
+
+
+def is_wsl() -> bool:
+    return "microsoft" in platform.uname().release.lower()
+
+
+def windows_documents() -> Path:
+    import ctypes
+
+    guid = (ctypes.c_byte * 16).from_buffer_copy(FOLDERID_DOCUMENTS.bytes_le)
+    path = ctypes.c_void_p()
+    shell32 = ctypes.windll.shell32
+    hresult = shell32.SHGetKnownFolderPath(ctypes.byref(guid), 0, None, ctypes.byref(path))
+    try:
+        if hresult != 0:
+            raise InstallerError(f"cannot resolve the Documents folder (HRESULT {hresult:#x})")
+        return Path(ctypes.wstring_at(path.value))
+    finally:
+        ctypes.windll.ole32.CoTaskMemFree(path)
+
+
+def register_windows_font(ttf: Path) -> None:
+    import winreg
+
+    access = winreg.KEY_SET_VALUE
+    with winreg.OpenKey(winreg.HKEY_CURRENT_USER, WINDOWS_FONTS_KEY, 0, access) as key:
+        winreg.SetValueEx(key, f"{ttf.stem} (TrueType)", 0, winreg.REG_SZ, str(ttf))
+
+
+def default_base_dirs(home: Path, system: str) -> dict[str, Path]:
+    if system != SupportedSystems.WINDOWS.value:
+        return {"home": home, "documents": home, "local_app_data": home / ".local/share"}
+    return {
+        "home": home,
+        "documents": windows_documents(),
+        "local_app_data": Path(os.environ["LOCALAPPDATA"]),
+    }
 
 
 class GitAgent:
@@ -118,7 +184,8 @@ class ConfigMgr:
             if not isinstance(self.config.get(key) or [], list):
                 fail(f"{key} must be a list")
 
-        dsts: set[str] = set()
+        # (base, dst) -> os sets claiming it; entries for disjoint OSes may share a dst
+        dsts: dict[tuple[str, str], list[set[str]]] = {}
         for key in ("dotfiles", "git_repos"):
             for entry in self._list(key):
                 valid = isinstance(entry, dict) and all(
@@ -127,11 +194,23 @@ class ConfigMgr:
                 if not valid:
                     fail(f"{key} entry needs string src and dst: {entry}")
                 dst = Path(entry["dst"])
-                if dst.is_absolute() or ".." in dst.parts or not dst.parts:
+                # anchor, not is_absolute(): on Windows "/tmp" has a root but no drive
+                if dst.anchor or ".." in dst.parts or not dst.parts:
                     fail(f"{key} dst must be a path inside $HOME: {entry['dst']!r}")
-                if str(dst) in dsts:
+
+                systems = entry.get("os", sorted(OS_NAMES))
+                if not (isinstance(systems, list) and systems and set(systems) <= OS_NAMES):
+                    fail(f"{key} os must be a non-empty list of {sorted(OS_NAMES)}: {entry}")
+                base = entry.get("base", "home")
+                if base not in BASES:
+                    fail(f"{key} base must be one of {list(BASES)}: {entry}")
+                if "stub" in entry and (key != "dotfiles" or entry["stub"] not in STUBS):
+                    fail(f"stub must be a dotfile with one of {sorted(STUBS)}: {entry}")
+
+                claimed = dsts.setdefault((base, str(dst)), [])
+                if any(other & set(systems) for other in claimed):
                     fail(f"duplicate dst: {dst}")
-                dsts.add(str(dst))
+                claimed.append(set(systems))
                 if key == "dotfiles" and not (ROOT / entry["src"]).exists():
                     fail(f"dotfile src not found: {entry['src']}")
 
@@ -167,11 +246,13 @@ class Installer:
         system: str,
         git_agent: GitAgent,
         config_mgr: ConfigMgr,
+        base_dirs: dict[str, Path] | None = None,
         assume_yes: bool = False,
         dry_run: bool = False,
     ):
         self.home = home
         self.system = system
+        self.base_dirs = base_dirs if base_dirs is not None else default_base_dirs(home, system)
         self.git_agent = git_agent
         self.config_mgr = config_mgr
         self.assume_yes = assume_yes
@@ -185,8 +266,15 @@ class Installer:
         click.echo(tb)
         return self.assume_yes or click.confirm("Do you want to continue?", default=False)
 
+    def _entries(self, key: str) -> list[dict]:
+        system = self.system.lower()
+        return [e for e in getattr(self.config_mgr, key) if system in e.get("os", OS_NAMES)]
+
+    def _dst(self, entry: dict) -> Path:
+        return self.base_dirs[entry.get("base", "home")] / entry["dst"]
+
     def clone_git_repos(self) -> None:
-        pairs = [(repo["src"], self.home / repo["dst"]) for repo in self.config_mgr.git_repos]
+        pairs = [(repo["src"], self._dst(repo)) for repo in self._entries("git_repos")]
         if not self._confirm("Prepare to clone git repos", pairs):
             return
 
@@ -194,16 +282,26 @@ class Installer:
             self.git_agent.clone(src, dst)
 
     def link_dotfiles(self) -> None:
-        pairs = [(ROOT / f["src"], self.home / f["dst"]) for f in self.config_mgr.dotfiles]
+        entries = self._entries("dotfiles")
+        pairs = [(ROOT / f["src"], self._dst(f)) for f in entries]
         if not self._confirm("Prepare to link dotfiles", pairs):
             return
 
-        for src, dst in pairs:
-            if dst.is_symlink() and dst.resolve() == src.resolve():
+        for entry, (src, dst) in zip(entries, pairs, strict=True):
+            stub = STUBS[entry["stub"]](src) if "stub" in entry else None
+            if stub is None:
+                linked = dst.is_symlink() and dst.resolve() == src.resolve()
+            else:
+                linked = (
+                    not dst.is_symlink()
+                    and dst.is_file()
+                    and dst.read_text(encoding="utf-8", errors="replace") == stub
+                )
+            if linked:
                 click.echo(f"skip {dst}: already linked")
                 continue
 
-            click.echo(f"link {src} -> {dst}")
+            click.echo(f"{'link' if stub is None else 'stub'} {src} -> {dst}")
             if self.dry_run:
                 continue
 
@@ -214,7 +312,17 @@ class Installer:
                 backup = dst.with_name(f"{dst.name}.bak.{datetime.now():%Y%m%d%H%M%S}")
                 click.echo(f"backup {dst} -> {backup}")
                 dst.rename(backup)
-            dst.symlink_to(src)
+            if stub is not None:
+                dst.write_text(stub, encoding="utf-8", newline="\n")
+                continue
+            try:
+                dst.symlink_to(src)
+            except OSError as e:
+                if getattr(e, "winerror", None) != ERROR_PRIVILEGE_NOT_HELD:
+                    raise
+                raise InstallerError(
+                    f"cannot symlink {dst}: give the entry a stub or an os list without windows"
+                ) from e
 
     def ensure_gitconfig_local(self) -> None:
         path = self.home / ".gitconfig.local"
@@ -225,11 +333,17 @@ class Installer:
             path.write_text(GITCONFIG_LOCAL_TEMPLATE, encoding="utf-8")
 
     def install_fonts(self) -> None:
-        # macOS fonts are installed by the Brewfile
-        if self.system != SupportedSystems.LINUX.value:
+        linux = self.system == SupportedSystems.LINUX.value
+        if linux and is_wsl():
+            click.echo("skip fonts: WSL terminals use fonts installed on the Windows side")
             return
-
-        font_dir = self.home / ".local/share/fonts/NerdFonts"
+        if linux:
+            font_dir = self.home / ".local/share/fonts/NerdFonts"
+        elif self.system == SupportedSystems.WINDOWS.value:
+            font_dir = self.base_dirs["local_app_data"] / "Microsoft/Windows/Fonts/NerdFonts"
+        else:
+            # macOS fonts are installed by the Brewfile
+            return
         missing = []
         for name in self.config_mgr.nerd_fonts:
             if any((font_dir / name).glob("*.ttf")):
@@ -255,8 +369,12 @@ class Installer:
             if f"sha256:{hashlib.sha256(data).hexdigest()}" != digest:
                 raise InstallerError(f"sha256 mismatch for {archive}")
             extract_fonts(data, font_dir / name)
+            if not linux:
+                for ttf in sorted((font_dir / name).glob("*.ttf")):
+                    register_windows_font(ttf)
 
-        run(["fc-cache", "-f", str(font_dir)], dry_run=self.dry_run)
+        if linux:
+            run(["fc-cache", "-f", str(font_dir)], dry_run=self.dry_run)
 
     @staticmethod
     def _nerd_font_assets() -> dict[str, tuple[str, str]]:
@@ -313,7 +431,7 @@ def check_supported() -> str:
     help="Link dotfiles into $HOME (default when no action is given).",
 )
 @click.option("-g", "--git", "clone_git_repos", is_flag=True, help="Clone git repositories.")
-@click.option("-f", "--fonts", "install_fonts", is_flag=True, help="Install fonts (Linux only).")
+@click.option("-f", "--fonts", "install_fonts", is_flag=True, help="Install fonts (not macOS).")
 @click.option("-t", "--go-tools", "install_go_tools", is_flag=True, help="Install Go tools.")
 @click.option("-a", "--all", "install_all", is_flag=True, help="Run all actions.")
 @click.option("-y", "--yes", "assume_yes", is_flag=True, help="Skip confirmation prompts.")
