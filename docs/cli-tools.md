@@ -3,22 +3,22 @@
 Quick reference for the modern CLI tools installed by this repo, and for how the dotfiles wire
 them together. Each tool has full docs at `<tool> --help` and on its project page.
 
-| Tool | Replaces | macOS | Ubuntu |
-|---|---|---|---|
-| [eza](https://github.com/eza-community/eza) | `ls`, `tree` | Brewfile | GitHub release → `/usr/local/bin/eza` |
-| [fd](https://github.com/sharkdp/fd) | `find` | Brewfile | apt `fd-find`, linked as `fd` |
-| [bat](https://github.com/sharkdp/bat) | `cat`, `less` | Brewfile | apt `bat`, linked as `bat` |
-| [ripgrep](https://github.com/BurntSushi/ripgrep) (`rg`) | `grep -r` | Brewfile | apt |
-| [fzf](https://github.com/junegunn/fzf) | history/file search | Brewfile | GitHub release → `/usr/local/bin/fzf` |
-| [zoxide](https://github.com/ajeetdsouza/zoxide) | `cd`, autojump | Brewfile | apt |
-| [delta](https://github.com/dandavison/delta) | git's `less` pager | Brewfile `git-delta` | GitHub release → `/usr/local/bin/delta` |
-| [jq](https://jqlang.org/) | JSON processing | Brewfile | apt |
-| [gron](https://github.com/tomnomnom/gron) | grepping JSON | Brewfile | — (macOS only) |
-| [gh](https://cli.github.com/) | GitHub web UI | Brewfile | official apt repo |
-| [btop](https://github.com/aristocratos/btop) | `top`, `htop` | Brewfile | apt |
-| [tig](https://jonas.github.io/tig/) | `git log` browsing | Brewfile | apt |
-| [tmux](https://github.com/tmux/tmux) | `screen` | Brewfile | apt |
-| [starship](https://starship.rs/) | shell prompt | Brewfile | GitHub release → `/usr/local/bin/starship` |
+| Tool | Replaces | macOS | Ubuntu | Windows |
+|---|---|---|---|---|
+| [eza](https://github.com/eza-community/eza) | `ls`, `tree` | Brewfile | GitHub release → `/usr/local/bin/eza` | winget |
+| [fd](https://github.com/sharkdp/fd) | `find` | Brewfile | apt `fd-find`, linked as `fd` | winget |
+| [bat](https://github.com/sharkdp/bat) | `cat`, `less` | Brewfile | apt `bat`, linked as `bat` | winget |
+| [ripgrep](https://github.com/BurntSushi/ripgrep) (`rg`) | `grep -r` | Brewfile | apt | winget |
+| [fzf](https://github.com/junegunn/fzf) | history/file search | Brewfile | GitHub release → `/usr/local/bin/fzf` | winget |
+| [zoxide](https://github.com/ajeetdsouza/zoxide) | `cd`, autojump | Brewfile | apt | winget |
+| [delta](https://github.com/dandavison/delta) | git's `less` pager | Brewfile `git-delta` | GitHub release → `/usr/local/bin/delta` | winget |
+| [jq](https://jqlang.org/) | JSON processing | Brewfile | apt | winget |
+| [gron](https://github.com/tomnomnom/gron) | grepping JSON | Brewfile | — (macOS only) | — |
+| [gh](https://cli.github.com/) | GitHub web UI | Brewfile | official apt repo | winget |
+| [btop](https://github.com/aristocratos/btop) | `top`, `htop` | Brewfile | apt | — |
+| [tig](https://jonas.github.io/tig/) | `git log` browsing | Brewfile | apt | — |
+| [tmux](https://github.com/tmux/tmux) | `screen` | Brewfile | apt | — |
+| [starship](https://starship.rs/) | shell prompt | Brewfile | GitHub release → `/usr/local/bin/starship` | winget |
 
 Debian and Ubuntu ship fd as `fdfind` and bat as `batcat`. `install.sh` links them as `fd` and
 `bat` in `/usr/local/bin`, so the same commands work on both platforms.
@@ -39,6 +39,15 @@ so nothing breaks on a machine that lacks one.
 | `MANPAGER` | Renders man pages through `bat` with syntax highlighting (set when bat is installed) |
 | `GIT_PAGER=delta` | Set when delta is installed, so `git diff/log/show` render through delta |
 | Prompt | starship, configured in [starship.toml](../assets/starship/starship.toml), for bash and zsh |
+
+On Windows, [profile.ps1](../assets/shell/profile.ps1) sets up the same integrations for
+PowerShell 7, with these differences:
+
+- The `ls`/`l`/`la`/`ll`/`lt`/`lta`/`lm`/`lS`/`ld` and `cat` aliases are PowerShell functions; they
+  replace the built-in `ls` and `cat` aliases, so use `Get-ChildItem` / `Get-Content` for the originals.
+- fzf `Ctrl-T` / `Ctrl-R` come from the [PSFzf](https://github.com/kelleyma49/PSFzf) module
+  (installed by `install.ps1`); `Alt-C` and `MANPAGER` are not set up.
+- `~/.shell_local.ps1` replaces `~/.shell_local` for machine-specific settings.
 
 ## eza
 
