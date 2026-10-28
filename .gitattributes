@@ -1,0 +1,3 @@
+# LF everywhere: bash and WSL break on CRLF, and Git for Windows defaults to autocrlf=true
+* text=auto eol=lf
+*.itermcolors -text
