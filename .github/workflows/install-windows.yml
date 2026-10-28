@@ -73,7 +73,7 @@ jobs:
             if (-not (Get-Command $tool -ErrorAction SilentlyContinue)) { throw "$tool not on PATH" }
           }
           # The ~/.gitconfig stub must pull in the repo gitconfig
-          if ((git config --global --get init.defaultBranch) -ne 'main') { throw 'gitconfig stub not applied' }
+          if ((git config --global --includes --get init.defaultBranch) -ne 'main') { throw 'gitconfig stub not applied' }
           # profile.ps1 must stay silent, and load through the $PROFILE stub
           $out = pwsh -NonInteractive -Command 'if (-not $env:STARSHIP_CONFIG) { throw "profile not loaded" }' 2>&1
           if ($LASTEXITCODE -ne 0 -or $out) { throw "profile check failed: $out" }
