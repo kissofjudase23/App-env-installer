@@ -7,6 +7,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
 PROFILE = ROOT / "assets/shell/profile.ps1"
+INSTALL_PS1 = ROOT / "install.ps1"
 PROXY = "http://proxy.example.com:8080"
 
 
@@ -75,3 +76,9 @@ def test_profile_removes_its_helpers(home):
     result = run_pwsh(script, home)
     assert result.stdout.strip() == "False", result.stderr
 
+
+def test_install_ps1_dot_source_does_not_run_main(home):
+    # Main would call winget; dot-sourcing must only define functions
+    script = f". '{INSTALL_PS1}'; [bool](Get-Command Install-WingetPackage -ErrorAction Ignore)"
+    result = run_pwsh(script, home, path="")
+    assert (result.returncode, result.stdout.strip()) == (0, "True"), result.stderr
