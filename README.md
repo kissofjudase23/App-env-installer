@@ -69,6 +69,8 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1            # first run; l
 powershell -ExecutionPolicy Bypass -File .\install.ps1 -Upgrade   # also upgrade installed packages (make upgrade)
 ```
 
+`-Upgrade` skips PowerShell 7 itself while any `pwsh` window is open, because its installer cannot replace a running `pwsh`; close them and run `winget upgrade Microsoft.PowerShell` from `cmd` or Windows PowerShell.
+
 `install.ps1` runs on the built-in Windows PowerShell 5.1 and will:
 1. Run `winget import` with [winget-packages.json](./winget-packages.json): Git, PowerShell 7, GNU make, uv, Go, starship, fzf, fd, bat, delta, eza, zoxide, ripgrep, gh, jq, shfmt, shellcheck. Neovim/Vim are not installed or configured on Windows.
 2. Install the PSScriptAnalyzer (for `make pslint`) and PSFzf PowerShell modules for the current user.

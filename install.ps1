@@ -47,13 +47,27 @@ function Assert-Windows {
 
 function Install-WingetPackage {
     param([switch] $Upgrade)
-    $arguments = @(
-        'import', '--import-file', $PackagesFile,
-        '--accept-package-agreements', '--accept-source-agreements', '--disable-interactivity'
-    )
-    # import upgrades installed packages unless told not to; non-zero exit if any package fails
-    if (-not $Upgrade) { $arguments += '--no-upgrade' }
-    Invoke-Native winget $arguments
+    $common = @('--accept-package-agreements', '--accept-source-agreements', '--disable-interactivity')
+    # Install what is missing; import exits non-zero if any package fails
+    Invoke-Native winget (@('import', '--import-file', $PackagesFile, '--no-upgrade') + $common)
+    if (-not $Upgrade) { return }
+
+    # The PowerShell MSI cannot replace pwsh while it runs (Windows Terminal, make, CI steps)
+    $config = Get-Content $PackagesFile -Raw | ConvertFrom-Json
+    if (Get-Process pwsh -ErrorAction SilentlyContinue) {
+        foreach ($source in $config.Sources) {
+            $source.Packages = @($source.Packages | Where-Object PackageIdentifier -ne 'Microsoft.PowerShell')
+        }
+        Write-Host 'Skip upgrading PowerShell 7 while pwsh is running; close it, then from cmd run: winget upgrade Microsoft.PowerShell'
+    }
+    $upgradeFile = Join-Path ([IO.Path]::GetTempPath()) 'app-env-installer-winget.json'
+    # WriteAllText: UTF-8 without the BOM that 5.1's Set-Content -Encoding UTF8 adds
+    [IO.File]::WriteAllText($upgradeFile, ($config | ConvertTo-Json -Depth 5))
+    try {
+        Invoke-Native winget (@('import', '--import-file', $upgradeFile) + $common)
+    } finally {
+        Remove-Item $upgradeFile -ErrorAction SilentlyContinue
+    }
 }
 
 # winget installers update the registry PATH, not this session's
