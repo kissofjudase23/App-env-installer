@@ -1,0 +1,80 @@
+name: Install (Windows)
+
+# Runs the real install.ps1 on a fresh runner; ci.yml only covers install.py and linting.
+# Keep both path lists identical.
+on:
+  # Weekly: catches upstream drift (renamed winget packages, release changes) with no commit here
+  schedule:
+    - cron: "0 3 * * 1"
+  push:
+    branches: [master]
+    paths:
+      - install.ps1
+      - install.py
+      - winget-packages.json
+      - config.yaml
+      - Makefile
+      - PSScriptAnalyzerSettings.psd1
+      - .python-version
+      - uv.lock
+      - assets/shell/profile.ps1
+      - assets/git/**
+      - .github/workflows/install-windows.yml
+  pull_request:
+    paths:
+      - install.ps1
+      - install.py
+      - winget-packages.json
+      - config.yaml
+      - Makefile
+      - PSScriptAnalyzerSettings.psd1
+      - .python-version
+      - uv.lock
+      - assets/shell/profile.ps1
+      - assets/git/**
+      - .github/workflows/install-windows.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  install:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    env:
+      # Lifts the GitHub API rate limit shared by all runners
+      GH_TOKEN: ${{ github.token }}
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      # Windows PowerShell 5.1, as on a fresh machine without pwsh
+      - name: Install
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File install.ps1
+
+      - name: Re-run with -Upgrade
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File install.ps1 -Upgrade
+
+      - name: Verify
+        run: |
+          $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' +
+            [Environment]::GetEnvironmentVariable('Path', 'User') + ";$env:Path"
+          foreach ($tool in 'bat', 'delta', 'eza', 'fd', 'fzf', 'gh', 'go', 'jq', 'make', 'rg',
+              'shellcheck', 'shfmt', 'starship', 'uv', 'zoxide') {
+            if (-not (Get-Command $tool -ErrorAction SilentlyContinue)) { throw "$tool not on PATH" }
+          }
+          # The ~/.gitconfig stub must pull in the repo gitconfig
+          if ((git config --global --get init.defaultBranch) -ne 'main') { throw 'gitconfig stub not applied' }
+          # profile.ps1 must stay silent, and load through the $PROFILE stub
+          $out = pwsh -NonInteractive -Command 'if (-not $env:STARSHIP_CONFIG) { throw "profile not loaded" }' 2>&1
+          if ($LASTEXITCODE -ne 0 -or $out) { throw "profile check failed: $out" }
+          make check
