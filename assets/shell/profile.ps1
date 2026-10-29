@@ -20,6 +20,11 @@ $goBin = if ($env:GOBIN) { $env:GOBIN } elseif ($env:GOPATH) {
     Join-Path ($env:GOPATH -split ';')[0] 'bin'
 } else { Join-Path $HOME 'go\bin' }
 Add-PathEntry $goBin
+# The OpenSSL Light MSI may leave its bin off PATH
+if ($env:ProgramFiles -and -not (Test-Command openssl)) {
+    $openSslBin = Join-Path $env:ProgramFiles 'OpenSSL-Win64\bin'
+    if (Test-Path $openSslBin) { Add-PathEntry $openSslBin }
+}
 
 if ($env:USE_CORP_PROXY -eq '1' -and $env:CORP_PROXY_URL) {
     # Windows env vars are case-insensitive, so one assignment covers both spellings

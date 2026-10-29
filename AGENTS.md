@@ -7,12 +7,12 @@ Dotfiles + dev-environment bootstrapper for **macOS**, **Ubuntu** and **Windows*
 Two-stage install:
 
 1. [install.sh](install.sh) (macOS/Ubuntu) or [install.ps1](install.ps1) (Windows) – then `install.py`.
-   - `install.ps1` (Windows PowerShell 5.1 compatible, `Set-StrictMode` + `$ErrorActionPreference = 'Stop'`, native commands through `Invoke-Native`): `winget import` of [winget-packages.json](winget-packages.json) with `--no-upgrade` (`-Upgrade` adds a second import without it, leaving out `Microsoft.PowerShell` while any pwsh runs, since its MSI cannot replace a running pwsh), reloads `PATH` from the registry, installs the PSScriptAnalyzer + PSFzf modules via pwsh, then `uv python install`, `uv sync`, `uv run install.py -a -y`. No nvim/vim on Windows. Runs `Main` only when executed, so tests can dot-source it.
-   - `install.sh` (bash, `set -Eeuo pipefail`) – detects OS, installs system packages, installs Python (version from [.python-version](.python-version)) + deps via `uv`, bootstraps Go (Ubuntu: go.dev tarball → `/usr/local/go` if missing or < 1.21; macOS: Brewfile) and, on Ubuntu (22.04 + 24.04), adds the gh apt repo, links `fdfind`/`batcat` as `fd`/`bat`, and installs fzf (< 0.48), eza, delta, starship (→ `/usr/local/bin`) and neovim (< 0.11 → `/opt/nvim`) from GitHub releases (`--upgrade` reinstalls them even when present), runs `install.py -a -y`, then `chsh` to zsh.
+   - `install.ps1` (Windows PowerShell 5.1 compatible, `Set-StrictMode` + `$ErrorActionPreference = 'Stop'`, native commands through `Invoke-Native`): `winget import` of [packages/winget-packages.json](packages/winget-packages.json) with `--no-upgrade` (`-Upgrade` adds a second import without it, leaving out `Microsoft.PowerShell` while any pwsh runs, since its MSI cannot replace a running pwsh), reloads `PATH` from the registry, installs the PSScriptAnalyzer + PSFzf modules via pwsh, then `uv python install`, `uv sync`, `uv run install.py -a -y`. No nvim/vim on Windows. Runs `Main` only when executed, so tests can dot-source it.
+   - `install.sh` (bash, `set -Eeuo pipefail`) – detects OS, installs system packages, installs Python (version from [.python-version](.python-version)) + deps via `uv`, bootstraps Go (Ubuntu: go.dev tarball → `/usr/local/go` if missing or < 1.21; macOS: `packages/Brewfile`) and, on Ubuntu (22.04 + 24.04), adds the gh apt repo, links `fdfind`/`batcat` as `fd`/`bat`, and installs fzf (< 0.48), eza, delta, starship (→ `/usr/local/bin`) and neovim (< 0.11 → `/opt/nvim`) from GitHub releases (`--upgrade` reinstalls them even when present), runs `install.py -a -y`, then `chsh` to zsh.
 2. [install.py](install.py) (click CLI) – reads [config.yaml](config.yaml) (validated on load: unknown keys, missing dotfile `src`, `dst` outside its base, bad `os`/`base`/`stub`, or the same `(base, dst)` for overlapping `os` → `InstallerError`) and, for entries whose `os` includes the current system:
    - `link_dotfiles` – symlinks `assets/*` into `$HOME` (macOS/Linux); entries with `stub` (Windows) get a small file that includes the repo file (`STUBS`: gitconfig `[include]`, PowerShell dot-source), so no symlink privilege is needed. Skips correct links/stubs; backs up anything else to `<dst>.bak.<YYYYmmddHHMMSS>`. `base: documents` resolves the Windows Documents known folder (`windows_documents`, follows OneDrive redirection).
    - `ensure_gitconfig_local` – creates a commented placeholder `~/.gitconfig.local` (never overwrites).
-   - `install_fonts` – `nerd_fonts` archives from the latest ryanoasis/nerd-fonts release (sha256 digest checked, `.ttf` only). Linux: `~/.local/share/fonts/NerdFonts/<name>`, then `fc-cache` (skipped on WSL). Windows: `%LOCALAPPDATA%\Microsoft\Windows\Fonts\NerdFonts\<name>`, registered under HKCU (`register_windows_font`). macOS fonts come from the Brewfile.
+   - `install_fonts` – `nerd_fonts` archives from the latest ryanoasis/nerd-fonts release (sha256 digest checked, `.ttf` only). Linux: `~/.local/share/fonts/NerdFonts/<name>`, then `fc-cache` (skipped on WSL). Windows: `%LOCALAPPDATA%\Microsoft\Windows\Fonts\NerdFonts\<name>`, registered under HKCU (`register_windows_font`). macOS fonts come from `packages/Brewfile`.
    - `clone_git_repos` – skips when `dst/.git` exists.
    - `install_go_tools` – `go install` each `go_tools` entry; skips with a warning if `go` is missing.
    - Flags: `-d` (default), `-g`, `-f`, `-t`, `-a`, `-y`, `--dry-run`. Every side effect must honor `dry_run`.
@@ -24,9 +24,9 @@ For any new GitHub-hosted binary on Ubuntu, reuse `github_release_asset` / `inst
 
 | Change | Edit |
 |---|---|
-| macOS packages / casks / fonts | [Brewfile](Brewfile) |
-| Ubuntu packages | [apt-packages.txt](apt-packages.txt) (`#` comments allowed) |
-| Windows packages | [winget-packages.json](winget-packages.json) (`winget import` format; check IDs with `winget show --id <id> --exact`) |
+| macOS packages / casks / fonts | [packages/Brewfile](packages/Brewfile) |
+| Ubuntu packages | [packages/apt-packages.txt](packages/apt-packages.txt) (`#` comments allowed) |
+| Windows packages | [packages/winget-packages.json](packages/winget-packages.json) (`winget import` format; check IDs with `winget show --id <id> --exact`) |
 | Dotfile links/stubs, git repos to clone, Linux/Windows Nerd Fonts | [config.yaml](config.yaml) (`src` relative to repo, `dst` relative to `base`; optional `os`, `base`, `stub`) |
 | `install.py` tests | [tests/](tests/) (pytest; `Installer` takes `home`/`base_dirs`/`ConfigMgr` so tests use `tmp_path`, never the real `$HOME`; symlink tests skip where symlinks need privileges) |
 | Shell dotfile smoke tests | [tests/test_shell.py](tests/test_shell.py) (clean `bash --norc` / `zsh -f`, temp `$HOME`; skipped when the shell is missing and on Windows) |
@@ -38,6 +38,7 @@ For any new GitHub-hosted binary on Ubuntu, reuse `github_release_asset` / `inst
 | Go version | Go's official toolchain (`GOTOOLCHAIN=auto`, per-project `go.mod` `go`/`toolchain` lines). Only a bootstrap `go` is installed; no gvm/goenv. |
 | Go tools (`go install`) | `go_tools` in [config.yaml](config.yaml) |
 | CLI tool usage docs | [docs/cli-tools.md](docs/cli-tools.md) – update when tool integrations in `common.sh` change |
+| User docs | [README.md](README.md) is only the entry page; per-OS guides [docs/macos.md](docs/macos.md), [docs/ubuntu.md](docs/ubuntu.md), [docs/windows.md](docs/windows.md); shared [docs/configuration.md](docs/configuration.md), [docs/shell.md](docs/shell.md), [docs/development.md](docs/development.md) |
 | Shell formatting style | [.editorconfig](.editorconfig) (read by shfmt) |
 | Shared bash+zsh env | [assets/shell/common.sh](assets/shell/common.sh) |
 | PowerShell 7 env (Windows) | [assets/shell/profile.ps1](assets/shell/profile.ps1) – mirror `common.sh` changes here when they apply to Windows |
@@ -61,7 +62,7 @@ Untracked, per-machine files (never commit their contents): `~/.shell_local` (e.
 - Never set `core.pager` / `interactive.diffFilter` to delta in `gitconfig`; `common.sh` sets `GIT_PAGER` only when delta exists.
 - Use `${HOMEBREW_PREFIX}` (set by `brew_env`) instead of hardcoded `/usr/local` or `/opt/homebrew`.
 - Do not hardcode user names, home paths, emails, or proxy addresses.
-- When adding a dotfile, update both `config.yaml` and the "Dotfiles Linked" table in [README.md](README.md) (including its OS column; a test compares them).
+- When adding a dotfile, update both `config.yaml` and the "Dotfiles Linked" table in [docs/configuration.md](docs/configuration.md) (including its OS column; a test compares them).
 
 ## Commands
 

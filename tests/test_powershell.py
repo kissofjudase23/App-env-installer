@@ -104,7 +104,8 @@ Install-WingetPackage {flag} 6> $null
 )
 def test_install_ps1_never_upgrades_running_pwsh(home, flag, expected):
     # The test itself runs in pwsh, whose MSI cannot be replaced while it runs
-    total = INSTALL_PS1.with_name("winget-packages.json").read_text().count("PackageIdentifier")
+    packages = INSTALL_PS1.parent / "packages" / "winget-packages.json"
+    total = packages.read_text().count("PackageIdentifier")
     result = run_pwsh(WINGET_SCRIPT.format(install=INSTALL_PS1, flag=flag), home)
     counts = [str(total)] + [str(total - 1)] * (len(expected) - 1)
     assert result.stdout.splitlines() == [

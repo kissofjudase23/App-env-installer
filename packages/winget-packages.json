@@ -24,6 +24,7 @@
         { "PackageIdentifier": "BurntSushi.ripgrep.MSVC" },
         { "PackageIdentifier": "GitHub.cli" },
         { "PackageIdentifier": "jqlang.jq" },
+        { "PackageIdentifier": "ShiningLight.OpenSSL.Light" },
         { "PackageIdentifier": "mvdan.shfmt" },
         { "PackageIdentifier": "koalaman.shellcheck" }
       ]

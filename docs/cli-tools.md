@@ -242,4 +242,23 @@ auth, and `--jq` filters the result the same way jq does.
   `prefix |` / `prefix -` split (new panes and windows keep the current directory),
   `prefix h/j/k/l` move between panes, `prefix [` enters vi copy mode (`v` select, `y` copy),
   `prefix R` reloads the config, `prefix d` detaches, `tmux a` reattaches.
-- **starship**: the prompt; see the README for the preset and how to update it.
+- **starship**: the prompt; see [shell.md](shell.md) for the preset and how to update it.
+
+## Network tools
+
+| Tool | macOS | Ubuntu | Windows |
+|---|---|---|---|
+| `curl` | built in | apt `curl` | built in (`curl.exe`; PowerShell 7 has no `curl` alias) |
+| `openssl` | built in (LibreSSL) | apt `openssl` | winget `ShiningLight.OpenSSL.Light` |
+| `nc` | built in | apt `netcat-openbsd` | not installed; use `Test-NetConnection <host> -Port <port>` |
+| `dig` | built in | apt `bind9-dnsutils` | not installed; use `Resolve-DnsName <name>` or `nslookup` |
+
+```bash
+curl -sSI https://example.com                      # response headers only
+curl -v --resolve example.com:443:1.2.3.4 https://example.com   # pin a host to an IP
+openssl s_client -connect example.com:443 -servername example.com < /dev/null
+openssl x509 -in cert.pem -noout -subject -issuer -dates
+nc -vz example.com 443                             # is the port open?
+dig +short example.com                             # A records
+dig @1.1.1.1 example.com MX                        # ask a specific resolver
+```

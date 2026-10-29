@@ -40,9 +40,9 @@ Use a single scope matching the main area changed; omit it if the change spans m
 | `install`   | `install.sh`, `install.ps1` (system packages, Python/Go bootstrap, `chsh`) |
 | `installer` | `install.py` (dotfile links, fonts, git repos, go tools)      |
 | `config`    | `config.yaml` (dotfiles, `git_repos`, `go_tools`)             |
-| `brew`      | `Brewfile` (macOS packages, casks, fonts)                     |
-| `apt`       | `apt-packages.txt` (Ubuntu packages)                          |
-| `winget`    | `winget-packages.json` (Windows packages)                     |
+| `brew`      | `packages/Brewfile` (macOS packages, casks, fonts)            |
+| `apt`       | `packages/apt-packages.txt` (Ubuntu packages)                 |
+| `winget`    | `packages/winget-packages.json` (Windows packages)            |
 | `python`    | `.python-version`, `pyproject.toml`, `uv.lock`                |
 | `shell`     | `assets/shell/*` (common, bash, zsh, PowerShell), `assets/starship/*` |
 | `vim`       | `assets/editor/vimrc.vim` (vim + nvim)                        |
@@ -51,6 +51,7 @@ Use a single scope matching the main area changed; omit it if the change spans m
 | `ci`        | `.github/workflows/*`                                         |
 | `make`      | `Makefile`                                                    |
 | `readme`    | `README.md`                                                   |
+| `docs`      | `docs/*` (per-OS guides, configuration, shell, CLI tools)     |
 | `agents`    | `AGENTS.md`, `CLAUDE.md`, `.claude/*`, `.github/instructions/*` |
 
 ### Rules

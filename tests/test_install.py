@@ -326,9 +326,9 @@ def test_repo_config_windows_uses_only_stubs(home):
     assert installer._entries("git_repos") == []
 
 
-def test_readme_dotfiles_table_matches_config():
-    readme = (install.ROOT / "README.md").read_text(encoding="utf-8")
-    section = readme.split("## Dotfiles Linked", 1)[1].split("\n## ", 1)[0]
+def test_docs_dotfiles_table_matches_config():
+    doc = (install.ROOT / "docs" / "configuration.md").read_text(encoding="utf-8")
+    section = doc.split("## Dotfiles Linked", 1)[1].split("\n## ", 1)[0]
     rows = re.findall(r"^\| `([^`]+)`\s*\| `([^`]+)`\s*\| ([a-z, ]+?)\s*\|$", section, re.MULTILINE)
     prefixes = {"home": "~/", "documents": "Documents/"}
     expected = [

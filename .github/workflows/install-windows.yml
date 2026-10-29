@@ -11,7 +11,7 @@ on:
     paths:
       - install.ps1
       - install.py
-      - winget-packages.json
+      - packages/winget-packages.json
       - config.yaml
       - Makefile
       - PSScriptAnalyzerSettings.psd1
@@ -24,7 +24,7 @@ on:
     paths:
       - install.ps1
       - install.py
-      - winget-packages.json
+      - packages/winget-packages.json
       - config.yaml
       - Makefile
       - PSScriptAnalyzerSettings.psd1
@@ -77,4 +77,7 @@ jobs:
           # profile.ps1 must stay silent, and load through the $PROFILE stub
           $out = pwsh -NonInteractive -Command 'if (-not $env:STARSHIP_CONFIG) { throw "profile not loaded" }' 2>&1
           if ($LASTEXITCODE -ne 0 -or $out) { throw "profile check failed: $out" }
+          # openssl reaches PATH through winget or profile.ps1
+          pwsh -NonInteractive -Command 'openssl version'
+          if ($LASTEXITCODE -ne 0) { throw 'openssl not on PATH' }
           make check
