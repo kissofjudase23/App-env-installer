@@ -32,7 +32,7 @@ Dotfiles are stub files pointing at absolute paths in this repo, so moving the r
 
 ## What Gets Installed
 
-[packages/winget-packages.json](../packages/winget-packages.json): Git, PowerShell 7, GNU make, uv, Go, starship, fzf, fd, bat, delta, eza, zoxide, ripgrep, gh, jq, OpenSSL, shfmt, shellcheck. Neovim/Vim are not installed or configured on Windows.
+[packages/winget-packages.json](../packages/winget-packages.json): Git, PowerShell 7, GNU make, uv, Go, starship, fzf, fd, bat, delta, eza, zoxide, ripgrep, gh, jq, OpenSSL, shfmt, shellcheck, Claude Code (`claude`), GitHub Copilot CLI (`copilot`). Neovim/Vim are not installed or configured on Windows.
 
 zoxide works in PowerShell 7: `profile.ps1` sets up `z` / `j` (and `zi` / `ji`) when it is installed.
 
@@ -60,7 +60,7 @@ $env:CORP_PROXY_URL = 'http://proxy.example.com:8080'
 
 ## Windows Terminal
 
-- **Font**: the native Windows install puts the Nerd Fonts in place; Settings → Profiles → Defaults → Appearance → Font face → *MesloLGS Nerd Font*
+- **Font**: the native Windows install puts the Nerd Fonts in place; Settings → Profiles → Defaults → Appearance → Font face → *MesloLGS Nerd Font*. Without a Nerd Font the prompt falls back to Cascadia, which has the powerline arrows but shows `�` for the OS logo and other icons. A font set on a single profile overrides Defaults.
 - **Default profile**: Settings → Startup → Default profile → PowerShell (7, not Windows PowerShell)
 - [Color schemes for Windows Terminal](https://github.com/mbadolato/iTerm2-Color-Schemes/tree/master/windowsterminal)
 
