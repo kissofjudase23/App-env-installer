@@ -26,7 +26,9 @@
         { "PackageIdentifier": "jqlang.jq" },
         { "PackageIdentifier": "ShiningLight.OpenSSL.Light" },
         { "PackageIdentifier": "mvdan.shfmt" },
-        { "PackageIdentifier": "koalaman.shellcheck" }
+        { "PackageIdentifier": "koalaman.shellcheck" },
+        { "PackageIdentifier": "Anthropic.ClaudeCode" },
+        { "PackageIdentifier": "GitHub.Copilot" }
       ]
     }
   ]
