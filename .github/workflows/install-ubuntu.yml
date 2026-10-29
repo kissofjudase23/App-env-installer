@@ -11,7 +11,7 @@ on:
     paths:
       - install.sh
       - install.py
-      - apt-packages.txt
+      - packages/apt-packages.txt
       - config.yaml
       - .python-version
       - uv.lock
@@ -21,7 +21,7 @@ on:
     paths:
       - install.sh
       - install.py
-      - apt-packages.txt
+      - packages/apt-packages.txt
       - config.yaml
       - .python-version
       - uv.lock

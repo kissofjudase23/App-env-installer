@@ -11,7 +11,7 @@ on:
     paths:
       - install.ps1
       - install.py
-      - winget-packages.json
+      - packages/winget-packages.json
       - config.yaml
       - Makefile
       - PSScriptAnalyzerSettings.psd1
@@ -24,7 +24,7 @@ on:
     paths:
       - install.ps1
       - install.py
-      - winget-packages.json
+      - packages/winget-packages.json
       - config.yaml
       - Makefile
       - PSScriptAnalyzerSettings.psd1

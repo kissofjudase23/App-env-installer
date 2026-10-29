@@ -125,7 +125,7 @@ function install_pkgs_for_ubuntu() {
     add_gh_apt_repo
     sudo apt-get update -y
 
-    sed -e 's/#.*//' apt-packages.txt | xargs sudo apt-get install -y
+    sed -e 's/#.*//' packages/apt-packages.txt | xargs sudo apt-get install -y
 
     if ! command -v uv &> /dev/null; then
         curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -303,7 +303,7 @@ function install_pkgs_for_darwin() {
         load_brew_env
     fi
 
-    brew bundle --file=Brewfile
+    brew bundle --file=packages/Brewfile
 }
 
 function setup_python() {

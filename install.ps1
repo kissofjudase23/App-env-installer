@@ -11,7 +11,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$PackagesFile = Join-Path $PSScriptRoot 'winget-packages.json'
+$PackagesFile = Join-Path $PSScriptRoot 'packages\winget-packages.json'
 
 function Show-Usage {
     @'
@@ -20,7 +20,7 @@ Usage: powershell -ExecutionPolicy Bypass -File .\install.ps1 [-Upgrade]
 Bootstrap winget packages, Python, dotfiles and Go tools on Windows.
 
 Options:
-  -Upgrade  Upgrade the packages in winget-packages.json even when installed
+  -Upgrade  Upgrade the packages in packages\winget-packages.json even when installed
   -Help     Show this help and exit
 '@
 }
