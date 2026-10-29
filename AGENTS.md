@@ -38,6 +38,7 @@ For any new GitHub-hosted binary on Ubuntu, reuse `github_release_asset` / `inst
 | Go version | Go's official toolchain (`GOTOOLCHAIN=auto`, per-project `go.mod` `go`/`toolchain` lines). Only a bootstrap `go` is installed; no gvm/goenv. |
 | Go tools (`go install`) | `go_tools` in [config.yaml](config.yaml) |
 | CLI tool usage docs | [docs/cli-tools.md](docs/cli-tools.md) – update when tool integrations in `common.sh` change |
+| User docs | [README.md](README.md) is only the entry page; per-OS guides [docs/macos.md](docs/macos.md), [docs/ubuntu.md](docs/ubuntu.md), [docs/windows.md](docs/windows.md); shared [docs/configuration.md](docs/configuration.md), [docs/shell.md](docs/shell.md), [docs/development.md](docs/development.md) |
 | Shell formatting style | [.editorconfig](.editorconfig) (read by shfmt) |
 | Shared bash+zsh env | [assets/shell/common.sh](assets/shell/common.sh) |
 | PowerShell 7 env (Windows) | [assets/shell/profile.ps1](assets/shell/profile.ps1) – mirror `common.sh` changes here when they apply to Windows |
@@ -61,7 +62,7 @@ Untracked, per-machine files (never commit their contents): `~/.shell_local` (e.
 - Never set `core.pager` / `interactive.diffFilter` to delta in `gitconfig`; `common.sh` sets `GIT_PAGER` only when delta exists.
 - Use `${HOMEBREW_PREFIX}` (set by `brew_env`) instead of hardcoded `/usr/local` or `/opt/homebrew`.
 - Do not hardcode user names, home paths, emails, or proxy addresses.
-- When adding a dotfile, update both `config.yaml` and the "Dotfiles Linked" table in [README.md](README.md) (including its OS column; a test compares them).
+- When adding a dotfile, update both `config.yaml` and the "Dotfiles Linked" table in [docs/configuration.md](docs/configuration.md) (including its OS column; a test compares them).
 
 ## Commands
 

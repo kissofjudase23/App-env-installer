@@ -242,7 +242,7 @@ auth, and `--jq` filters the result the same way jq does.
   `prefix |` / `prefix -` split (new panes and windows keep the current directory),
   `prefix h/j/k/l` move between panes, `prefix [` enters vi copy mode (`v` select, `y` copy),
   `prefix R` reloads the config, `prefix d` detaches, `tmux a` reattaches.
-- **starship**: the prompt; see the README for the preset and how to update it.
+- **starship**: the prompt; see [shell.md](shell.md) for the preset and how to update it.
 
 ## Network tools
 

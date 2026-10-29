@@ -51,6 +51,7 @@ Use a single scope matching the main area changed; omit it if the change spans m
 | `ci`        | `.github/workflows/*`                                         |
 | `make`      | `Makefile`                                                    |
 | `readme`    | `README.md`                                                   |
+| `docs`      | `docs/*` (per-OS guides, configuration, shell, CLI tools)     |
 | `agents`    | `AGENTS.md`, `CLAUDE.md`, `.claude/*`, `.github/instructions/*` |
 
 ### Rules
