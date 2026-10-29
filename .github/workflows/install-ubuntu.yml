@@ -75,7 +75,7 @@ jobs:
         run: |
           source install.sh
           [[ "$(getent passwd root | cut -d: -f7)" == "$(command -v zsh)" ]]
-          zsh -i -c 'for tool in bat delta eza fd fzf gh go nvim starship uv zoxide; do
+          zsh -i -c 'for tool in bat curl delta dig eza fd fzf gh go nc nvim openssl starship uv zoxide; do
             command -v "${tool}" > /dev/null || { echo "${tool} not on PATH" >&2; exit 1; }
           done'
           nvim_version="$(zsh -i -c 'nvim --version | head -n1')"

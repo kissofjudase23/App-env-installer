@@ -3,6 +3,7 @@
 # fd-find and bat install as fdfind/batcat; install.sh links them as fd/bat.
 bat
 bash-completion
+bind9-dnsutils
 btop
 curl
 fd-find
@@ -10,6 +11,8 @@ fontconfig
 gh
 git
 jq
+netcat-openbsd
+openssl
 ripgrep
 shellcheck
 shfmt
