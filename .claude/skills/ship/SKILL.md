@@ -1,6 +1,6 @@
 ---
 name: ship
-description: Run make check, commit, push to origin and watch CI for the pushed commit
+description: Run make check, commit, push to origin, watch CI, open a PR and merge it once confirmed
 disable-model-invocation: true
 ---
 1. Run `git status`, `git diff --stat` and `git diff`. Stop if there is nothing to commit.
@@ -16,3 +16,9 @@ disable-model-invocation: true
    Watch each with `gh run watch <id> --exit-status` in the background
    (install-ubuntu can take 30 min). On failure, show `gh run view <id> --log-failed`
    and summarize the cause.
+6. On `master`, stop here. Otherwise create a PR against `master` with `gh pr create`
+   (branch pushes may start no runs; the PR triggers them).
+7. Wait with `gh pr checks <number> --watch` in the background and confirm every check
+   passed. On failure, show `gh run view <id> --log-failed`, summarize the cause and stop.
+8. Ask the user whether to merge the PR and delete the remote branch. Only after they
+   confirm, run `gh pr merge <number> --merge --delete-branch`.
