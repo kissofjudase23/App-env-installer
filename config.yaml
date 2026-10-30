@@ -99,3 +99,5 @@ go_tools:
   - "golang.org/x/tools/gopls@latest"
   - "golang.org/x/tools/cmd/goimports@latest"
   - "github.com/go-delve/delve/cmd/dlv@latest"
+  - "github.com/mikefarah/yq/v4@latest"
+  - "github.com/rhysd/actionlint/cmd/actionlint@latest"

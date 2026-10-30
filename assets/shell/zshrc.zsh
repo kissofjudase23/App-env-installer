@@ -18,6 +18,7 @@ plugins=(sudo)
 
 # Load tool plugins only when their command exists (some warn at startup otherwise)
 for _plugin _cmd in \
+  direnv direnv \
   docker docker \
   docker-compose docker \
   golang go \
