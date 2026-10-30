@@ -1,7 +1,10 @@
 "$schema" = 'https://starship.rs/config-schema.json'
 
 # Upstream: https://github.com/carlosplanchon/starship-p10k-rainbow (MIT), commit f61ab74.
-# Local change: os_fg 39 (blue) -> 7 (silver, follows the terminal theme). Keep it when re-copying from upstream.
+# Local changes (keep them when re-copying from upstream):
+#   os_fg 39 (blue) -> 7 (silver, follows the terminal theme).
+#   seg_fg 0 -> 16, dir_bg 4 -> 31, git_bg 2 -> 70, git_dirty_bg 3 -> 178: fixed 256 colors,
+#   so the segments look the same in every terminal theme (ANSI 0-15 are theme-defined).
 # ───────────────────────────────────────────────────────────────
 #  Powerlevel10k "rainbow"-style: powerline, 1 line, compact.
 #  Left: OS · directory · Git
@@ -10,6 +13,8 @@
 # ───────────────────────────────────────────────────────────────
 
 add_newline = false
+# Default 30 ms is too short for large dirs, /mnt/c on WSL and Defender-scanned Windows folders
+scan_timeout = 100
 palette = 'p10k'
 
 format = """
@@ -37,13 +42,13 @@ $hostname"""
 
 # ANSI 256 colors based on the original Powerlevel10k profile.
 [palettes.p10k]
-seg_fg = '0'
+seg_fg = '16'
 os_bg = '236'
 os_fg = '7'
-dir_bg = '4'
+dir_bg = '31'
 dir_fg = '254'
-git_bg = '2'
-git_dirty_bg = '3'
+git_bg = '70'
+git_dirty_bg = '178'
 
 # ── Left ───────────────────────────────────────────────────────
 
