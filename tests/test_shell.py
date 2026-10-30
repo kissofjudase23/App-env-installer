@@ -80,6 +80,23 @@ def test_common_sh_sets_proxy_from_shell_local(shell, home):
     assert result.stdout.splitlines() == [PROXY, PROXY, "127.0.0.1,localhost"]
 
 
+@pytest.mark.parametrize("shell", ["bash", "zsh"])
+@pytest.mark.parametrize(
+    ("term", "expected"),
+    [
+        ("xterm", "xterm-256color"),
+        ("xterm-256color", "xterm-256color"),
+        ("nosuchterm", "nosuchterm"),
+    ],
+)
+def test_common_sh_upgrades_term_to_256color(shell, term, expected, home):
+    if shutil.which("infocmp") is None:
+        pytest.skip("infocmp is not installed")
+    script = 'source "$1"; printf "%s" "$TERM"'
+    result = run_shell(shell, script, home, str(COMMON), env={"TERM": term})
+    assert result.stdout == expected
+
+
 def test_common_sh_keeps_only_alias_setting(home):
     result = run_shell("bash", 'source "$1"; declare -F', home, str(COMMON))
     assert result.stdout.split() == ["declare", "-f", "alias_setting"]
