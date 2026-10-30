@@ -85,7 +85,7 @@ jobs:
           # The init.vim stub must load the vimrc, whose first launch installs vim-plug and the plugins
           nvim --headless '+PlugInstall --sync' +qa
           if ($LASTEXITCODE -ne 0) { throw 'nvim PlugInstall failed' }
-          foreach ($plugin in 'molokai', 'nerdtree', 'ale', 'vim-easy-align', 'ack.vim', 'vim-go') {
+          foreach ($plugin in 'molokai', 'kanagawa.nvim', 'nerdtree', 'ale', 'vim-easy-align', 'ack.vim', 'vim-go') {
             if (-not (Test-Path "$HOME\.vim\plugged\$plugin\.git")) { throw "$plugin not installed" }
           }
           make check
