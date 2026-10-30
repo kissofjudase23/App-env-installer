@@ -184,8 +184,8 @@ function term_setting() {
         *-256color) ;;
         *)
             local candidate="${TERM:-xterm}-256color"
-            local terminfo="${candidate:0:1}/${candidate}"
-            if [[ -f "/usr/share/terminfo/${terminfo}" || -f "$HOME/.terminfo/${terminfo}" ]]; then
+            # infocmp searches every terminfo dir (Debian/Ubuntu keep xterm-256color in /lib/terminfo)
+            if infocmp "${candidate}" > /dev/null 2>&1; then
                 export TERM="${candidate}"
             fi
             ;;
