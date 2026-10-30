@@ -27,7 +27,9 @@ if empty(glob(s:plug_path))
 endif
 
 call plug#begin('~/.vim/plugged')
-Plug 'tomasr/molokai'
+" Both stay registered: vim and nvim share ~/.vim/plugged, so :PlugClean would delete the other's
+Plug 'tomasr/molokai', has('nvim') ? {'on': []} : {}
+Plug 'rebelot/kanagawa.nvim', has('nvim') ? {} : {'on': []}
 Plug 'preservim/nerdtree'
 Plug 'dense-analysis/ale'
 Plug 'junegunn/vim-easy-align'
@@ -108,7 +110,7 @@ nnoremap <C-H> <C-W><C-H>
 syntax on
 set t_Co=256
 " plugins are missing until the first PlugInstall finishes
-silent! colorscheme molokai
+silent! execute 'colorscheme' (has('nvim') ? 'kanagawa-wave' : 'molokai')
 
 " F4 removes all trailing whitespace; F5 toggles NERDTree
 nnoremap <F4> :let _s=@/<Bar>:%s/\s\+$//e<Bar>:let @/=_s<Bar><CR>
