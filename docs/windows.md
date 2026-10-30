@@ -24,7 +24,7 @@ GitHub's API allows 60 anonymous requests per hour per IP; if `GITHUB_TOKEN` or 
 `install.ps1` runs on the built-in Windows PowerShell 5.1 and will:
 1. Run `winget import` with [packages/winget-packages.json](../packages/winget-packages.json).
 2. Install the PSScriptAnalyzer (for `make pslint`) and PSFzf PowerShell modules for the current user.
-3. Run `uv python install`, `uv sync` and `uv run install.py -a -y`, which writes the `~/.gitconfig` and PowerShell `$PROFILE` stubs (see [Dotfiles Linked](configuration.md#dotfiles-linked)), creates `~/.gitconfig.local`, installs the Meslo and Mononoki Nerd Fonts for the current user (`%LOCALAPPDATA%\Microsoft\Windows\Fonts`) and runs `go install` for the Go tools.
+3. Run `uv python install`, `uv sync` and `uv run install.py -a -y`, which writes the `~/.gitconfig`, PowerShell `$PROFILE` and Neovim `init.vim` stubs (see [Dotfiles Linked](configuration.md#dotfiles-linked)), creates `~/.gitconfig.local`, installs the Meslo and Mononoki Nerd Fonts for the current user (`%LOCALAPPDATA%\Microsoft\Windows\Fonts`) and runs `go install` for the Go tools.
 
 An existing `~/.gitconfig` is backed up as `~/.gitconfig.bak.<timestamp>`; move your `[user]` section from it into `~/.gitconfig.local`.
 
@@ -32,7 +32,9 @@ Dotfiles are stub files pointing at absolute paths in this repo, so moving the r
 
 ## What Gets Installed
 
-[packages/winget-packages.json](../packages/winget-packages.json): Git, PowerShell 7, GNU make, uv, Go, starship, fzf, fd, bat, delta, eza, zoxide, ripgrep, gh, jq, OpenSSL, shfmt, shellcheck, Claude Code (`claude`), GitHub Copilot CLI (`copilot`). Neovim/Vim are not installed or configured on Windows.
+[packages/winget-packages.json](../packages/winget-packages.json): Git, PowerShell 7, GNU make, uv, Go, Neovim, starship, fzf, fd, bat, delta, eza, zoxide, ripgrep, gh, jq, OpenSSL, shfmt, shellcheck, Claude Code (`claude`), GitHub Copilot CLI (`copilot`). Vim is not installed or configured on Windows.
+
+Neovim reads the shared [vimrc.vim](../assets/editor/vimrc.vim) through `%LOCALAPPDATA%\nvim\init.vim`. The first launch installs vim-plug and the plugins, as on the other systems ([details](shell.md)). `t<Enter>` opens a `pwsh` terminal, and `:!` runs in `cmd.exe`, Neovim's default on Windows.
 
 zoxide works in PowerShell 7: `profile.ps1` sets up `z` / `j` (and `zi` / `ji`) when it is installed.
 
@@ -48,7 +50,7 @@ To add a package, add its ID (check with `winget show --id <id> --exact`) to win
 
 ## Shell
 
-PowerShell 7 loads [profile.ps1](../assets/shell/profile.ps1) through its `$PROFILE` stub. It mirrors `common.sh`: the same eza/bat aliases (as functions), fzf with fd/bat, `GIT_PAGER=delta`, zoxide (`z`, `j`), starship, PSReadLine history prediction, and PSFzf's `Ctrl-T` / `Ctrl-R` when installed. starship reads [starship.toml](../assets/starship/starship.toml) through `STARSHIP_CONFIG`, set by `profile.ps1`.
+PowerShell 7 loads [profile.ps1](../assets/shell/profile.ps1) through its `$PROFILE` stub. It mirrors `common.sh`: the same eza/bat aliases (as functions), `vi`/`vim`/`vimdiff` and `EDITOR` for Neovim, fzf with fd/bat, `GIT_PAGER=delta`, zoxide (`z`, `j`), starship, PSReadLine history prediction, and PSFzf's `Ctrl-T` / `Ctrl-R` when installed. starship reads [starship.toml](../assets/starship/starship.toml) through `STARSHIP_CONFIG`, set by `profile.ps1`.
 
 Machine-specific settings go in `~/.shell_local.ps1` (untracked), which `profile.ps1` dot-sources:
 

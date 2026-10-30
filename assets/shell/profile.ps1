@@ -39,6 +39,15 @@ if (Test-Command fd) {
     $env:FZF_ALT_C_COMMAND = 'fd --type d --hidden --exclude .git'
 }
 
+if (Test-Command nvim) {
+    $env:VISUAL = 'nvim'
+    $env:EDITOR = 'nvim'
+    $env:GIT_EDITOR = 'nvim'
+    Set-Alias -Name vi -Value nvim
+    Set-Alias -Name vim -Value nvim
+    function vimdiff { nvim -d @args }
+}
+
 # Set here rather than core.pager so git still works where delta is missing
 if (Test-Command delta) { $env:GIT_PAGER = 'delta' }
 

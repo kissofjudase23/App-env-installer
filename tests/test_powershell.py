@@ -71,6 +71,23 @@ def test_profile_sets_proxy_and_starship_config(home):
     ], result.stderr
 
 
+def test_profile_uses_nvim_as_editor(tmp_path, home):
+    # Get-Command -CommandType Application needs a .cmd on Windows, an executable bit elsewhere
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    fake = bin_dir / ("nvim.cmd" if os.name == "nt" else "nvim")
+    fake.write_text("@echo off\n" if os.name == "nt" else "#!/bin/sh\n")
+    fake.chmod(0o755)
+    pwsh_dir = str(Path(shutil.which("pwsh") or "pwsh").parent)
+    script = (
+        f". '{PROFILE}'; $env:VISUAL; $env:EDITOR; $env:GIT_EDITOR; "
+        "(Get-Alias vi).Definition; (Get-Alias vim).Definition; "
+        "[bool](Get-Command vimdiff -CommandType Function -ErrorAction Ignore)"
+    )
+    result = run_pwsh(script, home, path=os.pathsep.join([str(bin_dir), pwsh_dir]))
+    assert result.stdout.splitlines() == ["nvim"] * 5 + ["True"], result.stderr
+
+
 def test_profile_removes_its_helpers(home):
     script = f". '{PROFILE}'; [bool](Get-Command Test-Command, Add-PathEntry -ErrorAction Ignore)"
     result = run_pwsh(script, home)

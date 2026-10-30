@@ -44,7 +44,7 @@ if has('nvim')
     " ESC to leave terminal mode
     tnoremap <Esc> <C-\><C-n>
 
-    nnoremap t<Enter> :bo vsp term://zsh<CR>
+    execute 'nnoremap t<Enter> :bo vsp term://' . (has('win32') ? 'pwsh' : 'zsh') . '<CR>'
 
     " mouse in visual mode only, so the terminal's own selection keeps working
     set mouse=v
@@ -80,7 +80,8 @@ set cc=120
 set splitbelow
 set splitright
 set encoding=utf-8
-set fileformats=unix
+" Windows tools still write CRLF files; show them without ^M, keep new files LF
+let &fileformats = has('win32') ? 'unix,dos' : 'unix'
 
 " Persistent undo; vim's default undodir is the file's own dir, nvim's is under stdpath('state')
 if !has('nvim')

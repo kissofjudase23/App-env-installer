@@ -18,19 +18,20 @@
 | Key    | Description                                                                                  |
 | ------ | -------------------------------------------------------------------------------------------- |
 | `os`   | Subset of `[darwin, linux, windows]` the entry applies to; all when omitted                  |
-| `base` | `home` (default) or `documents` (the Windows Documents folder); `dst` is relative to it      |
-| `stub` | Dotfiles only: `gitconfig` or `powershell` writes a file that includes `src` instead of a symlink |
+| `base` | `home` (default), `documents` (the Windows Documents folder) or `local_app_data` (`%LOCALAPPDATA%`); `dst` is relative to it |
+| `stub` | Dotfiles only: `gitconfig`, `powershell` or `vim` writes a file that includes `src` instead of a symlink |
 
 OS packages live in [packages/](../packages): [Brewfile](../packages/Brewfile) (macOS), [apt-packages.txt](../packages/apt-packages.txt) (Ubuntu), [winget-packages.json](../packages/winget-packages.json) (Windows).
 
 ## Dotfiles Linked
 
-On macOS and Linux, symlinks are created from this repo into `$HOME`. On Windows, `install.py` writes small **stub files** instead, which include the repo file (gitconfig `[include]`, PowerShell dot-source), so no Developer Mode or admin rights are needed and edits in the repo still apply immediately. `Documents/` is the Windows Documents folder (follows OneDrive redirection).
+On macOS and Linux, symlinks are created from this repo into `$HOME`. On Windows, `install.py` writes small **stub files** instead, which include the repo file (gitconfig `[include]`, PowerShell dot-source, Vimscript `source`), so no Developer Mode or admin rights are needed and edits in the repo still apply immediately. `Documents/` is the Windows Documents folder (follows OneDrive redirection).
 
 | Source                          | Target                                                   | OS            |
 | ------------------------------- | -------------------------------------------------------- | ------------- |
 | `assets/editor/vimrc.vim`       | `~/.vimrc`                                               | darwin, linux |
 | `assets/editor/vimrc.vim`       | `~/.config/nvim/init.vim`                                | darwin, linux |
+| `assets/editor/vimrc.vim`       | `%LOCALAPPDATA%/nvim/init.vim`                           | windows       |
 | `assets/shell/bash_profile.sh`  | `~/.bash_profile`                                        | darwin, linux |
 | `assets/shell/bashrc.sh`        | `~/.bashrc`                                              | darwin, linux |
 | `assets/shell/zshrc.zsh`        | `~/.zshrc`                                               | darwin, linux |

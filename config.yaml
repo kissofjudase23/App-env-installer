@@ -2,7 +2,8 @@
 # Entry keys: src (repo-relative), dst (relative to base), optional
 #   os:   [darwin, linux, windows] subset; omitted = all
 #   base: home (default) | documents (Windows known folder, follows OneDrive redirection)
-#   stub: gitconfig | powershell – write a file that includes src instead of a symlink
+#         | local_app_data (Windows %LOCALAPPDATA%)
+#   stub: gitconfig | powershell | vim – write a file that includes src instead of a symlink
 
 git_repos:
   - {name: "oh-my-zsh",
@@ -21,6 +22,14 @@ dotfiles:
      src: "assets/editor/vimrc.vim",
      dst: ".config/nvim/init.vim",
      os: [darwin, linux]}
+
+  # stdpath('config') on Windows
+  - {name: "nvim_init_stub",
+     src: "assets/editor/vimrc.vim",
+     dst: "nvim/init.vim",
+     os: [windows],
+     base: local_app_data,
+     stub: vim}
 
   # bash login shells (macOS terminals, ssh)
   - {name: "bash_profile",
