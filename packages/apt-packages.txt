@@ -6,6 +6,7 @@ bash-completion
 bind9-dnsutils
 btop
 curl
+direnv
 fd-find
 fontconfig
 gh

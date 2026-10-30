@@ -40,6 +40,11 @@ function common_bash_setting() {
     if command -v fzf > /dev/null 2>&1; then
         eval "$(fzf --bash 2> /dev/null)"
     fi
+
+    # after starship, which also sets PROMPT_COMMAND
+    if command -v direnv > /dev/null 2>&1; then
+        eval "$(direnv hook bash)"
+    fi
 }
 
 function darwin_bash_setting() {

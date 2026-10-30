@@ -14,6 +14,9 @@ them together. Each tool has full docs at `<tool> --help` and on its project pag
 | [delta](https://github.com/dandavison/delta) | git's `less` pager | Brewfile `git-delta` | GitHub release → `/usr/local/bin/delta` | winget |
 | [jq](https://jqlang.org/) | JSON processing | Brewfile | apt | winget |
 | [gron](https://github.com/tomnomnom/gron) | grepping JSON | Brewfile | — (macOS only) | — |
+| [yq](https://github.com/mikefarah/yq) | YAML processing | `go_tools` | `go_tools` | `go_tools` |
+| [actionlint](https://github.com/rhysd/actionlint) | GitHub Actions workflow checks | `go_tools` | `go_tools` | `go_tools` |
+| [direnv](https://direnv.net/) | per-directory environment variables | Brewfile | apt | — |
 | [gh](https://cli.github.com/) | GitHub web UI | Brewfile | official apt repo | winget |
 | [btop](https://github.com/aristocratos/btop) | `top`, `htop` | Brewfile | apt | — |
 | [tig](https://jonas.github.io/tig/) | `git log` browsing | Brewfile | apt | — |
@@ -189,6 +192,34 @@ field lives:
 gron data.json | rg email    # json.users[3].email = "..."
 gron data.json | rg email | gron -u   # back to JSON with only matching paths
 ```
+
+## yq
+
+```bash
+yq '.go_tools' config.yaml   # read a YAML path
+yq -o=json config.yaml       # convert YAML to JSON
+yq -i '.a.b = 1' file.yaml   # edit a file in place
+```
+
+## actionlint
+
+```bash
+actionlint                   # check .github/workflows/* from the repo root
+actionlint path/to/ci.yml    # check one workflow
+```
+
+## direnv
+
+direnv loads a directory's `.envrc` when you enter it and unloads it when you leave. The shell
+hook is set up in [zshrc.zsh](../assets/shell/zshrc.zsh) and [bashrc.sh](../assets/shell/bashrc.sh).
+
+```bash
+echo 'export API_URL=http://localhost:8080' > .envrc
+direnv allow                 # trust this .envrc; required again after each change
+direnv deny                  # stop loading it
+```
+
+Do not commit an `.envrc` that holds secrets.
 
 ## gh
 
