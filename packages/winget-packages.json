@@ -14,6 +14,7 @@
         { "PackageIdentifier": "ezwinports.make" },
         { "PackageIdentifier": "astral-sh.uv" },
         { "PackageIdentifier": "GoLang.Go" },
+        { "PackageIdentifier": "Neovim.Neovim" },
         { "PackageIdentifier": "Starship.Starship" },
         { "PackageIdentifier": "junegunn.fzf" },
         { "PackageIdentifier": "sharkdp.fd" },

@@ -19,6 +19,7 @@ on:
       - uv.lock
       - assets/shell/profile.ps1
       - assets/git/**
+      - assets/editor/**
       - .github/workflows/install-windows.yml
   pull_request:
     paths:
@@ -32,6 +33,7 @@ on:
       - uv.lock
       - assets/shell/profile.ps1
       - assets/git/**
+      - assets/editor/**
       - .github/workflows/install-windows.yml
   workflow_dispatch:
 
@@ -68,7 +70,7 @@ jobs:
         run: |
           $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' +
             [Environment]::GetEnvironmentVariable('Path', 'User') + ";$env:Path"
-          foreach ($tool in 'bat', 'delta', 'eza', 'fd', 'fzf', 'gh', 'go', 'jq', 'make', 'rg',
+          foreach ($tool in 'bat', 'delta', 'eza', 'fd', 'fzf', 'gh', 'go', 'jq', 'make', 'nvim', 'rg',
               'shellcheck', 'shfmt', 'starship', 'uv', 'zoxide') {
             if (-not (Get-Command $tool -ErrorAction SilentlyContinue)) { throw "$tool not on PATH" }
           }
@@ -80,4 +82,10 @@ jobs:
           # openssl reaches PATH through winget or profile.ps1
           pwsh -NonInteractive -Command 'openssl version'
           if ($LASTEXITCODE -ne 0) { throw 'openssl not on PATH' }
+          # The init.vim stub must load the vimrc, whose first launch installs vim-plug and the plugins
+          nvim --headless '+PlugInstall --sync' +qa
+          if ($LASTEXITCODE -ne 0) { throw 'nvim PlugInstall failed' }
+          foreach ($plugin in 'molokai', 'nerdtree', 'ale', 'vim-easy-align', 'ack.vim', 'vim-go') {
+            if (-not (Test-Path "$HOME\.vim\plugged\$plugin\.git")) { throw "$plugin not installed" }
+          }
           make check

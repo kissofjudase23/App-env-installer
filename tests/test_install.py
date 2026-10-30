@@ -162,6 +162,26 @@ def test_powershell_stub_quotes_path():
     assert install.STUBS["powershell"](src).splitlines()[-1] == f". '{quoted}'"
 
 
+def test_vim_stub_quotes_path():
+    src = Path("C:/it's here/vimrc.vim")
+    lines = install.STUBS["vim"](src).splitlines()
+    assert lines[0].startswith('" Managed by App-env-installer')
+    assert lines[1] == "execute 'source ' . fnameescape('C:/it''s here/vimrc.vim')"
+
+
+def test_link_dotfiles_stub_uses_local_app_data(tmp_path, home):
+    init = {
+        "src": "assets/editor/vimrc.vim",
+        "dst": "nvim/init.vim",
+        "base": "local_app_data",
+        "stub": "vim",
+    }
+    make_installer(tmp_path, home, system="Windows", dotfiles=[init]).link_dotfiles()
+
+    content = (home / "AppData/Local/nvim/init.vim").read_text()
+    assert (install.ROOT / "assets/editor/vimrc.vim").as_posix() in content
+
+
 def test_link_dotfiles_stub_uses_base_dir(tmp_path, home):
     profile = {
         "src": "assets/shell/profile.ps1",
@@ -321,7 +341,11 @@ def test_repo_config_windows_uses_only_stubs(home):
         base_dirs=base_dirs(home),
     )
     entries = installer._entries("dotfiles")
-    assert sorted(e["name"] for e in entries) == ["gitconfig_stub", "powershell_profile"]
+    assert sorted(e["name"] for e in entries) == [
+        "gitconfig_stub",
+        "nvim_init_stub",
+        "powershell_profile",
+    ]
     assert all("stub" in e for e in entries)
     assert installer._entries("git_repos") == []
 
@@ -330,7 +354,7 @@ def test_docs_dotfiles_table_matches_config():
     doc = (install.ROOT / "docs" / "configuration.md").read_text(encoding="utf-8")
     section = doc.split("## Dotfiles Linked", 1)[1].split("\n## ", 1)[0]
     rows = re.findall(r"^\| `([^`]+)`\s*\| `([^`]+)`\s*\| ([a-z, ]+?)\s*\|$", section, re.MULTILINE)
-    prefixes = {"home": "~/", "documents": "Documents/"}
+    prefixes = {"home": "~/", "documents": "Documents/", "local_app_data": "%LOCALAPPDATA%/"}
     expected = [
         (f["src"], prefixes[f.get("base", "home")] + f["dst"], ", ".join(f["os"]))
         for f in install.ConfigMgr().dotfiles

@@ -55,7 +55,7 @@ class SupportedSystems(Enum):
 # config.yaml `os` values are the lowercase platform.system() names
 OS_NAMES = frozenset(s.value.lower() for s in SupportedSystems)
 # config.yaml `base` values: the directory a dst is relative to
-BASES = ("home", "documents")
+BASES = ("home", "documents", "local_app_data")
 
 
 # /etc/os-release ID values
@@ -72,10 +72,20 @@ def _ps_quote(value: str) -> str:
     return "'" + value.replace("'", "''") + "'"
 
 
+# Vimscript comments start with ", and its single quotes escape like PowerShell's
+def _vim_stub(src: Path) -> str:
+    path = _ps_quote(src.as_posix())
+    return (
+        f'" Managed by App-env-installer; edit {src.as_posix()} instead\n'
+        f"execute 'source ' . fnameescape({path})\n"
+    )
+
+
 # Windows dotfiles are small files that include the repo file, so no symlink privilege is needed
 STUBS = {
     "gitconfig": lambda src: f'{_stub_header(src)}[include]\n    path = "{src.as_posix()}"\n',
     "powershell": lambda src: f"{_stub_header(src)}. {_ps_quote(str(src))}\n",
+    "vim": _vim_stub,
 }
 
 
