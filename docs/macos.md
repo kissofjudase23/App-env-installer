@@ -21,7 +21,7 @@ GitHub's API allows 60 anonymous requests per hour per IP, which a shared office
 
 `install.sh` will:
 1. Install Homebrew (if missing) and run `brew bundle` with the [Brewfile](../packages/Brewfile) (includes Nerd Fonts).
-2. Run `uv python install` (version read from [.python-version](../.python-version)) and `uv sync`.
+2. Run `uv python install --default` (version read from [.python-version](../.python-version); new shells get `python3` from uv through `~/.local/bin`) and `uv sync`.
 3. Run `uv run install.py -a -y`, which:
    - Symlinks dotfiles from [assets/](../assets) into `$HOME` (existing files are backed up as `<file>.bak.<timestamp>`).
    - Creates `~/.gitconfig.local` if missing.
