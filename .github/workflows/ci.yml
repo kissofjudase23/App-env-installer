@@ -26,7 +26,7 @@ jobs:
           persist-credentials: false
 
       # setup-uv publishes no floating major tag; Dependabot bumps the pin
-      - uses: astral-sh/setup-uv@v10.3.2
+      - uses: astral-sh/setup-uv@v10.3.3
 
       - name: Install Python
         run: uv python install
