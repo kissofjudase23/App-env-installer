@@ -97,6 +97,18 @@ def test_common_sh_upgrades_term_to_256color(shell, term, expected, home):
     assert result.stdout == expected
 
 
+@pytest.mark.parametrize("shell", ["bash", "zsh"])
+@pytest.mark.parametrize("exists", [True, False], ids=["exists", "missing"])
+def test_common_sh_prepends_local_bin(shell, exists, home):
+    local_bin = home / ".local" / "bin"
+    if exists:
+        local_bin.mkdir(parents=True)
+    result = run_shell(shell, 'source "$1"; printf "%s" "$PATH"', home, str(COMMON))
+    entries = result.stdout.split(":")
+    assert (entries[0] == str(local_bin)) is exists
+    assert (str(local_bin) in entries) is exists
+
+
 def test_common_sh_keeps_only_alias_setting(home):
     result = run_shell("bash", 'source "$1"; declare -F', home, str(COMMON))
     assert result.stdout.split() == ["declare", "-f", "alias_setting"]

@@ -50,8 +50,8 @@ function brew_env() {
 }
 
 function uv_env() {
-    if [[ -f "$HOME/.local/bin/env" ]]; then
-        source "$HOME/.local/bin/env"
+    if [[ -d "$HOME/.local/bin" ]]; then
+        path_prepend "$HOME/.local/bin"
     fi
 }
 
