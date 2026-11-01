@@ -21,7 +21,7 @@ GitHub's API allows 60 anonymous requests per hour per IP, which a shared office
 
 `install.sh` will:
 1. Add the gh apt repo, install [apt-packages.txt](../packages/apt-packages.txt) and the GitHub-release tools (fzf, neovim, eza, delta, starship), install `uv`, and install the latest stable Go from [go.dev](https://go.dev/dl/) into `/usr/local/go` if `go` is missing or older than 1.21.
-2. Run `uv python install` (version read from [.python-version](../.python-version)) and `uv sync`.
+2. Run `uv python install --default` (version read from [.python-version](../.python-version); new shells get `python3` from uv through `~/.local/bin`) and `uv sync`.
 3. Run `uv run install.py -a -y`, which:
    - Symlinks dotfiles from [assets/](../assets) into `$HOME` (existing files are backed up as `<file>.bak.<timestamp>`).
    - Creates `~/.gitconfig.local` if missing.

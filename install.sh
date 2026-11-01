@@ -308,7 +308,7 @@ function install_pkgs_for_darwin() {
 
 function setup_python() {
     # No argument: uv reads the version from .python-version
-    uv python install
+    uv python install --default
     uv sync
     uv run install.py -a -y
 }
