@@ -1,7 +1,8 @@
 "$schema" = 'https://starship.rs/config-schema.json'
 
 # Upstream: https://github.com/carlosplanchon/starship-p10k-rainbow (MIT), commit f61ab74.
-# Local change: os_fg 39 (blue) -> 7 (silver, follows the terminal theme). Keep it when re-copying from upstream.
+# Local changes: os_fg 39 (blue) -> 7 (silver, follows the terminal theme); full directory path
+# (truncation_length 0, truncate_to_repo false). Keep them when re-copying from upstream.
 # ───────────────────────────────────────────────────────────────
 #  Powerlevel10k "rainbow"-style: powerline, 1 line, compact.
 #  Left: OS · directory · Git
@@ -79,9 +80,8 @@ Windows = '󰍲'
 
 [directory]
 format = '[](fg:os_bg bg:dir_bg)[ $path ](fg:dir_fg bg:dir_bg)([$read_only ]($read_only_style))'
-truncation_length = 3
-truncation_symbol = '…/'
-truncate_to_repo = true
+truncation_length = 0
+truncate_to_repo = false
 
 # The lock appears inside the segment when the directory is not writable,
 # like p10k's DIR_SHOW_WRITABLE.
