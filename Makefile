@@ -1,6 +1,6 @@
 
 
-.PHONY: help install upgrade sync lint format test shellcheck shfmt format-shell pslint check
+.PHONY: help install upgrade sync lint format test shellcheck shfmt format-shell actionlint pslint check
 
 .DEFAULT_GOAL := help
 
@@ -57,16 +57,19 @@ shfmt: ## Check shell formatting with shfmt (style from .editorconfig), without 
 format-shell: ## Reformat shell scripts in place with shfmt
 	shfmt -w $(SHELL_SCRIPTS)
 
+actionlint: ## Lint GitHub Actions workflows with actionlint (pinned in uv.lock)
+	uv run actionlint
+
 ifeq ($(OS),Windows_NT)
 pslint: ##w Run PSScriptAnalyzer on install.ps1 and profile.ps1 (installed by install.ps1)
 	$(PSLINT)
 
-check: lint test pslint shellcheck shfmt ##w Pre-commit gate: lint + test + pslint + shellcheck + shfmt + install.py -a -y --dry-run (no changes made)
+check: lint test pslint shellcheck shfmt actionlint ##w Pre-commit gate: lint + test + pslint + shellcheck + shfmt + actionlint + install.py -a -y --dry-run (no changes made)
 	uv run install.py -a -y --dry-run
 else
 pslint: ##u Run PSScriptAnalyzer on install.ps1 and profile.ps1 (requires pwsh and the PSScriptAnalyzer module)
 	pwsh -NoProfile -NonInteractive -Command '$(PSLINT)'
 
-check: lint test shellcheck shfmt ##u Pre-commit gate: lint + test + shellcheck + shfmt + install.py -a -y --dry-run (no changes made)
+check: lint test shellcheck shfmt actionlint ##u Pre-commit gate: lint + test + shellcheck + shfmt + actionlint + install.py -a -y --dry-run (no changes made)
 	uv run install.py -a -y --dry-run
 endif

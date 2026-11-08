@@ -58,6 +58,10 @@ jobs:
         if: runner.os == 'Linux'
         run: make shfmt
 
+      - name: actionlint
+        if: runner.os == 'Linux'
+        run: make actionlint
+
       # make runs its recipes in pwsh on Windows; install.ps1 installs make on real machines
       - name: PSScriptAnalyzer
         if: runner.os == 'Windows'
