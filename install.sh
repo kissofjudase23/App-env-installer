@@ -80,6 +80,16 @@ function detect_os() {
     esac
 }
 
+# The user's login shell from the account database; $SHELL stays stale until the next login
+function login_shell() {
+    local user
+    user="$(id -un)"
+    case "$(uname -s)" in
+        Darwin) dscl . -read "/Users/${user}" UserShell | sed 's/^UserShell: //' ;;
+        *) getent passwd "${user}" | cut -d: -f7 ;;
+    esac
+}
+
 function change_default_shell_to_zsh() {
     local zsh_path
     zsh_path="$(command -v zsh)"
@@ -89,9 +99,10 @@ function change_default_shell_to_zsh() {
         echo "${zsh_path}" | sudo tee -a /etc/shells > /dev/null
     fi
 
-    if [ "${SHELL:-}" != "${zsh_path}" ]; then
+    if [ "$(login_shell)" != "${zsh_path}" ]; then
         echo "Changing default shell to ${zsh_path}..."
-        chsh -s "${zsh_path}"
+        # sudo reuses the credentials cached by earlier steps; plain chsh asks for a password
+        sudo chsh -s "${zsh_path}" "$(id -un)"
     fi
 }
 
