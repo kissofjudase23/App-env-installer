@@ -17,18 +17,18 @@ bash install.sh   # or: make install
 bash install.sh --help
 ```
 
-GitHub's API allows 60 anonymous requests per hour per IP, which a shared office NAT can exhaust. If `GITHUB_TOKEN` or `GH_TOKEN` is set, `install.sh` and `install.py` send it to `api.github.com` only (never to download hosts), e.g. `GH_TOKEN=$(gh auth token) bash install.sh`.
+Behind a shared office NAT, set a [GitHub API token](configuration.md#github-api-token) to avoid the anonymous rate limit.
 
 `install.sh` will:
-1. Add the gh apt repo, install [apt-packages.txt](../packages/apt-packages.txt) and the GitHub-release tools (fzf, neovim, eza, delta, starship), install `uv`, and install the latest stable Go from [go.dev](https://go.dev/dl/) into `/usr/local/go` if `go` is missing or older than 1.21.
+1. Add the gh apt repo, install [apt-packages.txt](../packages/apt-packages.txt) and the GitHub-release tools (fzf, neovim, eza, delta, starship), install `uv` into `~/.local/bin` (without letting its installer edit your shell rc files), and install the latest stable Go from [go.dev](https://go.dev/dl/) into `/usr/local/go` if `go` is missing or older than 1.21.
 2. Run `uv python install --default` (version read from [.python-version](../.python-version); new shells get `python3` from uv through `~/.local/bin`) and `uv sync`.
 3. Run `uv run install.py -a -y`, which:
    - Symlinks dotfiles from [assets/](../assets) into `$HOME` (existing files are backed up as `<file>.bak.<timestamp>`).
    - Creates `~/.gitconfig.local` if missing.
    - Installs the Meslo and Mononoki Nerd Fonts from the official [Nerd Fonts](https://github.com/ryanoasis/nerd-fonts) release (sha256-verified) into `~/.local/share/fonts/NerdFonts/`.
    - Clones git repos (oh-my-zsh).
-   - Installs Go tools with `go install`.
-4. Add `zsh` to `/etc/shells` if needed and switch your default shell to it.
+   - Installs Go tools with `go install` (tools already in `~/go/bin` are skipped).
+4. Add `zsh` to `/etc/shells` if needed and switch your login shell to it (`sudo chsh`).
 
 Both stages are idempotent and can be re-run safely. See [configuration.md](configuration.md) for what gets linked and how to run `install.py` by hand.
 
@@ -40,7 +40,7 @@ Network tools: `curl`, `openssl`, `nc` (`netcat-openbsd`) and `dig` (`bind9-dnsu
 
 To add a package, edit apt-packages.txt and re-run `bash install.sh`.
 
-Re-running `install.sh` skips GitHub-release tools that are already installed (and recent enough). To update them, run `bash install.sh --upgrade` (or `make upgrade`), which reinstalls the latest fzf, eza, delta, starship and Neovim releases.
+Re-running `install.sh` skips GitHub-release tools, Go tools and Nerd Fonts that are already installed (and recent enough). To update them, run `bash install.sh --upgrade` (or `make upgrade`), which reinstalls the latest fzf, eza, delta, starship and Neovim releases and the Go tools, and replaces fonts from an older Nerd Fonts release ([details](configuration.md#manual-installpy-usage)).
 
 ## WSL2
 

@@ -11,7 +11,7 @@
 | `git_repos`  | Repositories to clone (oh-my-zsh)                            |
 | `dotfiles`   | Files in `assets/` to link into `$HOME`                      |
 | `nerd_fonts` | Nerd Fonts release archives installed on Linux and Windows (Meslo, Mononoki) |
-| `go_tools`   | Packages installed with `go install` (gopls, goimports, dlv) |
+| `go_tools`   | Packages installed with `go install` (gopls, goimports, dlv, yq, actionlint) |
 
 `dotfiles` and `git_repos` entries take `src` and `dst` plus optional keys:
 
@@ -56,9 +56,25 @@ uv run install.py -t              # only install Go tools (go install)
 uv run install.py -a              # all actions
 uv run install.py -a --dry-run    # print what would happen
 uv run install.py -a -y           # skip confirmation prompts
+uv run install.py -a --upgrade    # also reinstall Go tools and update Nerd Fonts
 ```
 
-`install.py` can be run from any directory.
+`install.py` can be run from any directory. Without `--upgrade`, Go tools whose binary already exists in `$GOBIN` (default `~/go/bin`) and fonts that are already installed are skipped. With `--upgrade`, every Go tool is reinstalled at the version in `config.yaml` (`@latest`), and a font is replaced only when the latest Nerd Fonts release differs from the one recorded in its `.release` file. `bash install.sh --upgrade` and `install.ps1 -Upgrade` pass `--upgrade` through.
+
+## GitHub API token
+
+GitHub's API allows 60 anonymous requests per hour per IP, which a shared office NAT can exhaust. If `GITHUB_TOKEN` or `GH_TOKEN` is set, `install.sh` and `install.py` send it to `api.github.com` only (never to download hosts), e.g. `GH_TOKEN=$(gh auth token) bash install.sh`.
+
+## Moving the repo
+
+Symlinks (macOS, Linux) and stubs (Windows) point at absolute paths in this repo. After moving or renaming the clone, the old links break and new shells start without these settings. Re-run `uv run install.py` from the new location: it replaces stale symlinks and rewrites stubs without creating backups.
+
+## Undo / uninstall
+
+1. Remove the links or stubs listed under [Dotfiles Linked](#dotfiles-linked) (`rm ~/.zshrc ~/.assets ...`).
+2. Restore any backups: `install.py` renamed each file it replaced to `<file>.bak.<YYYYmmddHHMMSS>`, e.g. `mv ~/.zshrc.bak.20260101120000 ~/.zshrc`.
+3. Switch the login shell back if you like: `chsh -s /bin/bash`.
+4. Packages, fonts, Go tools and `~/.oh-my-zsh` stay installed; remove them with your package manager or `rm -rf`.
 
 ## Machine-specific settings
 

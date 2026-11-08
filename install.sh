@@ -16,9 +16,10 @@ Usage: bash install.sh [--upgrade]
 Bootstrap packages, Python, dotfiles and Go tools on macOS or Ubuntu.
 
 Options:
-  --upgrade   Ubuntu: reinstall the latest fzf, eza, delta, starship and
-              Neovim releases even when already installed
-              (macOS: brew bundle already upgrades)
+  --upgrade   Reinstall the Go tools and update the Nerd Fonts (Linux) even
+              when installed; on Ubuntu also reinstall the latest fzf, eza,
+              delta, starship and Neovim releases (macOS: brew bundle
+              already upgrades the packages)
   -h, --help  Show this help and exit
 USAGE
 }
@@ -79,6 +80,16 @@ function detect_os() {
     esac
 }
 
+# The user's login shell from the account database; $SHELL stays stale until the next login
+function login_shell() {
+    local user
+    user="$(id -un)"
+    case "$(uname -s)" in
+        Darwin) dscl . -read "/Users/${user}" UserShell | sed 's/^UserShell: //' ;;
+        *) getent passwd "${user}" | cut -d: -f7 ;;
+    esac
+}
+
 function change_default_shell_to_zsh() {
     local zsh_path
     zsh_path="$(command -v zsh)"
@@ -88,9 +99,10 @@ function change_default_shell_to_zsh() {
         echo "${zsh_path}" | sudo tee -a /etc/shells > /dev/null
     fi
 
-    if [ "${SHELL:-}" != "${zsh_path}" ]; then
+    if [ "$(login_shell)" != "${zsh_path}" ]; then
         echo "Changing default shell to ${zsh_path}..."
-        chsh -s "${zsh_path}"
+        # sudo reuses the credentials cached by earlier steps; plain chsh asks for a password
+        sudo chsh -s "${zsh_path}" "$(id -un)"
     fi
 }
 
@@ -127,13 +139,13 @@ function install_pkgs_for_ubuntu() {
 
     sed -e 's/#.*//' packages/apt-packages.txt | xargs sudo apt-get install -y
 
+    # Never let the uv installer edit rc files (they may be symlinks into this repo);
+    # common.sh already puts ~/.local/bin on PATH
     if ! command -v uv &> /dev/null; then
-        curl -LsSf https://astral.sh/uv/install.sh | sh
+        curl -LsSf https://astral.sh/uv/install.sh |
+            env UV_NO_MODIFY_PATH=1 UV_INSTALL_DIR="${HOME}/.local/bin" sh
     fi
-    if [ -f "${HOME}/.local/bin/env" ]; then
-        # shellcheck disable=SC1091
-        . "${HOME}/.local/bin/env"
-    fi
+    export PATH="${HOME}/.local/bin:${PATH}"
 }
 
 GO_MIN_VERSION="1.21"
@@ -310,7 +322,11 @@ function setup_python() {
     # No argument: uv reads the version from .python-version
     uv python install --default
     uv sync
-    uv run install.py -a -y
+    if ((UPGRADE == 1)); then
+        uv run install.py -a -y --upgrade
+    else
+        uv run install.py -a -y
+    fi
 }
 
 function main() {

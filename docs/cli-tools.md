@@ -271,7 +271,8 @@ auth, and `--jq` filters the result the same way jq does.
 - **tmux**: terminal multiplexer, configured by [tmux.conf](../assets/tmux/tmux.conf). The prefix
   is `Ctrl-a` (screen-like): `prefix c` new window, `prefix n`/`p` next/previous,
   `prefix |` / `prefix -` split (new panes and windows keep the current directory),
-  `prefix h/j/k/l` move between panes, `prefix [` enters vi copy mode (`v` select, `y` copy),
+  `prefix h/j/k/l` move between panes, `prefix [` enters vi copy mode (`v` select, `y` copy, also to
+  the system clipboard via OSC 52),
   `prefix R` reloads the config, `prefix d` detaches, `tmux a` reattaches.
 - **starship**: the prompt; see [shell.md](shell.md) for the preset and how to update it.
 

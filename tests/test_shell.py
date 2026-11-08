@@ -264,3 +264,58 @@ def test_release_tools_upgrade(home, coreutils_path, fzf_version, args, expected
         "bash", RELEASE_TOOLS_SCRIPT, home, str(INSTALL_SH), coreutils_path, fzf_version, *args
     )
     assert result.stdout.splitlines() == expected, result.stderr
+
+
+@pytest.mark.parametrize(("args", "flag"), [([], ""), (["--upgrade"], " --upgrade")])
+def test_setup_python_passes_upgrade(home, args, flag):
+    script = 'source "$1"; shift; uv() { echo "uv $*"; }; parse_args "$@"; setup_python'
+    result = run_shell("bash", script, home, str(INSTALL_SH), *args)
+    assert result.stdout.splitlines() == [
+        "uv python install --default",
+        "uv sync",
+        f"uv run install.py -a -y{flag}",
+    ], result.stderr
+
+
+# Each stub answers only for the expected user, so a wrong lookup prints nothing
+LOGIN_SHELL_SCRIPT = """
+source "$1"
+os="$2"
+uname() { echo "${os}"; }
+id() { echo alice; }
+dscl() { [[ "$3" == /Users/alice ]] && printf 'UserShell: /bin/zsh\\n'; }
+getent() { [[ "$1 $2" == "passwd alice" ]] && echo alice:x:1000:1000::/home/alice:/usr/bin/zsh; }
+login_shell
+"""
+
+
+@pytest.mark.parametrize(("os_name", "shell"), [("Darwin", "/bin/zsh"), ("Linux", "/usr/bin/zsh")])
+def test_login_shell(home, os_name, shell):
+    result = run_shell("bash", LOGIN_SHELL_SCRIPT, home, str(INSTALL_SH), os_name)
+    assert result.stdout == f"{shell}\n", result.stderr
+
+
+CHSH_SCRIPT = """
+source "$1"
+current="$2"
+grep() { return 0; }
+id() { echo alice; }
+login_shell() { echo "${current}"; }
+sudo() { echo "sudo $*"; }
+change_default_shell_to_zsh
+"""
+
+
+@pytest.mark.parametrize("current", ["zsh", "/bin/bash"])
+def test_change_default_shell_to_zsh(home, current):
+    zsh = shutil.which("zsh")
+    if zsh is None:
+        pytest.skip("zsh is not installed")
+    current = zsh if current == "zsh" else current
+    result = run_shell("bash", CHSH_SCRIPT, home, str(INSTALL_SH), current)
+    expected = (
+        []
+        if current == zsh
+        else [f"Changing default shell to {zsh}...", f"sudo chsh -s {zsh} alice"]
+    )
+    assert result.stdout.splitlines() == expected, result.stderr

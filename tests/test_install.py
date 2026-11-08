@@ -55,7 +55,13 @@ def base_dirs(home: Path) -> dict[str, Path]:
 
 
 def make_installer(
-    tmp_path: Path, home: Path, *, dry_run: bool = False, system: str = "Darwin", **config
+    tmp_path: Path,
+    home: Path,
+    *,
+    dry_run: bool = False,
+    upgrade: bool = False,
+    system: str = "Darwin",
+    **config,
 ) -> install.Installer:
     config_path = tmp_path / "config.yaml"
     config_path.write_text(
@@ -69,6 +75,7 @@ def make_installer(
         base_dirs=base_dirs(home),
         assume_yes=True,
         dry_run=dry_run,
+        upgrade=upgrade,
     )
 
 
@@ -362,6 +369,13 @@ def test_docs_dotfiles_table_matches_config():
     assert sorted((src.rstrip("/"), dst, os) for src, dst, os in rows) == sorted(expected)
 
 
+def test_docs_make_targets_match_makefile():
+    makefile = (install.ROOT / "Makefile").read_text(encoding="utf-8")
+    targets = re.search(r"^\.PHONY: (.+)$", makefile, re.MULTILINE).group(1).split()
+    doc = (install.ROOT / "docs" / "development.md").read_text(encoding="utf-8")
+    assert re.findall(r"^\| `make ([a-z-]+)`", doc, re.MULTILINE) == targets
+
+
 def test_clone_git_repos_runs_git_clone(tmp_path, home, commands):
     git_repos = [{"name": "repo", "src": "https://example.com/repo.git", "dst": "src/repo"}]
     make_installer(tmp_path, home, git_repos=git_repos).clone_git_repos()
@@ -379,10 +393,38 @@ def test_clone_skips_existing_repo(tmp_path, home):
 
 def test_install_go_tools_runs_go_install(tmp_path, home, monkeypatch, commands):
     monkeypatch.setattr(install.shutil, "which", lambda _: "/usr/bin/go")
+    monkeypatch.setenv("GOBIN", str(home / "bin"))
     tools = ["example.com/a@latest", "example.com/b@v1"]
     make_installer(tmp_path, home, go_tools=tools).install_go_tools()
 
     assert commands == [["/usr/bin/go", "install", tool] for tool in tools]
+
+
+@pytest.mark.parametrize(
+    ("pkg", "system", "binary"),
+    [
+        ("golang.org/x/tools/gopls@latest", "Linux", "gopls"),
+        ("github.com/mikefarah/yq/v4@latest", "Darwin", "yq"),
+        ("github.com/go-delve/delve/cmd/dlv@v1.25.0", "Windows", "dlv.exe"),
+    ],
+)
+def test_go_tool_binary(pkg, system, binary):
+    assert install.go_tool_binary(pkg, system) == binary
+
+
+@pytest.mark.parametrize(("upgrade", "installed"), [(False, ["b"]), (True, ["a", "b"])])
+def test_install_go_tools_skips_installed_unless_upgrade(
+    tmp_path, home, monkeypatch, commands, upgrade, installed
+):
+    monkeypatch.setattr(install.shutil, "which", lambda _: "/usr/bin/go")
+    monkeypatch.setenv("GOBIN", str(home / "bin"))
+    (home / "bin").mkdir()
+    (home / "bin/a").write_text("")
+    tools = ["example.com/a@latest", "example.com/b/v2@latest"]
+    make_installer(tmp_path, home, upgrade=upgrade, go_tools=tools).install_go_tools()
+
+    expected = {"a": tools[0], "b": tools[1]}
+    assert commands == [["/usr/bin/go", "install", expected[name]] for name in installed]
 
 
 def test_install_go_tools_skips_without_go(tmp_path, home, monkeypatch):
@@ -413,6 +455,20 @@ def test_cli_dry_run_all_changes_nothing(cli_home):
     assert result.exit_code == 0, result.output
     assert "git clone" in result.output
     assert list(cli_home.iterdir()) == []
+
+
+def test_cli_upgrade_dry_run_reinstalls_go_tools(cli_home, monkeypatch):
+    monkeypatch.setattr(install.shutil, "which", lambda _: "/usr/bin/go")
+    monkeypatch.setenv("GOBIN", str(cli_home / "bin"))
+    (cli_home / "bin").mkdir()
+    (cli_home / "bin/gopls").write_text("")
+
+    plain = CliRunner().invoke(install.cli, ["-t", "-y", "--dry-run"])
+    upgrade = CliRunner().invoke(install.cli, ["-t", "-y", "--dry-run", "--upgrade"])
+
+    assert plain.exit_code == upgrade.exit_code == 0, plain.output + upgrade.output
+    assert "go install golang.org/x/tools/gopls@latest" not in plain.output
+    assert "go install golang.org/x/tools/gopls@latest" in upgrade.output
 
 
 def test_cli_reports_errors_with_exit_code(cli_home, monkeypatch):
@@ -498,7 +554,8 @@ def test_install_fonts_extracts_ttf_only(tmp_path, home, nerd_fonts_release):
     make_installer(tmp_path, home, system="Linux", nerd_fonts=["Meslo"]).install_fonts()
 
     font_dir = home / ".local/share/fonts/NerdFonts"
-    assert sorted(p.name for p in (font_dir / "Meslo").iterdir()) == ["A.ttf"]
+    assert sorted(p.name for p in (font_dir / "Meslo").iterdir()) == [".release", "A.ttf"]
+    assert (font_dir / "Meslo/.release").read_text() == "v0.0.0\n"
     assert sorted(p.name for p in font_dir.iterdir()) == ["Meslo"]
     assert commands == [["fc-cache", "-f", str(font_dir)]]
 
@@ -537,6 +594,26 @@ def test_install_fonts_skips_installed(tmp_path, home, nerd_fonts_release):
     assert commands == []
 
 
+@pytest.mark.parametrize(("release", "reinstalled"), [("v0.0.0", False), ("v-old", True)])
+def test_install_fonts_upgrade_replaces_older_release(
+    tmp_path, home, nerd_fonts_release, release, reinstalled
+):
+    archives, _, commands = nerd_fonts_release
+    archives["Meslo.tar.xz"] = make_font_archive({"New.ttf": b"font"})
+    font_dir = home / ".local/share/fonts/NerdFonts/Meslo"
+    font_dir.mkdir(parents=True)
+    (font_dir / "Old.ttf").write_bytes(b"font")
+    (font_dir / ".release").write_text(f"{release}\n")
+
+    installer = make_installer(tmp_path, home, upgrade=True, system="Linux", nerd_fonts=["Meslo"])
+    installer.install_fonts()
+
+    ttfs = sorted(p.name for p in font_dir.glob("*.ttf"))
+    assert ttfs == (["New.ttf"] if reinstalled else ["Old.ttf"])
+    assert (font_dir / ".release").read_text() == "v0.0.0\n"
+    assert commands == [["fc-cache", "-f", str(font_dir.parent)]]
+
+
 def test_install_fonts_rejects_digest_mismatch(tmp_path, home, nerd_fonts_release, monkeypatch):
     archives, _, _ = nerd_fonts_release
     archives["Meslo.tar.xz"] = make_font_archive({"A.ttf": b"font"})
@@ -563,7 +640,9 @@ def test_install_fonts_rejects_path_traversal(tmp_path, home, nerd_fonts_release
 def test_install_fonts_rejects_missing_digest(tmp_path, home, nerd_fonts_release, monkeypatch):
     _, fetched, _ = nerd_fonts_release
     assets = {"Meslo.tar.xz": ("https://example.com/Meslo.tar.xz", "")}
-    monkeypatch.setattr(install.Installer, "_nerd_font_assets", staticmethod(lambda: assets))
+    monkeypatch.setattr(
+        install.Installer, "_nerd_font_assets", staticmethod(lambda: ("v0.0.0", assets))
+    )
 
     with pytest.raises(install.InstallerError, match="no sha256 digest for Meslo.tar.xz"):
         make_installer(tmp_path, home, system="Linux", nerd_fonts=["Meslo"]).install_fonts()
@@ -595,13 +674,15 @@ def test_check_supported(monkeypatch, system, os_release, error):
             install.check_supported()
 
 
+@pytest.mark.parametrize("upgrade", [False, True], ids=["install", "upgrade"])
 @pytest.mark.parametrize("system", ["Linux", "Windows"])
-def test_dry_run_changes_nothing(tmp_path, home, system):
+def test_dry_run_changes_nothing(tmp_path, home, system, upgrade):
     (home / ".tigrc").write_text("mine")
     installer = make_installer(
         tmp_path,
         home,
         dry_run=True,
+        upgrade=upgrade,
         system=system,
         dotfiles=[
             {"name": "tigrc", "src": "assets/tig/tigrc", "dst": ".tigrc"},

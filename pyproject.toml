@@ -10,6 +10,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "actionlint-py>=1.7.12.25",
     "pytest>=9.2.0",
     "ruff",
 ]

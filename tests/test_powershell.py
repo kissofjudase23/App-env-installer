@@ -128,3 +128,18 @@ def test_install_ps1_never_upgrades_running_pwsh(home, flag, expected):
     assert result.stdout.splitlines() == [
         f"{line} {count}" for line, count in zip(expected, counts, strict=True)
     ], result.stderr
+
+
+@pytest.mark.parametrize(("flag", "suffix"), [("", ""), ("-Upgrade", " --upgrade")])
+def test_install_ps1_passes_upgrade_to_install_py(home, flag, suffix):
+    script = (
+        f". '{INSTALL_PS1}'\n"
+        'function Invoke-Native($Command, $Arguments) { Write-Output "$Command $Arguments" }\n'
+        f"Install-Python {flag}"
+    )
+    result = run_pwsh(script, home)
+    assert result.stdout.splitlines() == [
+        "uv python install",
+        "uv sync",
+        f"uv run install.py -a -y{suffix}",
+    ], result.stderr
