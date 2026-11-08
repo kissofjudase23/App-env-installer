@@ -1,14 +1,13 @@
 name: Install (Ubuntu)
 
 # Runs the real install.sh in fresh containers; ci.yml only covers install.py and linting.
-# Keep both path lists identical.
 on:
   # Weekly: catches upstream drift (renamed release assets, apt/gh repo changes) with no commit here
   schedule:
     - cron: "0 3 * * 1"
   push:
     branches: [master]
-    paths:
+    paths: &paths
       - install.sh
       - install.py
       - packages/apt-packages.txt
@@ -18,15 +17,7 @@ on:
       - assets/shell/**
       - .github/workflows/install-ubuntu.yml
   pull_request:
-    paths:
-      - install.sh
-      - install.py
-      - packages/apt-packages.txt
-      - config.yaml
-      - .python-version
-      - uv.lock
-      - assets/shell/**
-      - .github/workflows/install-ubuntu.yml
+    paths: *paths
   workflow_dispatch:
 
 permissions:
@@ -61,7 +52,7 @@ jobs:
           apt-get update
           apt-get install -y --no-install-recommends ca-certificates curl git sudo
 
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
