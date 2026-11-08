@@ -9,6 +9,7 @@
       "Bash(make test)",
       "Bash(make shfmt)",
       "Bash(make format-shell)",
+      "Bash(make actionlint)",
       "Bash(make check)",
       "Bash(make actionlint)",
       "Bash(make pslint)",
