@@ -14,12 +14,12 @@ Windows 10/11 with `winget` ("App Installer", preinstalled on Windows 11) and `g
 git clone https://github.com/kissofjudase23/App-env-installer.git
 cd App-env-installer
 powershell -ExecutionPolicy Bypass -File .\install.ps1            # first run; later: make install
-powershell -ExecutionPolicy Bypass -File .\install.ps1 -Upgrade   # also upgrade installed packages (make upgrade)
+powershell -ExecutionPolicy Bypass -File .\install.ps1 -Upgrade   # also upgrade packages, Go tools, fonts (make upgrade)
 ```
 
-`-Upgrade` skips PowerShell 7 itself while any `pwsh` window is open, because its installer cannot replace a running `pwsh`; close them and run `winget upgrade Microsoft.PowerShell` from `cmd` or Windows PowerShell.
+`-Upgrade` also reinstalls the Go tools and replaces fonts from an older Nerd Fonts release ([details](configuration.md#manual-installpy-usage)). It skips PowerShell 7 itself while any `pwsh` window is open, because its installer cannot replace a running `pwsh`; close them and run `winget upgrade Microsoft.PowerShell` from `cmd` or Windows PowerShell.
 
-GitHub's API allows 60 anonymous requests per hour per IP; if `GITHUB_TOKEN` or `GH_TOKEN` is set, `install.py` sends it to `api.github.com` only.
+Behind a shared office NAT, set a [GitHub API token](configuration.md#github-api-token) to avoid the anonymous rate limit.
 
 `install.ps1` runs on the built-in Windows PowerShell 5.1 and will:
 1. Run `winget import` with [packages/winget-packages.json](../packages/winget-packages.json).
@@ -52,13 +52,7 @@ To add a package, add its ID (check with `winget show --id <id> --exact`) to win
 
 PowerShell 7 loads [profile.ps1](../assets/shell/profile.ps1) through its `$PROFILE` stub. It mirrors `common.sh`: the same eza/bat aliases (as functions), `vi`/`vim`/`vimdiff` and `EDITOR` for Neovim, fzf with fd/bat, `GIT_PAGER=delta`, zoxide (`z`, `j`), starship, PSReadLine history prediction, and PSFzf's `Ctrl-T` / `Ctrl-R` when installed. starship reads [starship.toml](../assets/starship/starship.toml) through `STARSHIP_CONFIG`, set by `profile.ps1`.
 
-Machine-specific settings go in `~/.shell_local.ps1` (untracked), which `profile.ps1` dot-sources:
-
-```powershell
-# ~/.shell_local.ps1
-$env:USE_CORP_PROXY = '1'
-$env:CORP_PROXY_URL = 'http://proxy.example.com:8080'
-```
+Machine-specific settings, such as a corporate proxy, go in `~/.shell_local.ps1` (untracked), which `profile.ps1` dot-sources; see [configuration.md](configuration.md#machine-specific-settings).
 
 ## Windows Terminal
 

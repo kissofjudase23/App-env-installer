@@ -369,6 +369,13 @@ def test_docs_dotfiles_table_matches_config():
     assert sorted((src.rstrip("/"), dst, os) for src, dst, os in rows) == sorted(expected)
 
 
+def test_docs_make_targets_match_makefile():
+    makefile = (install.ROOT / "Makefile").read_text(encoding="utf-8")
+    targets = re.search(r"^\.PHONY: (.+)$", makefile, re.MULTILINE).group(1).split()
+    doc = (install.ROOT / "docs" / "development.md").read_text(encoding="utf-8")
+    assert re.findall(r"^\| `make ([a-z-]+)`", doc, re.MULTILINE) == targets
+
+
 def test_clone_git_repos_runs_git_clone(tmp_path, home, commands):
     git_repos = [{"name": "repo", "src": "https://example.com/repo.git", "dst": "src/repo"}]
     make_installer(tmp_path, home, git_repos=git_repos).clone_git_repos()

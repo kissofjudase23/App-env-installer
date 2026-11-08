@@ -17,7 +17,7 @@ bash install.sh   # or: make install
 bash install.sh --help
 ```
 
-GitHub's API allows 60 anonymous requests per hour per IP, which a shared office NAT can exhaust. If `GITHUB_TOKEN` or `GH_TOKEN` is set, `install.sh` and `install.py` send it to `api.github.com` only (never to download hosts), e.g. `GH_TOKEN=$(gh auth token) bash install.sh`.
+Behind a shared office NAT, set a [GitHub API token](configuration.md#github-api-token) to avoid the anonymous rate limit.
 
 `install.sh` will:
 1. Install Homebrew (if missing) and run `brew bundle` with the [Brewfile](../packages/Brewfile) (includes Nerd Fonts).
@@ -26,8 +26,8 @@ GitHub's API allows 60 anonymous requests per hour per IP, which a shared office
    - Symlinks dotfiles from [assets/](../assets) into `$HOME` (existing files are backed up as `<file>.bak.<timestamp>`).
    - Creates `~/.gitconfig.local` if missing.
    - Clones git repos (oh-my-zsh).
-   - Installs Go tools with `go install`.
-4. Add `zsh` to `/etc/shells` if needed and switch your default shell to it.
+   - Installs Go tools with `go install` (tools already in `~/go/bin` are skipped).
+4. Add `zsh` to `/etc/shells` if needed and switch your login shell to it (`sudo chsh`).
 
 Both stages are idempotent and can be re-run safely. See [configuration.md](configuration.md) for what gets linked and how to run `install.py` by hand.
 
@@ -37,11 +37,12 @@ See [packages/Brewfile](../packages/Brewfile): formulae, `claude` (Claude Deskto
 
 `curl`, `openssl` (LibreSSL), `nc` and `dig` ship with macOS, so they are not in the Brewfile (Homebrew's `curl` is keg-only and would not be on `PATH`). Usage: [cli-tools.md](cli-tools.md#network-tools).
 
-To add a package, edit the Brewfile and re-run `bash install.sh`. `brew bundle` already upgrades outdated packages, so `--upgrade` changes nothing on macOS.
+To add a package, edit the Brewfile and re-run `bash install.sh`. `brew bundle` already upgrades outdated packages; `bash install.sh --upgrade` (or `make upgrade`) additionally reinstalls the Go tools ([details](configuration.md#manual-installpy-usage)).
 
 ## iTerm2
 
 - **Font**: Preferences → Profiles → Text → Font → *MesloLGS Nerd Font*
+- **Clipboard**: tick Preferences → General → Selection → *Applications in terminal may access clipboard*, so text copied in tmux (`y` in copy mode, or a mouse selection) reaches the macOS clipboard.
 - **Transparency**: if Profiles → Window → Transparency is above 0, also tick *Keep background colors opaque*, otherwise the starship blocks look darker than their arrow edges.
 - **Color schemes** (bundled in [assets/iterm2_themes/](../assets/iterm2_themes)):
   - Tomorrow Night, Tomorrow Night Blue, Tomorrow Night Bright, Tomorrow Night Burns, Tomorrow Night Eighties
