@@ -8,3 +8,7 @@ Pipfile
 Pipfile.lock
 __pycache__/
 *.bak.*
+
+# Claude Code per-user files
+.claude/settings.local.json
+CLAUDE.local.md
