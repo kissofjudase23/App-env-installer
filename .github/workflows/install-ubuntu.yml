@@ -82,3 +82,8 @@ jobs:
           version_at_least "${NVIM_MIN_VERSION}" "${nvim_version#NVIM v}"
           # common.sh must stay silent for scp / ssh host cmd
           [[ -z "$(bash -c 'source ~/.bash_profile' 2>&1)" ]]
+          # Installers must not append to rc files (the uv installer edits ~/.profile by default)
+          if grep -qsF '.local/bin/env' ~/.profile; then echo "${HOME}/.profile was modified" >&2; exit 1; fi
+          # ~/.gitconfig links into the repo, so trust the root-run checkout from a separate file
+          git config --file /tmp/safe.gitconfig safe.directory '*'
+          GIT_CONFIG_GLOBAL=/tmp/safe.gitconfig git diff --exit-code

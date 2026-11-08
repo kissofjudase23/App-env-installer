@@ -264,3 +264,14 @@ def test_release_tools_upgrade(home, coreutils_path, fzf_version, args, expected
         "bash", RELEASE_TOOLS_SCRIPT, home, str(INSTALL_SH), coreutils_path, fzf_version, *args
     )
     assert result.stdout.splitlines() == expected, result.stderr
+
+
+@pytest.mark.parametrize(("args", "flag"), [([], ""), (["--upgrade"], " --upgrade")])
+def test_setup_python_passes_upgrade(home, args, flag):
+    script = 'source "$1"; shift; uv() { echo "uv $*"; }; parse_args "$@"; setup_python'
+    result = run_shell("bash", script, home, str(INSTALL_SH), *args)
+    assert result.stdout.splitlines() == [
+        "uv python install --default",
+        "uv sync",
+        f"uv run install.py -a -y{flag}",
+    ], result.stderr

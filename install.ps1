@@ -3,7 +3,7 @@
 #   powershell -ExecutionPolicy Bypass -File .\install.ps1 [-Upgrade]
 [CmdletBinding()]
 param(
-    # Also upgrade packages that are already installed
+    # Also upgrade installed packages, Go tools and Nerd Fonts
     [switch] $Upgrade,
     [switch] $Help
 )
@@ -20,7 +20,8 @@ Usage: powershell -ExecutionPolicy Bypass -File .\install.ps1 [-Upgrade]
 Bootstrap winget packages, Python, dotfiles and Go tools on Windows.
 
 Options:
-  -Upgrade  Upgrade the packages in packages\winget-packages.json even when installed
+  -Upgrade  Upgrade the packages in packages\winget-packages.json, the Go tools
+            and the Nerd Fonts even when installed
   -Help     Show this help and exit
 '@
 }
@@ -87,10 +88,13 @@ function Install-PwshModule {
 }
 
 function Install-Python {
+    param([switch] $Upgrade)
     # No argument: uv reads the version from .python-version
     Invoke-Native uv @('python', 'install')
     Invoke-Native uv @('sync')
-    Invoke-Native uv @('run', 'install.py', '-a', '-y')
+    $installArgs = @('run', 'install.py', '-a', '-y')
+    if ($Upgrade) { $installArgs += '--upgrade' }
+    Invoke-Native uv $installArgs
 }
 
 function Main {
@@ -105,7 +109,7 @@ function Main {
         Install-WingetPackage -Upgrade:$Upgrade
         Sync-SessionPath
         Install-PwshModule
-        Install-Python
+        Install-Python -Upgrade:$Upgrade
     } finally {
         Pop-Location
     }

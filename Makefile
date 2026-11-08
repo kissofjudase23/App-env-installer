@@ -20,7 +20,7 @@ help: ##w Show available targets and their descriptions (default target)
 install: ##w Full bootstrap: winget packages, Python via uv (.python-version), install.py -a -y (modifies $HOME)
 	powershell -NoProfile -ExecutionPolicy Bypass -File install.ps1
 
-upgrade: ##w Like install, but also upgrade installed winget packages (install.ps1 -Upgrade)
+upgrade: ##w Like install, but also upgrade installed winget packages, Go tools and Nerd Fonts (install.ps1 -Upgrade)
 	powershell -NoProfile -ExecutionPolicy Bypass -File install.ps1 -Upgrade
 else
 help: ##u Show available targets and their descriptions (default target)
@@ -30,7 +30,7 @@ help: ##u Show available targets and their descriptions (default target)
 install: ##u Full bootstrap: OS packages (brew/apt), Python via uv (.python-version), install.py -a -y, chsh to zsh (uses sudo, modifies $HOME)
 	bash install.sh
 
-upgrade: ##u Like install, but also update fzf, eza, delta, starship, nvim on Ubuntu (bash install.sh --upgrade)
+upgrade: ##u Like install, but also update Go tools, Nerd Fonts (Linux) and fzf, eza, delta, starship, nvim (Ubuntu) (bash install.sh --upgrade)
 	bash install.sh --upgrade
 endif
 
