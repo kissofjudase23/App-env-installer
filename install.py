@@ -3,6 +3,7 @@ import io
 import json
 import os
 import platform
+import re
 import shutil
 import subprocess
 import sys
@@ -28,6 +29,9 @@ WINDOWS_FONTS_KEY = r"Software\Microsoft\Windows NT\CurrentVersion\Fonts"
 FOLDERID_DOCUMENTS = uuid.UUID("FDD39AD0-238F-46AF-ADB4-6C85480369C7")
 # winerror when creating a symlink without Developer Mode or admin rights
 ERROR_PRIVILEGE_NOT_HELD = 1314
+
+# Records the nerd-fonts release tag a font dir came from, so --upgrade skips current fonts
+FONT_RELEASE_FILE = ".release"
 
 GITCONFIG_LOCAL_TEMPLATE = """\
 # Machine-specific git settings (not tracked). Uncomment and set your identity.
@@ -87,6 +91,13 @@ STUBS = {
     "powershell": lambda src: f"{_stub_header(src)}. {_ps_quote(str(src))}\n",
     "vim": _vim_stub,
 }
+
+
+def go_tool_binary(pkg: str, system: str) -> str:
+    parts = pkg.split("@", 1)[0].split("/")
+    # go install drops a major version suffix: github.com/mikefarah/yq/v4 installs yq
+    name = parts[-2] if len(parts) > 1 and re.fullmatch(r"v\d+", parts[-1]) else parts[-1]
+    return f"{name}.exe" if system == SupportedSystems.WINDOWS.value else name
 
 
 def run(cmd: list[str], *, dry_run: bool) -> None:
@@ -259,6 +270,7 @@ class Installer:
         base_dirs: dict[str, Path] | None = None,
         assume_yes: bool = False,
         dry_run: bool = False,
+        upgrade: bool = False,
     ):
         self.home = home
         self.system = system
@@ -267,6 +279,7 @@ class Installer:
         self.config_mgr = config_mgr
         self.assume_yes = assume_yes
         self.dry_run = dry_run
+        self.upgrade = upgrade
 
     def _confirm(self, title: str, pairs: list[tuple]) -> bool:
         click.echo(f"\n{title}:")
@@ -354,18 +367,23 @@ class Installer:
         else:
             # macOS fonts are installed by the Brewfile
             return
-        missing = []
-        for name in self.config_mgr.nerd_fonts:
-            if any((font_dir / name).glob("*.ttf")):
-                click.echo(f"skip {font_dir / name}: already installed")
-            else:
-                missing.append(name)
-        if not missing:
+        names = self.config_mgr.nerd_fonts
+        if not self.upgrade:
+            installed = [n for n in names if any((font_dir / n).glob("*.ttf"))]
+            for name in installed:
+                click.echo(f"skip {font_dir / name}: already installed (--upgrade to update)")
+            names = [n for n in names if n not in installed]
+        if not names:
             return
 
         # dry run stays offline: report the archives without resolving the release
-        assets = {} if self.dry_run else self._nerd_font_assets()
-        for name in missing:
+        tag, assets = ("", {}) if self.dry_run else self._nerd_font_assets()
+        for name in names:
+            release_file = font_dir / name / FONT_RELEASE_FILE
+            installed = release_file.read_text("utf-8").strip() if release_file.is_file() else ""
+            if tag and installed == tag:
+                click.echo(f"skip {font_dir / name}: nerd-fonts {tag} already installed")
+                continue
             archive = f"{name}.tar.xz"
             click.echo(f"download nerd-fonts {archive} -> {font_dir / name}")
             if self.dry_run:
@@ -379,6 +397,7 @@ class Installer:
             if f"sha256:{hashlib.sha256(data).hexdigest()}" != digest:
                 raise InstallerError(f"sha256 mismatch for {archive}")
             extract_fonts(data, font_dir / name)
+            release_file.write_text(f"{tag}\n", encoding="utf-8")
             if not linux:
                 for ttf in sorted((font_dir / name).glob("*.ttf")):
                     register_windows_font(ttf)
@@ -387,12 +406,13 @@ class Installer:
             run(["fc-cache", "-f", str(font_dir)], dry_run=self.dry_run)
 
     @staticmethod
-    def _nerd_font_assets() -> dict[str, tuple[str, str]]:
+    def _nerd_font_assets() -> tuple[str, dict[str, tuple[str, str]]]:
         release = json.loads(fetch(NERD_FONTS_RELEASE_API))
         click.echo(f"nerd-fonts {release['tag_name']}")
-        return {
+        assets = {
             a["name"]: (a["browser_download_url"], a.get("digest") or "") for a in release["assets"]
         }
+        return release["tag_name"], assets
 
     def install_go_tools(self) -> None:
         go = shutil.which("go")
@@ -404,7 +424,15 @@ class Installer:
             os.environ.get("GOBIN")
             or Path(os.environ.get("GOPATH", "").split(os.pathsep)[0] or self.home / "go") / "bin"
         )
-        pairs = [(pkg, gobin) for pkg in self.config_mgr.go_tools]
+        pairs = []
+        for pkg in self.config_mgr.go_tools:
+            binary = Path(gobin) / go_tool_binary(pkg, self.system)
+            if not self.upgrade and binary.exists():
+                click.echo(f"skip {binary}: already installed (--upgrade to update)")
+            else:
+                pairs.append((pkg, gobin))
+        if not pairs:
+            return
         if not self._confirm("Prepare to install go tools", pairs):
             return
 
@@ -445,6 +473,9 @@ def check_supported() -> str:
 @click.option("-t", "--go-tools", "install_go_tools", is_flag=True, help="Install Go tools.")
 @click.option("-a", "--all", "install_all", is_flag=True, help="Run all actions.")
 @click.option("-y", "--yes", "assume_yes", is_flag=True, help="Skip confirmation prompts.")
+@click.option(
+    "--upgrade", is_flag=True, help="Reinstall Go tools and update fonts even when installed."
+)
 @click.option("--dry-run", is_flag=True, help="Print actions without changing anything.")
 def cli(
     link_dotfiles: bool,
@@ -453,6 +484,7 @@ def cli(
     install_go_tools: bool,
     install_all: bool,
     assume_yes: bool,
+    upgrade: bool,
     dry_run: bool,
 ) -> None:
     if not (link_dotfiles or clone_git_repos or install_fonts or install_go_tools or install_all):
@@ -466,6 +498,7 @@ def cli(
             config_mgr=ConfigMgr(),
             assume_yes=assume_yes,
             dry_run=dry_run,
+            upgrade=upgrade,
         )
 
         if install_all or link_dotfiles:
