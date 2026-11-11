@@ -16,9 +16,11 @@ disable-model-invocation: true
    Watch each with `gh run watch <id> --exit-status` in the background
    (install-ubuntu can take 30 min). On failure, show `gh run view <id> --log-failed`
    and summarize the cause.
-6. On `master`, stop here. Otherwise create a PR against `master` with `gh pr create`
+6. On `master`, skip to step 9. Otherwise create a PR against `master` with `gh pr create`
    (branch pushes may start no runs; the PR triggers them).
 7. Wait with `gh pr checks <number> --watch` in the background and confirm every check
    passed. On failure, show `gh run view <id> --log-failed`, summarize the cause and stop.
 8. Ask the user whether to merge the PR and delete the remote branch. Only after they
-   confirm, run `gh pr merge <number> --merge --delete-branch`.
+   confirm, run `gh pr merge <number> --merge --delete-branch`; if they decline, stop here.
+9. Update local `master`: `git switch master` if needed, then `git fetch origin` and
+   `git pull --ff-only origin master`.
