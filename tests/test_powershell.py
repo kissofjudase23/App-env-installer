@@ -108,7 +108,8 @@ function Invoke-Native($Command, $Arguments) {{
     $file = $Arguments[[array]::IndexOf($Arguments, '--import-file') + 1]
     $ids = (Get-Content $file -Raw | ConvertFrom-Json).Sources.Packages.PackageIdentifier
     $pwsh = $ids -contains 'Microsoft.PowerShell'
-    Write-Output "$($Arguments -contains '--no-upgrade') $pwsh $($ids.Count)"
+    $copilot = $ids -contains 'GitHub.Copilot'
+    Write-Output "$($Arguments -contains '--no-upgrade') $pwsh $copilot $($ids.Count)"
 }}
 Install-WingetPackage {flag} 6> $null
 """
@@ -116,15 +117,15 @@ Install-WingetPackage {flag} 6> $null
 
 @pytest.mark.parametrize(
     ("flag", "expected"),
-    [("", ["True True"]), ("-Upgrade", ["True True", "False False"])],
+    [("", ["True True True"]), ("-Upgrade", ["True True True", "False False False"])],
     ids=["install", "upgrade"],
 )
-def test_install_ps1_never_upgrades_running_pwsh(home, flag, expected):
-    # The test itself runs in pwsh, whose MSI cannot be replaced while it runs
+def test_install_ps1_skips_upgrading_pwsh_and_copilot(home, flag, expected):
+    # The test runs in pwsh, whose MSI cannot replace it; Copilot CLI updates itself
     packages = INSTALL_PS1.parent / "packages" / "winget-packages.json"
     total = packages.read_text().count("PackageIdentifier")
     result = run_pwsh(WINGET_SCRIPT.format(install=INSTALL_PS1, flag=flag), home)
-    counts = [str(total)] + [str(total - 1)] * (len(expected) - 1)
+    counts = [str(total)] + [str(total - 2)] * (len(expected) - 1)
     assert result.stdout.splitlines() == [
         f"{line} {count}" for line, count in zip(expected, counts, strict=True)
     ], result.stderr

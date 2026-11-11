@@ -53,13 +53,16 @@ function Install-WingetPackage {
     Invoke-Native winget (@('import', '--import-file', $PackagesFile, '--no-upgrade') + $common)
     if (-not $Upgrade) { return }
 
+    # Copilot CLI updates its portable exe in place, so winget refuses to remove the "modified" package
+    $skip = @('GitHub.Copilot')
     # The PowerShell MSI cannot replace pwsh while it runs (Windows Terminal, make, CI steps)
-    $config = Get-Content $PackagesFile -Raw | ConvertFrom-Json
     if (Get-Process pwsh -ErrorAction SilentlyContinue) {
-        foreach ($source in $config.Sources) {
-            $source.Packages = @($source.Packages | Where-Object PackageIdentifier -ne 'Microsoft.PowerShell')
-        }
+        $skip += 'Microsoft.PowerShell'
         Write-Host 'Skip upgrading PowerShell 7 while pwsh is running; close it, then from cmd run: winget upgrade Microsoft.PowerShell'
+    }
+    $config = Get-Content $PackagesFile -Raw | ConvertFrom-Json
+    foreach ($source in $config.Sources) {
+        $source.Packages = @($source.Packages | Where-Object { $skip -notcontains $_.PackageIdentifier })
     }
     $upgradeFile = Join-Path ([IO.Path]::GetTempPath()) 'app-env-installer-winget.json'
     # WriteAllText: UTF-8 without the BOM that 5.1's Set-Content -Encoding UTF8 adds
