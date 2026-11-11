@@ -75,5 +75,5 @@ jobs:
           # ~/.gitconfig links into the repo, so trust the root-run checkout from a separate file
           git config --file /tmp/safe.gitconfig safe.directory '*'
           GIT_CONFIG_GLOBAL=/tmp/safe.gitconfig git diff --exit-code
-          # make, shellcheck and shfmt come from apt-packages.txt
-          make check
+          # make, shellcheck and shfmt come from apt-packages.txt; uv lives in ~/.local/bin
+          PATH="${HOME}/.local/bin:${PATH}" make check
