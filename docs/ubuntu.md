@@ -1,12 +1,13 @@
-# Ubuntu 24.04 and WSL2
+# Ubuntu (24.04, 26.04) and WSL2
 
 [← README](../README.md)
 
 ## Prerequisites
 
-Ubuntu 24.04 or newer (`install.sh` refuses older releases), with `git`, `curl`, `bash` and
-`sudo` (for apt installs and `/etc/shells`). Python (the version pinned in
-[.python-version](../.python-version)) is installed by `uv`; no system Python is required.
+Ubuntu 24.04 or 26.04 (`install.sh` refuses older releases; both are tested in CI), with
+`git`, `curl`, `bash` and `sudo` (for apt installs and `/etc/shells`). Python (the version
+pinned in [.python-version](../.python-version)) is installed by `uv`; no system Python is
+required.
 
 ## Installation
 
@@ -41,7 +42,7 @@ Re-running `install.sh` skips GitHub-release tools, Go tools and Nerd Fonts that
 Ubuntu on WSL2 is a regular Ubuntu install, so the steps above apply unchanged:
 
 ```powershell
-wsl --install -d Ubuntu-24.04
+wsl --install -d Ubuntu-26.04   # or Ubuntu-24.04; `wsl --list --online` shows the names
 ```
 
 Then, inside Ubuntu, clone the repo into the Linux file system (e.g. `~/App-env-installer`, not under `/mnt/c`, which is slow and has no Unix permissions) and run `bash install.sh`. `install.py` detects WSL and skips the Linux font install, because Windows Terminal renders with fonts installed on the Windows side (run the native [Windows install](windows.md), or `uv run install.py -f` on Windows, to get them).

@@ -688,6 +688,7 @@ def os_release_error():
     [
         ("Darwin", None, None),
         ("Linux", lambda: {"ID": "ubuntu", "VERSION_ID": "24.04"}, None),
+        ("Linux", lambda: {"ID": "ubuntu", "VERSION_ID": "26.04"}, None),
         ("Linux", lambda: {"ID": "fedora"}, "does not support fedora"),
         ("Linux", os_release_error, "cannot determine Linux distribution"),
         ("Windows", None, None),
