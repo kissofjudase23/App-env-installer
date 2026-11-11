@@ -261,13 +261,14 @@ function install_release_tools_for_ubuntu() {
     arch="$(ubuntu_arch go)"
     rust_arch="$(ubuntu_arch rust)"
 
-    # apt's fzf is too old for `fzf --bash` / `fzf --zsh`
+    # 24.04's apt fzf (0.44) is too old for `fzf --bash` / `fzf --zsh`
     current="$(command -v fzf &> /dev/null && fzf --version | cut -d' ' -f1 || echo 0)"
     if ! version_at_least "${FZF_MIN_VERSION}" "${current}" || ! keep_installed "fzf ${current}"; then
         install_github_binary junegunn/fzf "^fzf-.*-linux_${arch}\\.tar\\.gz$" fzf
     fi
 
-    # apt's eza (0.18) and delta (0.16) are far behind upstream
+    # 24.04's apt eza (0.18) and delta (0.16) are far behind upstream; the GitHub releases
+    # keep every supported Ubuntu on the same version
     if ! command -v eza &> /dev/null || ! keep_installed eza; then
         install_github_binary eza-community/eza "^eza_${rust_arch}-unknown-linux-gnu\\.tar\\.gz$" eza
     fi
@@ -283,7 +284,7 @@ function install_release_tools_for_ubuntu() {
 }
 
 function install_neovim_for_ubuntu() {
-    # apt has 0.9; the vimrc's native LSP setup needs 0.11
+    # 24.04's apt has 0.9 (26.04: 0.11); the vimrc's native LSP setup needs 0.11
     local current tmp_dir arch
     current="$(command -v nvim &> /dev/null && nvim --version | head -n1 || echo 0)"
     current="${current#NVIM v}"

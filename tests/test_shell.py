@@ -128,6 +128,8 @@ def test_non_interactive_bash_login_prints_nothing(home):
         ("0.48", "0.56.3", True),
         ("0.48", "0.9", False),
         ("0.11", "0", False),
+        ("24.04", "26.04", True),
+        ("24.04", "22.04", False),
     ],
 )
 def test_version_at_least(home, minimum, current, ok):
