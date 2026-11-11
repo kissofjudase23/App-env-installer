@@ -30,7 +30,7 @@ For any new GitHub-hosted binary on Ubuntu, reuse `github_release_asset` / `inst
 | Dotfile links/stubs, git repos to clone, Linux/Windows Nerd Fonts | [config.yaml](config.yaml) (`src` relative to repo, `dst` relative to `base`; optional `os`, `base`, `stub`) |
 | `install.py` tests | [tests/](tests/) (pytest; `Installer` takes `home`/`base_dirs`/`ConfigMgr` so tests use `tmp_path`, never the real `$HOME`; symlink tests skip where symlinks need privileges) |
 | Shell dotfile smoke tests | [tests/test_shell.py](tests/test_shell.py) (clean `bash --norc` / `zsh -f`, temp `$HOME`; skipped when the shell is missing and on Windows) |
-| PowerShell smoke tests | [tests/test_powershell.py](tests/test_powershell.py) (`pwsh -NoProfile`, temp `USERPROFILE`; skipped without `pwsh`) |
+| PowerShell smoke tests | [tests/test_powershell.py](tests/test_powershell.py) (`pwsh -NoProfile`, temp `USERPROFILE`; skipped without `pwsh`; pinned to one xdist worker because concurrent pwsh startups crash on macOS) |
 | PowerShell lint rules | [PSScriptAnalyzerSettings.psd1](PSScriptAnalyzerSettings.psd1) |
 | Line endings | [.gitattributes](.gitattributes) (LF everywhere) |
 | Python deps, ruff config | [pyproject.toml](pyproject.toml) (`uv` project, `package = false`) |
