@@ -14,7 +14,7 @@ Run `make` (or `make help`) to list all targets with descriptions. On Windows, `
 | `make sync`         | Creates/updates `.venv` with the Python deps pinned in `uv.lock` (`uv sync`).                                |
 | `make lint`         | `ruff check` + `ruff format --check`; reports issues without modifying files (same as CI).                   |
 | `make format`       | `ruff check --fix` + `ruff format`; fixes lint issues and reformats Python code in place.                    |
-| `make test`         | Runs `pytest` against a temporary `$HOME`: `install.py` unit tests, plus shell smoke tests (syntax, and `common.sh` / non-interactive bash must print nothing; skipped on Windows) and PowerShell smoke tests (`profile.ps1` must print nothing; skipped without `pwsh`). |
+| `make test`         | Runs `pytest` (in parallel via pytest-xdist) against a temporary `$HOME`: `install.py` unit tests, plus shell smoke tests (syntax, and `common.sh` / non-interactive bash must print nothing; skipped on Windows) and PowerShell smoke tests (`profile.ps1` must print nothing; skipped without `pwsh`). |
 | `make shellcheck`   | Runs `shellcheck` on `install.sh`, `common.sh`, `bashrc.sh`, `bash_profile.sh` (`shellcheck` is installed by `install.sh`). |
 | `make shfmt`        | Checks shell formatting with `shfmt` (style in `.editorconfig`).                                             |
 | `make format-shell` | Rewrites the shell scripts in place with `shfmt`.                                                            |

@@ -70,7 +70,7 @@ Untracked, per-machine files (never commit their contents): `~/.shell_local` (e.
 make sync        # uv sync
 make lint        # ruff check + ruff format --check
 make format      # ruff check --fix + ruff format
-make test        # pytest (tests/): install.py on a temp $HOME with subprocess/network blocked; shell dotfiles in clean bash/zsh (syntax, no output)
+make test        # pytest (tests/, parallel via pytest-xdist): install.py on a temp $HOME with subprocess/network blocked; shell dotfiles in clean bash/zsh (syntax, no output)
 make shellcheck  # needs shellcheck; or: uvx --from shellcheck-py shellcheck <files>
 make shfmt       # shfmt -d (style from .editorconfig); make format-shell to fix
 make actionlint  # actionlint on .github/workflows (dev dependency in uv.lock)
