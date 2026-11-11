@@ -92,7 +92,7 @@ Never run `install.sh`, `install.ps1`, `make install` or `make upgrade` for test
 
 - Docs and code comments in English; comments only for non-obvious intent, one line.
 - Python ≥ 3.14 (Dependabot supports up to 3.14), ruff rules `E,F,I,B,UP,SIM`, line length 100.
-- Shell dotfiles start with a `# shellcheck shell=bash` directive.
+- Bash dotfiles (`*.sh`) start with a `# shellcheck shell=bash` directive (shellcheck does not read zsh, so `zshrc.zsh` is not linted).
 - New `install.py` behavior gets a test in [tests/test_install.py](tests/test_install.py); side effects must be covered by `test_dry_run_changes_nothing`.
 - CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs ruff, pytest, and the dry run on ubuntu + macos + windows; shellcheck, shfmt and actionlint run on ubuntu only, PSScriptAnalyzer on windows only. [install-ubuntu.yml](.github/workflows/install-ubuntu.yml) runs the real `install.sh` (+ `--upgrade`, then `make check`) in an Ubuntu 24.04 container and [install-windows.yml](.github/workflows/install-windows.yml) the real `install.ps1` (+ `-Upgrade`, then `make check`) on a Windows runner, and [install-macos.yml](.github/workflows/install-macos.yml) the real `install.sh` (+ `--upgrade`) on a macOS runner – the only places they are executed; all run weekly, and on push to `master` / PRs only when their `paths` filters match, so keep each workflow's `paths: &paths` list (reused by `pull_request` through the anchor) in sync with files that affect installation. Actions are pinned by commit SHA with a version comment.
 - Commit messages (all agents): follow [.github/instructions/copilot-commit-message-instructions.md](.github/instructions/copilot-commit-message-instructions.md).

@@ -21,13 +21,8 @@ Behind a shared office NAT, set a [GitHub API token](configuration.md#github-api
 
 `install.sh` will:
 1. Install Homebrew (if missing) and run `brew bundle` with the [Brewfile](../packages/Brewfile) (includes Nerd Fonts).
-2. Run `uv python install --default` (version read from [.python-version](../.python-version); new shells get `python3` from uv through `~/.local/bin`) and `uv sync`.
-3. Run `uv run install.py -a -y`, which:
-   - Symlinks dotfiles from [assets/](../assets) into `$HOME` (existing files are backed up as `<file>.bak.<timestamp>`).
-   - Creates `~/.gitconfig.local` if missing.
-   - Clones git repos (oh-my-zsh).
-   - Installs Go tools with `go install` (tools already in `~/go/bin` are skipped).
-4. Add `zsh` to `/etc/shells` if needed and switch your login shell to it (`sudo chsh`).
+2. Run `uv python install --default` (version read from [.python-version](../.python-version); new shells get `python3` from uv through `~/.local/bin`), `uv sync` and `uv run install.py -a -y` ([what it does](../README.md#how-it-works)).
+3. Add `zsh` to `/etc/shells` if needed and switch your login shell to it (`sudo chsh`).
 
 Both stages are idempotent and can be re-run safely. See [configuration.md](configuration.md) for what gets linked and how to run `install.py` by hand.
 

@@ -36,7 +36,12 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1
 ## How it works
 
 1. **`install.sh`** (macOS/Ubuntu) or **`install.ps1`** (Windows) installs the OS packages from [packages/](packages), installs Python (version from [.python-version](.python-version)) and dependencies with [`uv`](https://github.com/astral-sh/uv), bootstraps Go, then runs `install.py`. On macOS/Ubuntu it also switches the default shell to `zsh`.
-2. **`install.py`** reads [config.yaml](config.yaml) to link dotfiles into `$HOME` (symlinks on macOS/Linux, stub files on Windows), clone git repositories, install fonts, and install Go tools.
+2. **`install.py`** reads [config.yaml](config.yaml) and:
+   - links dotfiles from [assets/](assets) into `$HOME` (symlinks on macOS/Linux, stub files on Windows); anything already there is backed up as `<file>.bak.<timestamp>`,
+   - creates `~/.gitconfig.local` if missing,
+   - installs the Meslo and Mononoki Nerd Fonts from the official release, sha256-verified (Linux and Windows; macOS gets them from the Brewfile),
+   - clones oh-my-zsh (macOS, Linux),
+   - installs the Go tools with `go install` (tools already in `~/go/bin` are skipped).
 
 Both stages are idempotent and can be re-run safely; `--upgrade` (`-Upgrade` on Windows) also updates tools that are already installed.
 

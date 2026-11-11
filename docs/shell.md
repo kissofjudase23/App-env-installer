@@ -9,7 +9,7 @@
 - Bash and zsh share environment settings via [common.sh](../assets/shell/common.sh).
 - Windows: PowerShell 7 loads [profile.ps1](../assets/shell/profile.ps1), which mirrors `common.sh`; see [windows.md](windows.md#shell).
 - Directory jumping uses [zoxide](https://github.com/ajeetdsouza/zoxide): `z <dir>`, or `j <dir>` (alias kept for autojump habits); `zi` / `ji` pick interactively with fzf.
-- The installer auto-runs `chsh -s $(which zsh)`. Restart your terminal afterwards.
+- `install.sh` switches your login shell to zsh with `sudo chsh` when it is not zsh yet. Restart your terminal afterwards.
 - The prompt is configured in [starship.toml](../assets/starship/starship.toml) (linked to `~/.config/starship.toml`): the [starship-p10k-rainbow](https://github.com/carlosplanchon/starship-p10k-rainbow) preset with a silver OS icon and the full directory path (Powerlevel10k Rainbow style: one line, ANSI-256 palette; left OS · directory · git, right exit status, duration, jobs, direnv, language versions and user@host on SSH/root). To update it, copy the upstream `starship.toml` over this file, re-apply the local changes noted in its header and bump the commit. bash has no right prompt unless [ble.sh](https://github.com/akinomyoga/ble.sh) is installed. Without starship, zsh falls back to the `robbyrussell` theme and bash to a plain prompt. See the [starship config docs](https://starship.rs/config/).
 - Recommended font: **MesloLGS Nerd Font** (installed on macOS, Linux and Windows; skipped on WSL, which uses the Windows fonts); the prompt icons need a Nerd Font.
 
