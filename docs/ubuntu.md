@@ -34,7 +34,7 @@ Both stages are idempotent and can be re-run safely. See [configuration.md](conf
 
 ## What Gets Installed
 
-See [packages/apt-packages.txt](../packages/apt-packages.txt). `gh` comes from the official cli.github.com apt repo and `uv` from its install script. `fzf`, `neovim` (≥ 0.11, in `/opt/nvim`), `eza`, `delta` and `starship` come from their GitHub releases, verified by sha256, because apt lacks them or ships versions that are too old. `fdfind`/`batcat` are linked as `fd`/`bat`.
+See [packages/apt-packages.txt](../packages/apt-packages.txt), which includes `make` for the [make targets](development.md). `gh` comes from the official cli.github.com apt repo and `uv` from its install script. `fzf`, `neovim` (≥ 0.11, in `/opt/nvim`), `eza`, `delta` and `starship` come from their GitHub releases, verified by sha256, because apt lacks them or ships versions that are too old. `fdfind`/`batcat` are linked as `fd`/`bat`.
 
 Network tools: `curl`, `openssl`, `nc` (`netcat-openbsd`) and `dig` (`bind9-dnsutils`); usage in [cli-tools.md](cli-tools.md#network-tools).
 

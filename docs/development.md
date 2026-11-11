@@ -41,7 +41,7 @@ Python deps and tool config live in [pyproject.toml](../pyproject.toml); `uv.loc
 | Workflow | Runs on | Triggers | What it does |
 | --- | --- | --- | --- |
 | [ci.yml](../.github/workflows/ci.yml) | Ubuntu, macOS, Windows | every push to `master` and PR | ruff, pytest and an `install.py` dry run; shellcheck, shfmt and actionlint on Ubuntu; PSScriptAnalyzer on Windows |
-| [install-ubuntu.yml](../.github/workflows/install-ubuntu.yml) | Ubuntu 24.04 container | weekly, pushes / PRs touching the install path, manual | real `install.sh`, then `install.sh --upgrade`, then checks tools, the login shell, silent dotfiles and an unchanged repo |
+| [install-ubuntu.yml](../.github/workflows/install-ubuntu.yml) | Ubuntu 24.04 container | weekly, pushes / PRs touching the install path, manual | real `install.sh`, then `install.sh --upgrade`, then checks tools, the login shell, silent dotfiles and an unchanged repo, and runs `make check` |
 | [install-macos.yml](../.github/workflows/install-macos.yml) | macOS runner | weekly, pushes / PRs touching the install path, manual | real `install.sh` (Homebrew + Brewfile), then `--upgrade`, with the same checks |
 | [install-windows.yml](../.github/workflows/install-windows.yml) | Windows runner | weekly, pushes / PRs touching the install path, manual | real `install.ps1` from Windows PowerShell 5.1, then `-Upgrade`, then tool, stub and Neovim plugin checks and `make check` |
 

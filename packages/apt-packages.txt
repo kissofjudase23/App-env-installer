@@ -12,6 +12,7 @@ fontconfig
 gh
 git
 jq
+make
 netcat-openbsd
 openssl
 ripgrep
