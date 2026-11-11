@@ -1,6 +1,6 @@
 name: Install (Ubuntu)
 
-# Runs the real install.sh in fresh containers; ci.yml only covers install.py and linting.
+# Runs the real install.sh in a fresh container; ci.yml only covers install.py and linting.
 on:
   # Weekly: catches upstream drift (renamed release assets, apt/gh repo changes) with no commit here
   schedule:
@@ -29,12 +29,8 @@ concurrency:
 
 jobs:
   install:
-    strategy:
-      fail-fast: false
-      matrix:
-        image: ["ubuntu:22.04", "ubuntu:24.04"]
     runs-on: ubuntu-latest
-    container: ${{ matrix.image }}
+    container: ubuntu:24.04
     timeout-minutes: 30
     env:
       # Container jobs default HOME to /github/home, which root does not own

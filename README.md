@@ -12,7 +12,7 @@ Automated development environment setup for **macOS**, **Ubuntu** and **Windows*
 | OS | Guide | Installer | Packages |
 | --- | --- | --- | --- |
 | macOS | [docs/macos.md](docs/macos.md) | `bash install.sh` | [packages/Brewfile](packages/Brewfile) |
-| Ubuntu 22.04 / 24.04, WSL2 | [docs/ubuntu.md](docs/ubuntu.md) | `bash install.sh` | [packages/apt-packages.txt](packages/apt-packages.txt) |
+| Ubuntu 24.04, WSL2 | [docs/ubuntu.md](docs/ubuntu.md) | `bash install.sh` | [packages/apt-packages.txt](packages/apt-packages.txt) |
 | Windows 10 / 11 | [docs/windows.md](docs/windows.md) | `install.ps1` | [packages/winget-packages.json](packages/winget-packages.json) |
 
 ## Quick start

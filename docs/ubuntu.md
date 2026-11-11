@@ -1,12 +1,12 @@
-# Ubuntu (22.04, 24.04) and WSL2
+# Ubuntu 24.04 and WSL2
 
 [← README](../README.md)
 
 ## Prerequisites
 
-`git`, `curl`, `bash` and `sudo` (for apt installs and `/etc/shells`). Python (the version
-pinned in [.python-version](../.python-version)) is installed by `uv`; no system Python is
-required.
+Ubuntu 24.04 or newer (`install.sh` refuses older releases), with `git`, `curl`, `bash` and
+`sudo` (for apt installs and `/etc/shells`). Python (the version pinned in
+[.python-version](../.python-version)) is installed by `uv`; no system Python is required.
 
 ## Installation
 
