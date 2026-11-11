@@ -12,6 +12,7 @@ dependencies = [
 dev = [
     "actionlint-py>=1.7.12.25",
     "pytest>=9.2.0",
+    "pytest-xdist>=3.8.0",
     "ruff",
 ]
 
@@ -21,6 +22,9 @@ package = false
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
+# The shell and pwsh smoke tests each spawn a process; pytest-xdist runs them side by side,
+# except the pwsh ones, which test_powershell.py pins to one worker (xdist_group)
+addopts = "-n auto --dist loadgroup"
 
 [tool.ruff]
 line-length = 100

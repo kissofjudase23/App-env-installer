@@ -10,6 +10,9 @@ PROFILE = ROOT / "assets/shell/profile.ps1"
 INSTALL_PS1 = ROOT / "install.ps1"
 PROXY = "http://proxy.example.com:8080"
 
+# One xdist worker (--dist loadgroup): pwsh processes started at the same time crash on macOS
+pytestmark = pytest.mark.xdist_group(name="pwsh")
+
 
 @pytest.fixture
 def home(tmp_path: Path) -> Path:

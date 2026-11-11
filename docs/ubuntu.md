@@ -1,12 +1,12 @@
-# Ubuntu (22.04, 24.04) and WSL2
+# Ubuntu 24.04 and WSL2
 
 [← README](../README.md)
 
 ## Prerequisites
 
-`git`, `curl`, `bash` and `sudo` (for apt installs and `/etc/shells`). Python (the version
-pinned in [.python-version](../.python-version)) is installed by `uv`; no system Python is
-required.
+Ubuntu 24.04 or newer (`install.sh` refuses older releases), with `git`, `curl`, `bash` and
+`sudo` (for apt installs and `/etc/shells`). Python (the version pinned in
+[.python-version](../.python-version)) is installed by `uv`; no system Python is required.
 
 ## Installation
 
@@ -21,20 +21,14 @@ Behind a shared office NAT, set a [GitHub API token](configuration.md#github-api
 
 `install.sh` will:
 1. Add the gh apt repo, install [apt-packages.txt](../packages/apt-packages.txt) and the GitHub-release tools (fzf, neovim, eza, delta, starship), install `uv` into `~/.local/bin` (without letting its installer edit your shell rc files), and install the latest stable Go from [go.dev](https://go.dev/dl/) into `/usr/local/go` if `go` is missing or older than 1.21.
-2. Run `uv python install --default` (version read from [.python-version](../.python-version); new shells get `python3` from uv through `~/.local/bin`) and `uv sync`.
-3. Run `uv run install.py -a -y`, which:
-   - Symlinks dotfiles from [assets/](../assets) into `$HOME` (existing files are backed up as `<file>.bak.<timestamp>`).
-   - Creates `~/.gitconfig.local` if missing.
-   - Installs the Meslo and Mononoki Nerd Fonts from the official [Nerd Fonts](https://github.com/ryanoasis/nerd-fonts) release (sha256-verified) into `~/.local/share/fonts/NerdFonts/`.
-   - Clones git repos (oh-my-zsh).
-   - Installs Go tools with `go install` (tools already in `~/go/bin` are skipped).
-4. Add `zsh` to `/etc/shells` if needed and switch your login shell to it (`sudo chsh`).
+2. Run `uv python install --default` (version read from [.python-version](../.python-version); new shells get `python3` from uv through `~/.local/bin`), `uv sync` and `uv run install.py -a -y` ([what it does](../README.md#how-it-works); fonts go to `~/.local/share/fonts/NerdFonts/`).
+3. Add `zsh` to `/etc/shells` if needed and switch your login shell to it (`sudo chsh`).
 
 Both stages are idempotent and can be re-run safely. See [configuration.md](configuration.md) for what gets linked and how to run `install.py` by hand.
 
 ## What Gets Installed
 
-See [packages/apt-packages.txt](../packages/apt-packages.txt). `gh` comes from the official cli.github.com apt repo and `uv` from its install script. `fzf`, `neovim` (≥ 0.11, in `/opt/nvim`), `eza`, `delta` and `starship` come from their GitHub releases, verified by sha256, because apt lacks them or ships versions that are too old. `fdfind`/`batcat` are linked as `fd`/`bat`.
+See [packages/apt-packages.txt](../packages/apt-packages.txt), which includes `make` for the [make targets](development.md). `gh` comes from the official cli.github.com apt repo and `uv` from its install script. `fzf`, `neovim` (≥ 0.11, in `/opt/nvim`), `eza`, `delta` and `starship` come from their GitHub releases, verified by sha256, because apt lacks them or ships versions that are too old. `fdfind`/`batcat` are linked as `fd`/`bat`.
 
 Network tools: `curl`, `openssl`, `nc` (`netcat-openbsd`) and `dig` (`bind9-dnsutils`); usage in [cli-tools.md](cli-tools.md#network-tools).
 

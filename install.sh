@@ -70,6 +70,10 @@ function detect_os() {
                 echo "Error: Unsupported Linux distribution: ${ID:-unknown}" >&2
                 exit 1
             fi
+            if ! version_at_least "${UBUNTU_MIN_VERSION}" "${VERSION_ID:-0}"; then
+                echo "Error: Unsupported Ubuntu ${VERSION_ID:-}: ${UBUNTU_MIN_VERSION} or newer is required" >&2
+                exit 1
+            fi
             echo "Detected OS: Linux (Ubuntu ${VERSION_ID:-})"
             DETECTED_OS="Linux"
             ;;
@@ -148,6 +152,7 @@ function install_pkgs_for_ubuntu() {
     export PATH="${HOME}/.local/bin:${PATH}"
 }
 
+UBUNTU_MIN_VERSION="24.04"
 GO_MIN_VERSION="1.21"
 GO_ROOT="/usr/local/go"
 FZF_MIN_VERSION="0.48"
@@ -262,7 +267,7 @@ function install_release_tools_for_ubuntu() {
         install_github_binary junegunn/fzf "^fzf-.*-linux_${arch}\\.tar\\.gz$" fzf
     fi
 
-    # eza and delta are not packaged on Ubuntu 22.04
+    # apt's eza (0.18) and delta (0.16) are far behind upstream
     if ! command -v eza &> /dev/null || ! keep_installed eza; then
         install_github_binary eza-community/eza "^eza_${rust_arch}-unknown-linux-gnu\\.tar\\.gz$" eza
     fi
@@ -278,7 +283,7 @@ function install_release_tools_for_ubuntu() {
 }
 
 function install_neovim_for_ubuntu() {
-    # apt has 0.6 (22.04) / 0.9 (24.04); the vimrc's native LSP setup needs 0.11
+    # apt has 0.9; the vimrc's native LSP setup needs 0.11
     local current tmp_dir arch
     current="$(command -v nvim &> /dev/null && nvim --version | head -n1 || echo 0)"
     current="${current#NVIM v}"

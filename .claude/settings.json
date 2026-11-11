@@ -10,7 +10,10 @@
       "Bash(make shfmt)",
       "Bash(make format-shell)",
       "Bash(make check)",
+      "Bash(make actionlint)",
+      "Bash(make pslint)",
       "Bash(uv sync)",
+      "Bash(uv run actionlint)",
       "Bash(uv run ruff:*)",
       "Bash(shellcheck:*)",
       "Bash(uv run pytest *)",
@@ -37,6 +40,10 @@
     "deny": [
       "Bash(bash install.sh:*)",
       "Bash(./install.sh:*)",
+      "Bash(powershell * install.ps1*)",
+      "Bash(pwsh * install.ps1*)",
+      "Bash(./install.ps1:*)",
+      "Bash(.\\install.ps1:*)",
       "Bash(make install)",
       "Bash(make upgrade)",
       "Bash(chsh:*)"

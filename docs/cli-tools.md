@@ -1,5 +1,7 @@
 # CLI Tools Guide
 
+[← README](../README.md)
+
 Quick reference for the modern CLI tools installed by this repo, and for how the dotfiles wire
 them together. Each tool has full docs at `<tool> --help` and on its project page.
 

@@ -46,6 +46,7 @@ def no_side_effects(monkeypatch):
     monkeypatch.setattr(install.subprocess, "run", fail)
     monkeypatch.setattr(install.urllib.request, "urlopen", fail)
     monkeypatch.setattr(install, "register_windows_font", fail)
+    monkeypatch.setattr(install, "unregister_windows_font", fail)
     monkeypatch.setattr(install, "windows_documents", fail)
     monkeypatch.setattr(install, "is_wsl", lambda: False)
 
@@ -231,7 +232,7 @@ def test_link_dotfiles_stub_replaces_symlink(tmp_path, home):
     assert GITCONFIG.read_text().startswith("[core]")
 
 
-def test_link_dotfiles_filters_by_os(tmp_path, home):
+def test_link_dotfiles_filters_by_os(tmp_path, home, capsys):
     dotfiles = [
         {"src": "assets/tig/tigrc", "dst": ".tigrc", "os": ["darwin", "linux"]},
         {**GITCONFIG_STUB, "os": ["windows"]},
@@ -244,6 +245,8 @@ def test_link_dotfiles_filters_by_os(tmp_path, home):
     installer.clone_git_repos()
 
     assert sorted(p.name for p in home.iterdir()) == [".gitconfig"]
+    # nothing to clone on this OS: no empty confirmation table
+    assert "Prepare to clone" not in capsys.readouterr().out
 
 
 def test_link_dotfiles_explains_missing_symlink_privilege(tmp_path, home, monkeypatch):
@@ -294,6 +297,11 @@ def test_config_defaults_missing_lists_to_empty(tmp_path):
         ({"git_repos": [{"src": "https://example.com/r.git", "dst": "a/../../r"}]}, "inside"),
         ({"dotfiles": [{"src": "assets", "dst": "."}]}, "inside \\$HOME"),
         ({"nerd_fonts": [{"name": "Meslo"}]}, "nerd_fonts entries must be strings"),
+        ({"dotfiles": [{**GITCONFIG_STUB, "oss": ["windows"]}]}, "unknown keys \\['oss'\\]"),
+        (
+            {"git_repos": [{"src": "https://example.com/r.git", "dst": "r", "stubs": 1}]},
+            "unknown keys",
+        ),
         ({"dotfiles": [{**GITCONFIG_STUB, "os": ["beos"]}]}, "os must be a non-empty list"),
         ({"dotfiles": [{**GITCONFIG_STUB, "os": []}]}, "os must be a non-empty list"),
         ({"dotfiles": [{**GITCONFIG_STUB, "base": "desktop"}]}, "base must be one of"),
@@ -612,6 +620,28 @@ def test_install_fonts_upgrade_replaces_older_release(
     assert ttfs == (["New.ttf"] if reinstalled else ["Old.ttf"])
     assert (font_dir / ".release").read_text() == "v0.0.0\n"
     assert commands == [["fc-cache", "-f", str(font_dir.parent)]]
+
+
+def test_install_fonts_upgrade_unregisters_dropped_windows_fonts(
+    tmp_path, home, nerd_fonts_release, monkeypatch
+):
+    archives, _, _ = nerd_fonts_release
+    archives["Meslo.tar.xz"] = make_font_archive({"Kept.ttf": b"font", "New.ttf": b"font"})
+    font_dir = home / "AppData/Local/Microsoft/Windows/Fonts/NerdFonts/Meslo"
+    font_dir.mkdir(parents=True)
+    for name in ("Kept.ttf", "Old.ttf"):
+        (font_dir / name).write_bytes(b"font")
+    (font_dir / ".release").write_text("v-old\n")
+    registered: list[Path] = []
+    unregistered: list[Path] = []
+    monkeypatch.setattr(install, "register_windows_font", registered.append)
+    monkeypatch.setattr(install, "unregister_windows_font", unregistered.append)
+
+    installer = make_installer(tmp_path, home, upgrade=True, system="Windows", nerd_fonts=["Meslo"])
+    installer.install_fonts()
+
+    assert unregistered == [font_dir / "Old.ttf"]
+    assert registered == [font_dir / "Kept.ttf", font_dir / "New.ttf"]
 
 
 def test_install_fonts_rejects_digest_mismatch(tmp_path, home, nerd_fonts_release, monkeypatch):

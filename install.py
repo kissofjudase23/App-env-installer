@@ -1,3 +1,4 @@
+import contextlib
 import hashlib
 import io
 import json
@@ -60,6 +61,8 @@ class SupportedSystems(Enum):
 OS_NAMES = frozenset(s.value.lower() for s in SupportedSystems)
 # config.yaml `base` values: the directory a dst is relative to
 BASES = ("home", "documents", "local_app_data")
+# Keys a dotfiles / git_repos entry may have; anything else is most likely a typo
+ENTRY_KEYS = frozenset({"name", "src", "dst", "os", "base", "stub"})
 
 
 # /etc/os-release ID values
@@ -159,6 +162,17 @@ def register_windows_font(ttf: Path) -> None:
         winreg.SetValueEx(key, f"{ttf.stem} (TrueType)", 0, winreg.REG_SZ, str(ttf))
 
 
+def unregister_windows_font(ttf: Path) -> None:
+    import winreg
+
+    access = winreg.KEY_SET_VALUE
+    with (
+        winreg.OpenKey(winreg.HKEY_CURRENT_USER, WINDOWS_FONTS_KEY, 0, access) as key,
+        contextlib.suppress(FileNotFoundError),
+    ):
+        winreg.DeleteValue(key, f"{ttf.stem} (TrueType)")
+
+
 def default_base_dirs(home: Path, system: str) -> dict[str, Path]:
     if system != SupportedSystems.WINDOWS.value:
         return {"home": home, "documents": home, "local_app_data": home / ".local/share"}
@@ -214,6 +228,8 @@ class ConfigMgr:
                 )
                 if not valid:
                     fail(f"{key} entry needs string src and dst: {entry}")
+                if unknown := sorted(set(entry) - ENTRY_KEYS):
+                    fail(f"{key} entry has unknown keys {unknown}: {entry}")
                 dst = Path(entry["dst"])
                 # anchor, not is_absolute(): on Windows "/tmp" has a root but no drive
                 if dst.anchor or ".." in dst.parts or not dst.parts:
@@ -298,7 +314,7 @@ class Installer:
 
     def clone_git_repos(self) -> None:
         pairs = [(repo["src"], self._dst(repo)) for repo in self._entries("git_repos")]
-        if not self._confirm("Prepare to clone git repos", pairs):
+        if not pairs or not self._confirm("Prepare to clone git repos", pairs):
             return
 
         for src, dst in pairs:
@@ -307,7 +323,7 @@ class Installer:
     def link_dotfiles(self) -> None:
         entries = self._entries("dotfiles")
         pairs = [(ROOT / f["src"], self._dst(f)) for f in entries]
-        if not self._confirm("Prepare to link dotfiles", pairs):
+        if not pairs or not self._confirm("Prepare to link dotfiles", pairs):
             return
 
         for entry, (src, dst) in zip(entries, pairs, strict=True):
@@ -396,10 +412,15 @@ class Installer:
             data = fetch(url)
             if f"sha256:{hashlib.sha256(data).hexdigest()}" != digest:
                 raise InstallerError(f"sha256 mismatch for {archive}")
+            previous = set((font_dir / name).glob("*.ttf"))
             extract_fonts(data, font_dir / name)
             release_file.write_text(f"{tag}\n", encoding="utf-8")
             if not linux:
-                for ttf in sorted((font_dir / name).glob("*.ttf")):
+                current = sorted((font_dir / name).glob("*.ttf"))
+                # a release may rename or drop files; their registry values would dangle
+                for ttf in sorted(previous.difference(current)):
+                    unregister_windows_font(ttf)
+                for ttf in current:
                     register_windows_font(ttf)
 
         if linux:

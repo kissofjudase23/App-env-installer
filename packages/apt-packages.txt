@@ -1,5 +1,5 @@
-# Installed by install.sh on Ubuntu (22.04 and 24.04). gh comes from the official cli.github.com repo.
-# From GitHub releases instead of apt (missing or too old): fzf, neovim, eza, delta, starship.
+# Installed by install.sh on Ubuntu 24.04. gh comes from the official cli.github.com repo.
+# From GitHub releases instead of apt (too old): fzf, neovim, eza, delta, starship.
 # fd-find and bat install as fdfind/batcat; install.sh links them as fd/bat.
 bat
 bash-completion
@@ -12,6 +12,7 @@ fontconfig
 gh
 git
 jq
+make
 netcat-openbsd
 openssl
 ripgrep

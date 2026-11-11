@@ -62,7 +62,8 @@ jobs:
         if: runner.os == 'Linux'
         run: make actionlint
 
-      # make runs its recipes in pwsh on Windows; install.ps1 installs make on real machines
+      # Same command as `make pslint` (the Makefile's PSLINT); make itself is only installed on
+      # real machines by install.ps1 and exercised by install-windows.yml
       - name: PSScriptAnalyzer
         if: runner.os == 'Windows'
         shell: pwsh
@@ -70,8 +71,11 @@ jobs:
           if (-not (Get-Module -ListAvailable PSScriptAnalyzer)) {
             Install-PSResource PSScriptAnalyzer -TrustRepository -Quiet
           }
-          choco install make -y --no-progress
-          make pslint
+          $r = foreach ($f in 'install.ps1', 'assets/shell/profile.ps1') {
+            Invoke-ScriptAnalyzer -Settings PSScriptAnalyzerSettings.psd1 -Path $f
+          }
+          $r
+          exit [int][bool]$r
 
       - name: Dry run
         run: uv run install.py -a -y --dry-run

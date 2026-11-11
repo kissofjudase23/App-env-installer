@@ -39,8 +39,8 @@
     tool = nvimdiff
     # Even create extra merge commit when fast forward merge would be possible
     ff = false
-    # zdiff3 needs git >= 2.35; Ubuntu 22.04 ships 2.34
-    conflictStyle = diff3
+    # zdiff3 needs git >= 2.35 (Ubuntu 24.04 ships 2.43)
+    conflictStyle = zdiff3
 [pull]
     rebase = true
 [rebase]
