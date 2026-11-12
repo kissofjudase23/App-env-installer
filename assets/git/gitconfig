@@ -12,6 +12,7 @@
     df = diff
     co = checkout
     ci = commit
+    s = switch
     st = status
     br = branch
     d = difftool
