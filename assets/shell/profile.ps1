@@ -6,9 +6,9 @@ function Test-Command([string] $Name) {
 }
 
 function Add-PathEntry([string] $Dir, [switch] $Prepend) {
-    $entries = $env:PATH -split [IO.Path]::PathSeparator
-    if ($entries -contains $Dir) { return }
-    $env:PATH = if ($Prepend) { "$Dir;$env:PATH" } else { "$env:PATH;$Dir" }
+    $sep = [IO.Path]::PathSeparator
+    if (($env:PATH -split $sep) -contains $Dir) { return }
+    $env:PATH = if ($Prepend) { "$Dir$sep$env:PATH" } else { "$env:PATH$sep$Dir" }
 }
 
 # Untracked machine-specific overrides, e.g. $env:USE_CORP_PROXY = '1' and $env:CORP_PROXY_URL
@@ -16,6 +16,9 @@ $shellLocal = Join-Path $HOME '.shell_local.ps1'
 if (Test-Path $shellLocal) { . $shellLocal }
 
 Add-PathEntry (Join-Path $HOME 'bin') -Prepend
+# uv python install --default (install.ps1) puts python there
+$localBin = Join-Path $HOME '.local' 'bin'
+if (Test-Path $localBin) { Add-PathEntry $localBin -Prepend }
 $goBin = if ($env:GOBIN) { $env:GOBIN } elseif ($env:GOPATH) {
     Join-Path ($env:GOPATH -split ';')[0] 'bin'
 } else { Join-Path $HOME 'go\bin' }
@@ -97,4 +100,4 @@ if (Test-Command zoxide) {
 }
 
 Remove-Item Function:Add-PathEntry, Function:Test-Command
-Remove-Variable shellLocal, goBin, openSslBin -ErrorAction SilentlyContinue
+Remove-Variable shellLocal, localBin, goBin, openSslBin -ErrorAction SilentlyContinue

@@ -83,6 +83,13 @@ def test_profile_appends_corp_no_proxy(home):
     result = run_pwsh(f". '{PROFILE}'; $env:NO_PROXY", home)
     assert result.stdout.strip() == "127.0.0.1,localhost,.corp.example.com", result.stderr
 
+
+def test_profile_prepends_local_bin(home):
+    (home / ".local" / "bin").mkdir(parents=True)
+    result = run_pwsh(f". '{PROFILE}'; ($env:PATH -split [IO.Path]::PathSeparator)[0]", home)
+    assert result.stdout.strip() == str(home / ".local" / "bin"), result.stderr
+
+
 def test_profile_uses_nvim_as_editor(tmp_path, home):
     # Get-Command -CommandType Application needs a .cmd on Windows, an executable bit elsewhere
     bin_dir = tmp_path / "bin"
@@ -103,7 +110,7 @@ def test_profile_uses_nvim_as_editor(tmp_path, home):
 def test_profile_removes_its_helpers(home):
     script = (
         f". '{PROFILE}'; [bool](Get-Command Test-Command, Add-PathEntry -ErrorAction Ignore); "
-        "[bool](Get-Variable shellLocal, goBin, openSslBin -ErrorAction Ignore)"
+        "[bool](Get-Variable shellLocal, localBin, goBin, openSslBin -ErrorAction Ignore)"
     )
     result = run_pwsh(script, home)
     assert result.stdout.splitlines() == ["False", "False"], result.stderr
@@ -155,7 +162,7 @@ def test_install_ps1_passes_upgrade_to_install_py(home, flag, suffix):
     )
     result = run_pwsh(script, home)
     assert result.stdout.splitlines() == [
-        "uv python install",
-        "uv sync",
+        "uv python install --default",
+        "uv sync --locked",
         f"uv run install.py -a -y{suffix}",
     ], result.stderr
