@@ -81,6 +81,16 @@ def test_common_sh_sets_proxy_from_shell_local(shell, home):
 
 
 @pytest.mark.parametrize("shell", ["bash", "zsh"])
+def test_common_sh_appends_corp_no_proxy(shell, home):
+    (home / ".shell_local").write_text(
+        f"USE_CORP_PROXY=1\nCORP_PROXY_URL={PROXY}\nCORP_NO_PROXY=.corp.example.com\n"
+    )
+    script = 'source "$1"; printf "%s\\n" "$NO_PROXY" "$no_proxy"'
+    result = run_shell(shell, script, home, str(COMMON))
+    assert result.stdout.splitlines() == ["127.0.0.1,localhost,.corp.example.com"] * 2
+
+
+@pytest.mark.parametrize("shell", ["bash", "zsh"])
 @pytest.mark.parametrize(
     ("term", "expected"),
     [

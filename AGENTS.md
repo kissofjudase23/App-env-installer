@@ -51,7 +51,7 @@ For any new GitHub-hosted binary on Ubuntu, reuse `github_release_asset` / `inst
 | Agent instructions (all tools) | this file, [AGENTS.md](AGENTS.md) |
 | Tool-specific agent config | [CLAUDE.md](CLAUDE.md) + [.claude/settings.json](.claude/settings.json) + [.claude/skills/](.claude/skills/) (Claude Code), [.vscode/settings.json](.vscode/settings.json) (Copilot in VS Code) |
 
-Untracked, per-machine files (never commit their contents): `~/.shell_local` / `~/.shell_local.ps1` on Windows (e.g. `USE_CORP_PROXY=1`, `CORP_PROXY_URL`), `~/.gitconfig.local` (git `[user]`).
+Untracked, per-machine files (never commit their contents): `~/.shell_local` / `~/.shell_local.ps1` on Windows (e.g. `USE_CORP_PROXY=1`, `CORP_PROXY_URL`, `CORP_NO_PROXY`), `~/.gitconfig.local` (git `[user]`).
 
 ## Critical gotchas
 

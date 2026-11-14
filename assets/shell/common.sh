@@ -115,7 +115,8 @@ function network_setting() {
     # curl reads lowercase http_proxy only; most other tools accept both cases
     export HTTP_PROXY="${CORP_PROXY_URL}" http_proxy="${CORP_PROXY_URL}"
     export HTTPS_PROXY="${CORP_PROXY_URL}" https_proxy="${CORP_PROXY_URL}"
-    export NO_PROXY="127.0.0.1,localhost" no_proxy="127.0.0.1,localhost"
+    local no_proxy_hosts="127.0.0.1,localhost${CORP_NO_PROXY:+,${CORP_NO_PROXY}}"
+    export NO_PROXY="${no_proxy_hosts}" no_proxy="${no_proxy_hosts}"
 }
 
 function env_setting() {

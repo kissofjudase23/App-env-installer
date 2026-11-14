@@ -128,9 +128,10 @@ Symlinks (macOS, Linux) and stubs (Windows) point at absolute paths in this repo
 # ~/.shell_local
 export USE_CORP_PROXY=1
 export CORP_PROXY_URL="http://proxy.example.com:8080"
+export CORP_NO_PROXY=".corp.example.com,10.0.0.0/8"   # optional: hosts that bypass the proxy
 ```
 
-The proxy variables (`HTTP_PROXY`, `HTTPS_PROXY`, `NO_PROXY`, in both upper and lower case) are only set when `USE_CORP_PROXY=1` and `CORP_PROXY_URL` is non-empty.
+The proxy variables (`HTTP_PROXY`, `HTTPS_PROXY`, `NO_PROXY`, in both upper and lower case) are only set when `USE_CORP_PROXY=1` and `CORP_PROXY_URL` is non-empty. `NO_PROXY` is `127.0.0.1,localhost`, followed by `CORP_NO_PROXY` when set. Tools differ in which entries they understand: a leading-dot domain works almost everywhere, CIDR ranges only in some tools.
 
 On Windows, `profile.ps1` dot-sources `~/.shell_local.ps1` instead:
 
@@ -138,9 +139,10 @@ On Windows, `profile.ps1` dot-sources `~/.shell_local.ps1` instead:
 # ~/.shell_local.ps1
 $env:USE_CORP_PROXY = '1'
 $env:CORP_PROXY_URL = 'http://proxy.example.com:8080'
+$env:CORP_NO_PROXY = '.corp.example.com'
 ```
 
-Both files are loaded first, before `common.sh` or `profile.ps1` sets anything else. They can provide inputs such as the proxy settings above, but cannot override what is set later (`EDITOR`, `LANG`, `GIT_PAGER`, the aliases). `NO_PROXY` is always `127.0.0.1,localhost`; to add internal domains, change `network_setting` in `common.sh` (and the proxy block in `profile.ps1`).
+Both files are loaded first, before `common.sh` or `profile.ps1` sets anything else. They can provide inputs such as the proxy settings above, but cannot override what is set later (`EDITOR`, `LANG`, `GIT_PAGER`, the aliases).
 
 ## Git identity
 

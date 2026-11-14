@@ -31,7 +31,8 @@ def run_pwsh(script: str, home: Path, *, path: str | None = None) -> subprocess.
         "USERPROFILE": str(home),
         "PATH": path if path is not None else os.environ["PATH"],
     }
-    for name in ("USE_CORP_PROXY", "CORP_PROXY_URL", "HTTP_PROXY", "HTTPS_PROXY", "NO_PROXY"):
+    proxy_vars = ("USE_CORP_PROXY", "CORP_PROXY_URL", "CORP_NO_PROXY")
+    for name in (*proxy_vars, "HTTP_PROXY", "HTTPS_PROXY", "NO_PROXY"):
         env.pop(name, None)
         env.pop(name.lower(), None)
     return subprocess.run(
@@ -73,6 +74,14 @@ def test_profile_sets_proxy_and_starship_config(home):
         str(ROOT / "assets" / "starship" / "starship.toml"),
     ], result.stderr
 
+
+def test_profile_appends_corp_no_proxy(home):
+    (home / ".shell_local.ps1").write_text(
+        f"$env:USE_CORP_PROXY = '1'\n$env:CORP_PROXY_URL = '{PROXY}'\n"
+        "$env:CORP_NO_PROXY = '.corp.example.com'\n"
+    )
+    result = run_pwsh(f". '{PROFILE}'; $env:NO_PROXY", home)
+    assert result.stdout.strip() == "127.0.0.1,localhost,.corp.example.com", result.stderr
 
 def test_profile_uses_nvim_as_editor(tmp_path, home):
     # Get-Command -CommandType Application needs a .cmd on Windows, an executable bit elsewhere

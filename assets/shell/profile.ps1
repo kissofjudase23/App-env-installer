@@ -31,6 +31,7 @@ if ($env:USE_CORP_PROXY -eq '1' -and $env:CORP_PROXY_URL) {
     $env:HTTP_PROXY = $env:CORP_PROXY_URL
     $env:HTTPS_PROXY = $env:CORP_PROXY_URL
     $env:NO_PROXY = '127.0.0.1,localhost'
+    if ($env:CORP_NO_PROXY) { $env:NO_PROXY += ",$env:CORP_NO_PROXY" }
 }
 
 if (Test-Command fd) {
