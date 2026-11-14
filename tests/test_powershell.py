@@ -84,10 +84,18 @@ def test_profile_appends_corp_no_proxy(home):
     assert result.stdout.strip() == "127.0.0.1,localhost,.corp.example.com", result.stderr
 
 
-def test_profile_prepends_local_bin(home):
-    (home / ".local" / "bin").mkdir(parents=True)
-    result = run_pwsh(f". '{PROFILE}'; ($env:PATH -split [IO.Path]::PathSeparator)[0]", home)
-    assert result.stdout.strip() == str(home / ".local" / "bin"), result.stderr
+@pytest.mark.parametrize("on_path", [False, True], ids=["missing", "later-on-path"])
+def test_profile_puts_local_bin_first(home, on_path):
+    local_bin = home / ".local" / "bin"
+    local_bin.mkdir(parents=True)
+    path = os.pathsep.join([os.environ["PATH"], str(local_bin)]) if on_path else None
+    script = (
+        f". '{PROFILE}'; $e = $env:PATH -split [IO.Path]::PathSeparator; "
+        f"$e[0]; @($e | Where-Object {{ $_ -eq '{local_bin}' }}).Count"
+    )
+    result = run_pwsh(script, home, path=path)
+    # first, and moved rather than duplicated
+    assert result.stdout.splitlines() == [str(local_bin), "1"], result.stderr
 
 
 def test_profile_uses_nvim_as_editor(tmp_path, home):

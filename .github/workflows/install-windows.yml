@@ -73,9 +73,10 @@ jobs:
           # openssl reaches PATH through winget or profile.ps1
           pwsh -NonInteractive -Command 'openssl version'
           if ($LASTEXITCODE -ne 0) { throw 'openssl not on PATH' }
-          # uv python install --default puts python in ~/.local/bin, which profile.ps1 adds to PATH
-          pwsh -NonInteractive -Command 'python --version'
-          if ($LASTEXITCODE -ne 0) { throw 'python not on PATH' }
+          # uv python install --default puts python in ~/.local/bin, which profile.ps1 puts first on
+          # PATH; the runner's own Python must not win
+          $python = pwsh -NonInteractive -Command '(Get-Command python).Source'
+          if ($python -ne "$HOME\.local\bin\python.exe") { throw "python resolves to '$python', not uv's" }
           # The init.vim stub must load the vimrc, whose first launch installs vim-plug and the plugins
           nvim --headless '+PlugInstall --sync' +qa
           if ($LASTEXITCODE -ne 0) { throw 'nvim PlugInstall failed' }

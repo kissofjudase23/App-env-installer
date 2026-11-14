@@ -7,8 +7,13 @@ function Test-Command([string] $Name) {
 
 function Add-PathEntry([string] $Dir, [switch] $Prepend) {
     $sep = [IO.Path]::PathSeparator
-    if (($env:PATH -split $sep) -contains $Dir) { return }
-    $env:PATH = if ($Prepend) { "$Dir$sep$env:PATH" } else { "$env:PATH$sep$Dir" }
+    $entries = $env:PATH -split $sep
+    if ($Prepend) {
+        # Moves an entry already on PATH to the front, so it wins (e.g. over the Store's python)
+        $env:PATH = (@($Dir) + @($entries | Where-Object { $_ -ne $Dir })) -join $sep
+    } elseif ($entries -notcontains $Dir) {
+        $env:PATH = "$env:PATH$sep$Dir"
+    }
 }
 
 # Untracked machine-specific overrides, e.g. $env:USE_CORP_PROXY = '1' and $env:CORP_PROXY_URL
@@ -17,7 +22,7 @@ if (Test-Path $shellLocal) { . $shellLocal }
 
 Add-PathEntry (Join-Path $HOME 'bin') -Prepend
 # uv python install --default (install.ps1) puts python there
-$localBin = Join-Path $HOME '.local' 'bin'
+$localBin = Join-Path -Path $HOME -ChildPath '.local' -AdditionalChildPath 'bin'
 if (Test-Path $localBin) { Add-PathEntry $localBin -Prepend }
 $goBin = if ($env:GOBIN) { $env:GOBIN } elseif ($env:GOPATH) {
     Join-Path ($env:GOPATH -split ';')[0] 'bin'
