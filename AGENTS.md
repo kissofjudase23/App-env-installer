@@ -8,7 +8,7 @@ Two-stage install:
 
 1. [install.sh](install.sh) (macOS/Ubuntu) or [install.ps1](install.ps1) (Windows) – then `install.py`.
    - `install.ps1` (Windows PowerShell 5.1 compatible, `Set-StrictMode` + `$ErrorActionPreference = 'Stop'`, native commands through `Invoke-Native`): `winget import` of [packages/winget-packages.json](packages/winget-packages.json) with `--no-upgrade` (`-Upgrade` adds a second import without it, leaving out `GitHub.Copilot`, whose portable exe updates itself so winget refuses to remove the "modified" package, and `Microsoft.PowerShell` while any pwsh runs, since its MSI cannot replace a running pwsh), reloads `PATH` from the registry, installs the PSScriptAnalyzer + PSFzf modules via pwsh, then `uv python install`, `uv sync`, `uv run install.py -a -y` (`-Upgrade` adds `--upgrade`). Neovim comes from winget (no vim on Windows). Runs `Main` only when executed, so tests can dot-source it.
-   - `install.sh` (bash, `set -Eeuo pipefail`) – detects OS, installs system packages, installs Python (version from [.python-version](.python-version)) + deps via `uv` (Ubuntu: the uv installer runs with `UV_NO_MODIFY_PATH=1`, so it never edits rc files), bootstraps Go (Ubuntu: go.dev tarball → `/usr/local/go` if missing or < 1.21; macOS: `packages/Brewfile`) and, on Ubuntu (24.04+; `detect_os` refuses older releases), adds the gh apt repo, links `fdfind`/`batcat` as `fd`/`bat`, and installs fzf (< 0.48), eza, delta, starship (→ `/usr/local/bin`) and neovim (< 0.11 → `/opt/nvim`) from GitHub releases (`--upgrade` reinstalls them even when present), runs `install.py -a -y` (plus `--upgrade`), then `sudo chsh` to zsh when `login_shell` (dscl/getent, not the stale `$SHELL`) differs.
+   - `install.sh` (bash, `set -Eeuo pipefail`) – detects OS (Ubuntu 24.04+; `detect_os` refuses older releases), then installs system packages. macOS: `brew bundle` of `packages/Brewfile` (includes Go). Ubuntu: adds the gh apt repo, installs the apt packages and uv (its installer runs with `UV_NO_MODIFY_PATH=1`, so it never edits rc files), links `fdfind`/`batcat` as `fd`/`bat`, bootstraps Go (go.dev tarball → `/usr/local/go` when missing or older than 1.21), and installs fzf (when missing or older than 0.48), eza, delta, starship (→ `/usr/local/bin`) and Neovim (when missing or older than 0.11 → `/opt/nvim`) from GitHub releases (`--upgrade` reinstalls them even when present). Then installs Python (version from [.python-version](.python-version)) + deps via `uv`, runs `install.py -a -y` (plus `--upgrade`), and `sudo chsh` to zsh when `login_shell` (dscl/getent, not the stale `$SHELL`) differs.
 2. [install.py](install.py) (click CLI) – reads [config.yaml](config.yaml) (validated on load: unknown top-level or entry keys, missing dotfile `src`, `dst` outside its base, bad `os`/`base`/`stub`, or the same `(base, dst)` for overlapping `os` → `InstallerError`) and, for entries whose `os` includes the current system:
    - `link_dotfiles` – symlinks `assets/*` into `$HOME` (macOS/Linux); entries with `stub` (Windows) get a small file that includes the repo file (`STUBS`: gitconfig `[include]`, PowerShell dot-source, Vimscript `source`), so no symlink privilege is needed. Skips correct links/stubs; backs up anything else to `<dst>.bak.<YYYYmmddHHMMSS>`. `base: documents` resolves the Windows Documents known folder (`windows_documents`, follows OneDrive redirection); `base: local_app_data` is `%LOCALAPPDATA%`.
    - `ensure_gitconfig_local` – creates a commented placeholder `~/.gitconfig.local` (never overwrites).
@@ -29,15 +29,15 @@ For any new GitHub-hosted binary on Ubuntu, reuse `github_release_asset` / `inst
 | Windows packages | [packages/winget-packages.json](packages/winget-packages.json) (`winget import` format; check IDs with `winget show --id <id> --exact`) |
 | Dotfile links/stubs, git repos to clone, Linux/Windows Nerd Fonts | [config.yaml](config.yaml) (`src` relative to repo, `dst` relative to `base`; optional `os`, `base`, `stub`) |
 | `install.py` tests | [tests/](tests/) (pytest; `Installer` takes `home`/`base_dirs`/`ConfigMgr` so tests use `tmp_path`, never the real `$HOME`; symlink tests skip where symlinks need privileges) |
-| Shell dotfile smoke tests | [tests/test_shell.py](tests/test_shell.py) (clean `bash --norc` / `zsh -f`, temp `$HOME`; skipped when the shell is missing and on Windows) |
-| PowerShell smoke tests | [tests/test_powershell.py](tests/test_powershell.py) (`pwsh -NoProfile`, temp `USERPROFILE`; skipped without `pwsh`; pinned to one xdist worker because concurrent pwsh startups crash on macOS) |
+| Shell tests | [tests/test_shell.py](tests/test_shell.py) (dotfile smoke tests in clean `bash --norc` / `zsh -f` with a temp `$HOME`, plus unit tests of the `source`d `install.sh` functions; skipped when the shell is missing and on Windows) |
+| PowerShell tests | [tests/test_powershell.py](tests/test_powershell.py) (`profile.ps1` smoke tests with `pwsh -NoProfile` and a temp `USERPROFILE`, plus unit tests of the dot-sourced `install.ps1`; skipped without `pwsh`, so `make check` on a machine without it does not run them; pinned to one xdist worker because concurrent pwsh startups crash on macOS) |
 | PowerShell lint rules | [PSScriptAnalyzerSettings.psd1](PSScriptAnalyzerSettings.psd1) |
 | Line endings | [.gitattributes](.gitattributes) (LF everywhere) |
 | Python deps, ruff config | [pyproject.toml](pyproject.toml) (`uv` project, `package = false`) |
-| Python interpreter version | [.python-version](.python-version) – single source of truth; `install.sh` calls `uv python install --default` and CI bare `uv python install`, without a version. Bump `requires-python` in [pyproject.toml](pyproject.toml) only if the floor changes. |
+| Python interpreter version | [.python-version](.python-version) – single source of truth; `install.sh` calls `uv python install --default`, `install.ps1` and CI a bare `uv python install`, all without a version. Bump `requires-python` in [pyproject.toml](pyproject.toml) only if the floor changes. |
 | Go version | Go's official toolchain (`GOTOOLCHAIN=auto`, per-project `go.mod` `go`/`toolchain` lines). Only a bootstrap `go` is installed; no gvm/goenv. |
 | Go tools (`go install`) | `go_tools` in [config.yaml](config.yaml) |
-| CLI tool usage docs | [docs/cli-tools.md](docs/cli-tools.md) – update when tool integrations in `common.sh` change |
+| CLI tool usage docs | [docs/cli-tools.md](docs/cli-tools.md) – update when tool integrations in `common.sh`, `bashrc.sh`, `zshrc.zsh` or `profile.ps1` change |
 | User docs | [README.md](README.md) is only the entry page; per-OS guides [docs/macos.md](docs/macos.md), [docs/ubuntu.md](docs/ubuntu.md), [docs/windows.md](docs/windows.md); shared [docs/configuration.md](docs/configuration.md), [docs/shell.md](docs/shell.md), [docs/development.md](docs/development.md), [docs/troubleshooting.md](docs/troubleshooting.md); the make target table in development.md must list every `.PHONY` target in order (a test compares them) |
 | Shell formatting style | [.editorconfig](.editorconfig) (read by shfmt) |
 | Shared bash+zsh env | [assets/shell/common.sh](assets/shell/common.sh) |
@@ -50,15 +50,17 @@ For any new GitHub-hosted binary on Ubuntu, reuse `github_release_asset` / `inst
 | Agent instructions (all tools) | this file, [AGENTS.md](AGENTS.md) |
 | Tool-specific agent config | [CLAUDE.md](CLAUDE.md) + [.claude/settings.json](.claude/settings.json) + [.claude/skills/](.claude/skills/) (Claude Code), [.vscode/settings.json](.vscode/settings.json) (Copilot in VS Code) |
 
-Untracked, per-machine files (never commit their contents): `~/.shell_local` (e.g. `USE_CORP_PROXY=1`, `CORP_PROXY_URL`), `~/.gitconfig.local` (git `[user]`).
+Untracked, per-machine files (never commit their contents): `~/.shell_local` / `~/.shell_local.ps1` on Windows (e.g. `USE_CORP_PROXY=1`, `CORP_PROXY_URL`), `~/.gitconfig.local` (git `[user]`).
 
 ## Critical gotchas
 
 - `~/.assets` is a symlink to this repo's `assets/`, and most dotfiles in `$HOME` are symlinks into it. **Editing or deleting files under `assets/` immediately affects the user's live shell/git/vim.** Never leave them missing or broken. Installers (e.g. Docker Desktop) may append machine-specific lines to `~/.bash_profile`/`~/.zshrc` through these symlinks; never commit them (revert, or move them to `~/.shell_local`).
-- `common.sh` is sourced by **both bash and zsh**: keep it POSIX-ish/bash+zsh compatible and **never print output** (it breaks scp and the prompt). `profile.ps1` must not print either, and guards optional tools with `Test-Command`.
+- `common.sh` is sourced by **both bash and zsh**: keep it POSIX-ish/bash+zsh compatible and **never print output** (it breaks scp and the prompt). It also runs for non-interactive shells (`scp`, `ssh host cmd`), so keep it cheap. `profile.ps1` must not print either, and guards optional tools with `Test-Command`.
+- `~/.shell_local` (`~/.shell_local.ps1`) is sourced first, so it can only provide inputs such as the proxy flags, not override what `common.sh` (`profile.ps1`) sets later.
+- `common.sh` leaves `alias_setting` defined on purpose: `bashrc.sh` unsets it, `zshrc.zsh` re-runs it after oh-my-zsh and then unsets it (a test checks).
 - On Windows, dotfiles are stubs pointing at absolute repo paths (no `~/.assets`); moving the repo means re-running `install.py`. Never add a Windows dotfile entry without `stub` – symlinks need Developer Mode or admin.
 - `install.ps1` must stay ASCII and Windows PowerShell 5.1 compatible (5.1 reads BOM-less files as ANSI; no `??`, ternaries or `&&`).
-- Shell integrations for optional tools (eza, fd, bat, delta, zsh plugins) must be guarded by `command -v` so a missing tool never errors or prints.
+- Shell integrations for optional tools (eza, fd, bat, delta, zsh plugins, oh-my-zsh itself) must be guarded (`command -v` in bash/`common.sh`, `$+commands` or a file test in zsh, `Test-Command` in PowerShell) so a missing tool never errors or prints.
 - Never set `core.pager` / `interactive.diffFilter` to delta in `gitconfig`; `common.sh` sets `GIT_PAGER` only when delta exists.
 - Use `${HOMEBREW_PREFIX}` (set by `brew_env`) instead of hardcoded `/usr/local` or `/opt/homebrew`.
 - Do not hardcode user names, home paths, emails, or proxy addresses.
@@ -70,7 +72,7 @@ Untracked, per-machine files (never commit their contents): `~/.shell_local` (e.
 make sync        # uv sync
 make lint        # ruff check + ruff format --check
 make format      # ruff check --fix + ruff format
-make test        # pytest (tests/, parallel via pytest-xdist): install.py on a temp $HOME with subprocess/network blocked; shell dotfiles in clean bash/zsh (syntax, no output)
+make test        # pytest (tests/, parallel via pytest-xdist): install.py on a temp $HOME with subprocess/network blocked; shell dotfiles in clean bash/zsh (syntax, no output); install.sh / install.ps1 functions
 make shellcheck  # needs shellcheck; or: uvx --from shellcheck-py shellcheck <files>
 make shfmt       # shfmt -d (style from .editorconfig); make format-shell to fix
 make actionlint  # actionlint on .github/workflows (dev dependency in uv.lock)
