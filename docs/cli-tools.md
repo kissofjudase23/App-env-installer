@@ -15,7 +15,7 @@ them together. Each tool has full docs at `<tool> --help` and on its project pag
 | [zoxide](https://github.com/ajeetdsouza/zoxide) | `cd`, autojump | Brewfile | apt | winget |
 | [delta](https://github.com/dandavison/delta) | git's `less` pager | Brewfile `git-delta` | GitHub release → `/usr/local/bin/delta` | winget |
 | [jq](https://jqlang.org/) | JSON processing | Brewfile | apt | winget |
-| [gron](https://github.com/tomnomnom/gron) | grepping JSON | Brewfile | — (macOS only) | — |
+| [gron](https://github.com/tomnomnom/gron) | grepping JSON | Brewfile | apt | — |
 | [yq](https://github.com/mikefarah/yq) | YAML processing | `go_tools` | `go_tools` | `go_tools` |
 | [actionlint](https://github.com/rhysd/actionlint) | GitHub Actions workflow checks | `go_tools` | `go_tools` | `go_tools` |
 | [direnv](https://direnv.net/) | per-directory environment variables | Brewfile | apt | — |
@@ -195,8 +195,8 @@ jq -s 'length' *.json        # slurp multiple files into one array
 curl -s URL | jq -c '.[]'    # one compact object per line
 ```
 
-gron (macOS only) flattens JSON into greppable `path = value` lines, which helps find where a
-field lives:
+gron (macOS and Ubuntu) flattens JSON into greppable `path = value` lines, which helps find where
+a field lives:
 
 ```bash
 gron data.json | rg email    # json.users[3].email = "..."
