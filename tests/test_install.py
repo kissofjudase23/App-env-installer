@@ -1,7 +1,9 @@
 import hashlib
 import io
 import json
+import os
 import re
+import subprocess
 import tarfile
 import tempfile
 from pathlib import Path
@@ -49,6 +51,10 @@ def no_side_effects(monkeypatch):
     monkeypatch.setattr(install, "unregister_windows_font", fail)
     monkeypatch.setattr(install, "windows_documents", fail)
     monkeypatch.setattr(install, "is_wsl", lambda: False)
+    # go missing unless a test asks for the go fixture, so nothing runs the real `go env`
+    monkeypatch.setattr(install.shutil, "which", lambda _: None)
+    for name in ("GOBIN", "GOPATH"):
+        monkeypatch.delenv(name, raising=False)
 
 
 def base_dirs(home: Path) -> dict[str, Path]:
@@ -62,6 +68,7 @@ def make_installer(
     dry_run: bool = False,
     upgrade: bool = False,
     system: str = "Darwin",
+    assume_yes: bool = True,
     **config,
 ) -> install.Installer:
     config_path = tmp_path / "config.yaml"
@@ -74,7 +81,7 @@ def make_installer(
         git_agent=install.GitAgent(dry_run=dry_run),
         config_mgr=install.ConfigMgr(config_path),
         base_dirs=base_dirs(home),
-        assume_yes=True,
+        assume_yes=assume_yes,
         dry_run=dry_run,
         upgrade=upgrade,
     )
@@ -87,12 +94,22 @@ def commands(monkeypatch) -> list[list[str]]:
     return recorded
 
 
+@pytest.fixture
+def go(monkeypatch, home) -> Path:
+    """Pretend go is installed with GOBIN at the returned directory."""
+    gobin = home / "bin"
+    monkeypatch.setattr(install.shutil, "which", lambda _: "/usr/bin/go")
+    monkeypatch.setattr(install, "go_bin_dir", lambda go, home: gobin)
+    return gobin
+
+
 def snapshot(home: Path) -> dict[str, str]:
-    return {
-        str(p.relative_to(home)): str(p.readlink()) if p.is_symlink() else p.read_text()
-        for p in sorted(home.rglob("*"))
-        if p.is_symlink() or p.is_file()
-    }
+    def describe(p: Path) -> str:
+        if p.is_symlink():
+            return str(p.readlink())
+        return "<dir>" if p.is_dir() else p.read_text()
+
+    return {str(p.relative_to(home)): describe(p) for p in sorted(home.rglob("*"))}
 
 
 def backups(home: Path, name: str) -> list[Path]:
@@ -297,6 +314,7 @@ def test_config_defaults_missing_lists_to_empty(tmp_path):
         ({"git_repos": [{"src": "https://example.com/r.git", "dst": "a/../../r"}]}, "inside"),
         ({"dotfiles": [{"src": "assets", "dst": "."}]}, "inside \\$HOME"),
         ({"nerd_fonts": [{"name": "Meslo"}]}, "nerd_fonts entries must be strings"),
+        ({"go_tools": ["golang.org/x/tools/gopls"]}, "go_tools entry needs a version"),
         ({"dotfiles": [{**GITCONFIG_STUB, "oss": ["windows"]}]}, "unknown keys \\['oss'\\]"),
         (
             {"git_repos": [{"src": "https://example.com/r.git", "dst": "r", "stubs": 1}]},
@@ -371,7 +389,11 @@ def test_docs_dotfiles_table_matches_config():
     rows = re.findall(r"^\| `([^`]+)`\s*\| `([^`]+)`\s*\| ([a-z, ]+?)\s*\|$", section, re.MULTILINE)
     prefixes = {"home": "~/", "documents": "Documents/", "local_app_data": "%LOCALAPPDATA%/"}
     expected = [
-        (f["src"], prefixes[f.get("base", "home")] + f["dst"], ", ".join(f["os"]))
+        (
+            f["src"],
+            prefixes[f.get("base", "home")] + f["dst"],
+            ", ".join(f.get("os", sorted(install.OS_NAMES))),
+        )
         for f in install.ConfigMgr().dotfiles
     ]
     assert sorted((src.rstrip("/"), dst, os) for src, dst, os in rows) == sorted(expected)
@@ -393,15 +415,72 @@ def test_clone_git_repos_runs_git_clone(tmp_path, home, commands):
     assert (home / "src").is_dir()
 
 
-def test_clone_skips_existing_repo(tmp_path, home):
+def test_clone_skips_existing_repo(tmp_path, home, commands):
     (home / "repo/.git").mkdir(parents=True)
     git_repos = [{"name": "repo", "src": "https://example.com/repo.git", "dst": "repo"}]
     make_installer(tmp_path, home, git_repos=git_repos).clone_git_repos()
 
+    assert commands == []
 
-def test_install_go_tools_runs_go_install(tmp_path, home, monkeypatch, commands):
-    monkeypatch.setattr(install.shutil, "which", lambda _: "/usr/bin/go")
-    monkeypatch.setenv("GOBIN", str(home / "bin"))
+
+def test_declined_confirmation_changes_nothing(tmp_path, home, monkeypatch, commands, go):
+    monkeypatch.setattr(install.click, "confirm", lambda *args, **kwargs: False)
+    installer = make_installer(
+        tmp_path,
+        home,
+        assume_yes=False,
+        dotfiles=[{"src": "assets/tig/tigrc", "dst": ".tigrc"}],
+        git_repos=[{"src": "https://example.com/repo.git", "dst": "repo"}],
+        go_tools=["example.com/tool@latest"],
+    )
+
+    installer.link_dotfiles()
+    installer.clone_git_repos()
+    installer.install_go_tools()
+
+    assert commands == []
+    assert list(home.iterdir()) == []
+
+
+@pytest.mark.parametrize(
+    ("stdout", "expected"),
+    [
+        (f"{os.sep}custom{os.sep}bin\n{os.sep}gopath\n", f"{os.sep}custom{os.sep}bin"),
+        (f"\n{os.sep}gopath\n", f"{os.sep}gopath{os.sep}bin"),
+    ],
+    ids=["gobin", "gopath"],
+)
+def test_go_bin_dir_asks_go_env(tmp_path, monkeypatch, stdout, expected):
+    calls = []
+
+    def run(cmd, **kwargs):
+        calls.append(cmd)
+        return subprocess.CompletedProcess(cmd, 0, stdout=stdout)
+
+    monkeypatch.setattr(install.subprocess, "run", run)
+
+    assert install.go_bin_dir("/usr/bin/go", tmp_path) == Path(expected)
+    assert calls == [["/usr/bin/go", "env", "GOBIN", "GOPATH"]]
+
+
+@pytest.mark.parametrize(
+    ("env", "expected"),
+    [
+        ({"GOBIN": "gobin"}, "gobin"),
+        ({"GOPATH": os.pathsep.join(["first", "second"])}, os.path.join("first", "bin")),
+        ({}, None),
+    ],
+    ids=["gobin", "gopath", "default"],
+)
+def test_go_bin_dir_without_go_reads_environment(tmp_path, monkeypatch, env, expected):
+    for name, value in env.items():
+        monkeypatch.setenv(name, value)
+
+    expected_dir = Path(expected) if expected else tmp_path / "go/bin"
+    assert install.go_bin_dir(None, tmp_path) == expected_dir
+
+
+def test_install_go_tools_runs_go_install(tmp_path, home, commands, go):
     tools = ["example.com/a@latest", "example.com/b@v1"]
     make_installer(tmp_path, home, go_tools=tools).install_go_tools()
 
@@ -422,12 +501,10 @@ def test_go_tool_binary(pkg, system, binary):
 
 @pytest.mark.parametrize(("upgrade", "installed"), [(False, ["b"]), (True, ["a", "b"])])
 def test_install_go_tools_skips_installed_unless_upgrade(
-    tmp_path, home, monkeypatch, commands, upgrade, installed
+    tmp_path, home, commands, go, upgrade, installed
 ):
-    monkeypatch.setattr(install.shutil, "which", lambda _: "/usr/bin/go")
-    monkeypatch.setenv("GOBIN", str(home / "bin"))
-    (home / "bin").mkdir()
-    (home / "bin/a").write_text("")
+    go.mkdir()
+    (go / "a").write_text("")
     tools = ["example.com/a@latest", "example.com/b/v2@latest"]
     make_installer(tmp_path, home, upgrade=upgrade, go_tools=tools).install_go_tools()
 
@@ -435,9 +512,11 @@ def test_install_go_tools_skips_installed_unless_upgrade(
     assert commands == [["/usr/bin/go", "install", expected[name]] for name in installed]
 
 
-def test_install_go_tools_skips_without_go(tmp_path, home, monkeypatch):
-    monkeypatch.setattr(install.shutil, "which", lambda _: None)
+def test_install_go_tools_skips_without_go(tmp_path, home, commands, capsys):
     make_installer(tmp_path, home, go_tools=["example.com/tool@latest"]).install_go_tools()
+
+    assert commands == []
+    assert "go not found" in capsys.readouterr().err
 
 
 @pytest.fixture
@@ -465,11 +544,24 @@ def test_cli_dry_run_all_changes_nothing(cli_home):
     assert list(cli_home.iterdir()) == []
 
 
-def test_cli_upgrade_dry_run_reinstalls_go_tools(cli_home, monkeypatch):
-    monkeypatch.setattr(install.shutil, "which", lambda _: "/usr/bin/go")
-    monkeypatch.setenv("GOBIN", str(cli_home / "bin"))
-    (cli_home / "bin").mkdir()
-    (cli_home / "bin/gopls").write_text("")
+@pytest.mark.parametrize(
+    ("flag", "title"),
+    [
+        ("-d", "Prepare to link dotfiles"),
+        ("-g", "Prepare to clone git repos"),
+        ("-t", "Prepare to install go tools"),
+    ],
+)
+def test_cli_runs_only_the_selected_action(cli_home, flag, title):
+    result = CliRunner().invoke(install.cli, [flag, "-y", "--dry-run"])
+
+    assert result.exit_code == 0, result.output
+    assert re.findall(r"^Prepare to [a-z ]+", result.output, re.MULTILINE) == [title]
+
+
+def test_cli_upgrade_dry_run_reinstalls_go_tools(cli_home, go):
+    go.mkdir()
+    (go / "gopls").write_text("")
 
     plain = CliRunner().invoke(install.cli, ["-t", "-y", "--dry-run"])
     upgrade = CliRunner().invoke(install.cli, ["-t", "-y", "--dry-run", "--upgrade"])
@@ -698,6 +790,23 @@ def test_install_fonts_rejects_missing_digest(tmp_path, home, nerd_fonts_release
     assert fetched == []
 
 
+def test_install_fonts_rejects_release_without_archive(tmp_path, home, nerd_fonts_release):
+    with pytest.raises(install.InstallerError, match="nerd-fonts release has no Meslo.tar.xz"):
+        make_installer(tmp_path, home, system="Linux", nerd_fonts=["Meslo"]).install_fonts()
+
+
+@pytest.mark.parametrize(
+    "body",
+    [b"<html>", b"{}", b'{"tag_name": "v1", "assets": [{"name": "Meslo.tar.xz"}]}'],
+    ids=["not-json", "no-tag", "no-url"],
+)
+def test_nerd_font_assets_rejects_unexpected_response(monkeypatch, body):
+    monkeypatch.setattr(install, "fetch", lambda url: body)
+
+    with pytest.raises(install.InstallerError, match="unexpected nerd-fonts release response"):
+        install.Installer._nerd_font_assets()
+
+
 def os_release_error():
     raise FileNotFoundError("/etc/os-release")
 
@@ -725,7 +834,7 @@ def test_check_supported(monkeypatch, system, os_release, error):
 
 
 @pytest.mark.parametrize("upgrade", [False, True], ids=["install", "upgrade"])
-@pytest.mark.parametrize("system", ["Linux", "Windows"])
+@pytest.mark.parametrize("system", ["Darwin", "Linux", "Windows"])
 def test_dry_run_changes_nothing(tmp_path, home, system, upgrade):
     (home / ".tigrc").write_text("mine")
     installer = make_installer(
@@ -739,7 +848,7 @@ def test_dry_run_changes_nothing(tmp_path, home, system, upgrade):
             {"name": "tmux", "src": "assets/tmux/tmux.conf", "dst": ".config/tmux/tmux.conf"},
             {**GITCONFIG_STUB, "dst": "PowerShell/profile.ps1", "base": "documents"},
         ],
-        git_repos=[{"name": "repo", "src": "https://example.com/repo.git", "dst": "repo"}],
+        git_repos=[{"name": "repo", "src": "https://example.com/repo.git", "dst": "src/repo"}],
         go_tools=["example.com/tool@latest"],
         nerd_fonts=["Meslo"],
     )
@@ -751,5 +860,5 @@ def test_dry_run_changes_nothing(tmp_path, home, system, upgrade):
     installer.clone_git_repos()
     installer.install_go_tools()
 
+    # snapshot() includes directories, so a stray mkdir fails here too
     assert snapshot(home) == before
-    assert sorted(p.name for p in home.iterdir()) == [".tigrc"]

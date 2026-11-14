@@ -59,7 +59,7 @@ uv run install.py -a -y           # skip confirmation prompts
 uv run install.py -a --upgrade    # also reinstall Go tools and update Nerd Fonts
 ```
 
-Run these from inside the repo, where `uv` finds the project and its dependencies; `install.py` itself resolves every path from its own location, so the working directory does not change what it links. Without `--upgrade`, Go tools whose binary already exists in `$GOBIN` (default `~/go/bin`) and fonts that are already installed are skipped. With `--upgrade`, every Go tool is reinstalled at the version in `config.yaml` (`@latest`), and a font is replaced only when the latest Nerd Fonts release differs from the one recorded in its `.release` file. `bash install.sh --upgrade` and `install.ps1 -Upgrade` pass `--upgrade` through.
+Run these from inside the repo, where `uv` finds the project and its dependencies; `install.py` itself resolves every path from its own location, so the working directory does not change what it links. Without `--upgrade`, Go tools whose binary already exists in the Go bin directory (`go env GOBIN`, or `bin` under the first `GOPATH` entry; default `~/go/bin`) and fonts that are already installed are skipped. Each `go_tools` entry needs a version (`@latest` or `@v1.2.3`), because `go install` outside a Go module requires one. With `--upgrade`, every Go tool is reinstalled at the version in `config.yaml` (`@latest`), and a font is replaced only when the latest Nerd Fonts release differs from the one recorded in its `.release` file. `bash install.sh --upgrade` and `install.ps1 -Upgrade` pass `--upgrade` through.
 
 ## Updating
 

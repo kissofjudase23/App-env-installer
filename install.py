@@ -103,6 +103,20 @@ def go_tool_binary(pkg: str, system: str) -> str:
     return f"{name}.exe" if system == SupportedSystems.WINDOWS.value else name
 
 
+def go_bin_dir(go: str | None, home: Path) -> Path:
+    # go env also sees `go env -w` settings, which never reach the environment
+    if go is not None:
+        result = subprocess.run(
+            [go, "env", "GOBIN", "GOPATH"], capture_output=True, text=True, check=True
+        )
+        gobin, gopath = ([*result.stdout.splitlines(), "", ""])[:2]
+    else:
+        gobin, gopath = os.environ.get("GOBIN", ""), os.environ.get("GOPATH", "")
+    if gobin:
+        return Path(gobin)
+    return Path(gopath.split(os.pathsep)[0] or home / "go") / "bin"
+
+
 def run(cmd: list[str], *, dry_run: bool) -> None:
     click.echo(f"$ {' '.join(cmd)}")
     if not dry_run:
@@ -254,6 +268,10 @@ class ConfigMgr:
         for key in ("nerd_fonts", "go_tools"):
             if not all(isinstance(item, str) for item in self._list(key)):
                 fail(f"{key} entries must be strings")
+        # outside a module, go install fails without pkg@version
+        for pkg in self.go_tools:
+            if "@" not in pkg:
+                fail(f"go_tools entry needs a version, e.g. {pkg}@latest")
 
     def _list(self, key: str) -> list:
         return self.config.get(key) or []
@@ -429,12 +447,17 @@ class Installer:
 
     @staticmethod
     def _nerd_font_assets() -> tuple[str, dict[str, tuple[str, str]]]:
-        release = json.loads(fetch(NERD_FONTS_RELEASE_API))
-        click.echo(f"nerd-fonts {release['tag_name']}")
-        assets = {
-            a["name"]: (a["browser_download_url"], a.get("digest") or "") for a in release["assets"]
-        }
-        return release["tag_name"], assets
+        try:
+            release = json.loads(fetch(NERD_FONTS_RELEASE_API))
+            tag = release["tag_name"]
+            assets = {
+                a["name"]: (a["browser_download_url"], a.get("digest") or "")
+                for a in release["assets"]
+            }
+        except (ValueError, KeyError, TypeError, AttributeError) as e:
+            raise InstallerError(f"unexpected nerd-fonts release response: {e!r}") from e
+        click.echo(f"nerd-fonts {tag}")
+        return tag, assets
 
     def install_go_tools(self) -> None:
         go = shutil.which("go")
@@ -442,13 +465,10 @@ class Installer:
             click.echo("skip go tools: go not found in PATH", err=True)
             return
 
-        gobin = (
-            os.environ.get("GOBIN")
-            or Path(os.environ.get("GOPATH", "").split(os.pathsep)[0] or self.home / "go") / "bin"
-        )
+        gobin = go_bin_dir(go, self.home)
         pairs = []
         for pkg in self.config_mgr.go_tools:
-            binary = Path(gobin) / go_tool_binary(pkg, self.system)
+            binary = gobin / go_tool_binary(pkg, self.system)
             if not self.upgrade and binary.exists():
                 click.echo(f"skip {binary}: already installed (--upgrade to update)")
             else:
