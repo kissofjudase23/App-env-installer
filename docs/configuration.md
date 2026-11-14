@@ -59,7 +59,36 @@ uv run install.py -a -y           # skip confirmation prompts
 uv run install.py -a --upgrade    # also reinstall Go tools and update Nerd Fonts
 ```
 
-`install.py` can be run from any directory. Without `--upgrade`, Go tools whose binary already exists in `$GOBIN` (default `~/go/bin`) and fonts that are already installed are skipped. With `--upgrade`, every Go tool is reinstalled at the version in `config.yaml` (`@latest`), and a font is replaced only when the latest Nerd Fonts release differs from the one recorded in its `.release` file. `bash install.sh --upgrade` and `install.ps1 -Upgrade` pass `--upgrade` through.
+Run these from inside the repo, where `uv` finds the project and its dependencies; `install.py` itself resolves every path from its own location, so the working directory does not change what it links. Without `--upgrade`, Go tools whose binary already exists in `$GOBIN` (default `~/go/bin`) and fonts that are already installed are skipped. With `--upgrade`, every Go tool is reinstalled at the version in `config.yaml` (`@latest`), and a font is replaced only when the latest Nerd Fonts release differs from the one recorded in its `.release` file. `bash install.sh --upgrade` and `install.ps1 -Upgrade` pass `--upgrade` through.
+
+## Updating
+
+Dotfiles are symlinks (stubs on Windows) into this repo, so after a `git pull` new shells pick up changed dotfiles right away. Re-run the installer (`bash install.sh`, or `install.ps1` on Windows) when the pull changes `config.yaml` or `packages/`; everything already in place is skipped.
+
+What a re-run updates, with and without `--upgrade` (`-Upgrade` on Windows):
+
+| Component | Plain re-run | With `--upgrade` |
+| --- | --- | --- |
+| Brewfile packages (macOS) | Installs missing ones, upgrades outdated ones | Same |
+| apt packages (Ubuntu) | `apt-get update`, then installs missing ones and upgrades the listed ones | Same |
+| winget packages (Windows) | Installs missing ones | Also upgrades installed ones, except GitHub Copilot CLI and, while `pwsh` runs, PowerShell 7 ([why](windows.md#installation)) |
+| fzf, eza, delta, starship, Neovim (Ubuntu) | Installs missing ones, and replaces fzf older than 0.48 and Neovim older than 0.11 | Reinstalls the latest GitHub releases |
+| Go tools | Installs those missing from `$GOBIN` | Reinstalls all at the version in `config.yaml` |
+| Nerd Fonts (Linux, Windows) | Installs missing ones | Replaces fonts from an older release |
+| Dotfiles | Links missing ones, replaces stale links and stubs | Same |
+
+On macOS, shells set up by this repo export `HOMEBREW_NO_AUTO_UPDATE=1`, so `brew bundle` compares against the package index Homebrew last fetched; run `brew update` first to get the newest versions.
+
+Neither kind of run updates the following; update them yourself:
+
+| Component | How |
+| --- | --- |
+| oh-my-zsh | `omz update` (oh-my-zsh also offers updates by itself every couple of weeks) |
+| Vim / Neovim plugins | `:PlugUpdate`, and `:PlugUpgrade` for vim-plug itself |
+| Go in `/usr/local/go` (Ubuntu) | Usually not needed: projects get newer Go versions through `GOTOOLCHAIN`. For a newer bootstrap, `sudo rm -rf /usr/local/go` and re-run `install.sh` |
+| uv (Ubuntu) | `uv self update` |
+| Python patch releases | `uv python upgrade` |
+| PSFzf, PSScriptAnalyzer (Windows) | `Update-PSResource PSFzf, PSScriptAnalyzer` in `pwsh` |
 
 ## GitHub API token
 
@@ -71,10 +100,25 @@ Symlinks (macOS, Linux) and stubs (Windows) point at absolute paths in this repo
 
 ## Undo / uninstall
 
-1. Remove the links or stubs listed under [Dotfiles Linked](#dotfiles-linked) (`rm ~/.zshrc ~/.assets ...`).
+1. Remove the links or stubs listed under [Dotfiles Linked](#dotfiles-linked) (`rm ~/.zshrc ~/.assets ...`; on Windows, the `~/.gitconfig`, PowerShell `$PROFILE` and `%LOCALAPPDATA%\nvim\init.vim` stubs). `~/.gitconfig.local` holds your git identity; delete it only if you no longer need it.
 2. Restore any backups: `install.py` renamed each file it replaced to `<file>.bak.<YYYYmmddHHMMSS>`, e.g. `mv ~/.zshrc.bak.20260101120000 ~/.zshrc`.
 3. Switch the login shell back if you like: `chsh -s /bin/bash`.
-4. Packages, fonts, Go tools and `~/.oh-my-zsh` stay installed; remove them with your package manager or `rm -rf`.
+4. Packages stay installed; remove them with `brew uninstall`, `apt remove` or `winget uninstall`. Everything else the installers put in place:
+
+| OS | What | Remove with |
+| --- | --- | --- |
+| macOS, Linux | oh-my-zsh | `rm -rf ~/.oh-my-zsh` |
+| All | Vim / Neovim plugins and Vim's undo history | `rm -rf ~/.vim` (Neovim's copy of vim-plug lives in `stdpath('data')/site/autoload`) |
+| All | Go tools | Delete them from `$(go env GOPATH)/bin` |
+| All | Python installed by uv | `uv python uninstall --all` |
+| Linux | Nerd Fonts | `rm -rf ~/.local/share/fonts/NerdFonts && fc-cache -f` |
+| Ubuntu | GitHub-release tools, and the `fd` / `bat` links to `fdfind` / `batcat` | `sudo rm /usr/local/bin/{fzf,eza,delta,starship,nvim,fd,bat}` and `sudo rm -rf /opt/nvim` |
+| Ubuntu | Go bootstrap | `sudo rm -rf /usr/local/go` |
+| Ubuntu | gh apt repository | `sudo rm /etc/apt/keyrings/githubcli-archive-keyring.gpg /etc/apt/sources.list.d/github-cli.list` |
+| Ubuntu | uv | `rm ~/.local/bin/uv ~/.local/bin/uvx` |
+| macOS, Ubuntu | zsh in `/etc/shells` | `sudoedit /etc/shells`, only if you also remove zsh |
+| Windows | Nerd Fonts | Delete `%LOCALAPPDATA%\Microsoft\Windows\Fonts\NerdFonts` and the matching values under `HKCU\Software\Microsoft\Windows NT\CurrentVersion\Fonts` |
+| Windows | PowerShell modules | `Uninstall-PSResource PSFzf, PSScriptAnalyzer` in `pwsh` |
 
 ## Machine-specific settings
 
@@ -95,6 +139,8 @@ On Windows, `profile.ps1` dot-sources `~/.shell_local.ps1` instead:
 $env:USE_CORP_PROXY = '1'
 $env:CORP_PROXY_URL = 'http://proxy.example.com:8080'
 ```
+
+Both files are loaded first, before `common.sh` or `profile.ps1` sets anything else. They can provide inputs such as the proxy settings above, but cannot override what is set later (`EDITOR`, `LANG`, `GIT_PAGER`, the aliases). `NO_PROXY` is always `127.0.0.1,localhost`; to add internal domains, change `network_setting` in `common.sh` (and the proxy block in `profile.ps1`).
 
 ## Git identity
 

@@ -35,7 +35,7 @@ Network tools: `curl`, `openssl`, `nc` (`netcat-openbsd`) and `dig` (`bind9-dnsu
 
 To add a package, edit apt-packages.txt and re-run `bash install.sh`.
 
-Re-running `install.sh` skips GitHub-release tools, Go tools and Nerd Fonts that are already installed (and recent enough). To update them, run `bash install.sh --upgrade` (or `make upgrade`), which reinstalls the latest fzf, eza, delta, starship and Neovim releases and the Go tools, and replaces fonts from an older Nerd Fonts release ([details](configuration.md#manual-installpy-usage)).
+Re-running `install.sh` skips GitHub-release tools, Go tools and Nerd Fonts that are already installed (and recent enough). To update them, run `bash install.sh --upgrade` (or `make upgrade`), which reinstalls the latest fzf, eza, delta, starship and Neovim releases and the Go tools, and replaces fonts from an older Nerd Fonts release ([what each run updates](configuration.md#updating)).
 
 ## WSL2
 

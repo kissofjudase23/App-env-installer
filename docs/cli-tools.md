@@ -30,7 +30,8 @@ Debian and Ubuntu ship fd as `fdfind` and bat as `batcat`. `install.sh` links th
 
 ## What the dotfiles set up
 
-[common.sh](../assets/shell/common.sh) enables each integration only when its tool is installed,
+[common.sh](../assets/shell/common.sh), [bashrc.sh](../assets/shell/bashrc.sh) and
+[zshrc.zsh](../assets/shell/zshrc.zsh) enable each integration only when its tool is installed,
 so nothing breaks on a machine that lacks one.
 
 | Integration | Effect |
@@ -43,6 +44,12 @@ so nothing breaks on a machine that lacks one.
 | fzf `Ctrl-R` | Fuzzy-searches shell history |
 | `MANPAGER` | Renders man pages through `bat` with syntax highlighting (set when bat is installed) |
 | `GIT_PAGER=delta` | Set when delta is installed, so `git diff/log/show` render through delta |
+| `vi`, `vim`, `vimdiff` | Run Neovim when it is installed, which also becomes `EDITOR`, `VISUAL` and `GIT_EDITOR`; otherwise `vi` runs Vim |
+| `tree` | `tree -C`: always colored |
+| `grep`, `egrep`, `fgrep` | `--color=auto` (Linux) |
+| `ssh` | Runs with `TERM=xterm-256color`, because remote hosts may lack the terminfo entry for tmux or your local terminal |
+| `TERM` | Upgraded to `<term>-256color` when that terminfo entry exists |
+| `aws` | Tab completion in bash when `aws_completer` is installed |
 | Prompt | starship, configured in [starship.toml](../assets/starship/starship.toml), for bash and zsh |
 
 On Windows, [profile.ps1](../assets/shell/profile.ps1) sets up the same integrations for
@@ -52,6 +59,7 @@ PowerShell 7, with these differences:
   replace the built-in `ls` and `cat` aliases, so use `Get-ChildItem` / `Get-Content` for the originals.
 - fzf `Ctrl-T` / `Ctrl-R` come from the [PSFzf](https://github.com/kelleyma49/PSFzf) module
   (installed by `install.ps1`); `Alt-C` and `MANPAGER` are not set up.
+- The `tree`, `grep` and `ssh` aliases, the `TERM` upgrade and `aws` completion are not set up.
 - `~/.shell_local.ps1` replaces `~/.shell_local` for machine-specific settings.
 
 ## eza

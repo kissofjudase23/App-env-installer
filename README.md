@@ -43,14 +43,14 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1
    - clones oh-my-zsh (macOS, Linux),
    - installs the Go tools with `go install` (tools already in `~/go/bin` are skipped).
 
-Both stages are idempotent and can be re-run safely; `--upgrade` (`-Upgrade` on Windows) also updates tools that are already installed.
+Both stages are idempotent and can be re-run safely; `--upgrade` (`-Upgrade` on Windows) also updates tools that are already installed ([what each run updates](docs/configuration.md#updating)).
 
 ## Documentation
 
-- [Configuration](docs/configuration.md) – `config.yaml`, dotfiles linked, manual `install.py` usage, per-machine settings, git identity
+- [Configuration](docs/configuration.md) – `config.yaml`, dotfiles linked, manual `install.py` usage, updating, uninstalling, per-machine settings, git identity
 - [Shell, Go and Editor](docs/shell.md) – zsh/oh-my-zsh, starship, PowerShell profile, Go toolchains, Vim/Neovim
 - [CLI tools](docs/cli-tools.md) – eza, fd, bat, ripgrep, fzf, zoxide, delta, jq, gh, network tools
 - [Development](docs/development.md) – make targets, tests, CI
-- [Troubleshooting](docs/troubleshooting.md) – rate limits, missing icons, a moved repo, upgrades
+- [Troubleshooting](docs/troubleshooting.md) – rate limits, missing icons, zsh without oh-my-zsh, a moved repo, unexpected `git status` changes, `chsh`, tmux shell and clipboard, Vim plugin bootstrap, Windows font upgrades
 
 AI coding agents (Claude Code, GitHub Copilot): project instructions live in [AGENTS.md](AGENTS.md).

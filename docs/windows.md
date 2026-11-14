@@ -17,7 +17,7 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1            # first run; l
 powershell -ExecutionPolicy Bypass -File .\install.ps1 -Upgrade   # also upgrade packages, Go tools, fonts (make upgrade)
 ```
 
-`-Upgrade` also reinstalls the Go tools and replaces fonts from an older Nerd Fonts release ([details](configuration.md#manual-installpy-usage)). It skips PowerShell 7 itself while any `pwsh` window is open, because its installer cannot replace a running `pwsh`; close them and run `winget upgrade Microsoft.PowerShell` from `cmd` or Windows PowerShell. It never upgrades GitHub Copilot CLI: `copilot` updates itself in place, after which winget refuses to replace the "modified" portable package (`winget list` keeps showing the version first installed).
+`-Upgrade` also reinstalls the Go tools and replaces fonts from an older Nerd Fonts release ([what each run updates](configuration.md#updating)). It skips PowerShell 7 itself while any `pwsh` window is open, because its installer cannot replace a running `pwsh`; close them and run `winget upgrade Microsoft.PowerShell` from `cmd` or Windows PowerShell. It never upgrades GitHub Copilot CLI: `copilot` updates itself in place, after which winget refuses to replace the "modified" portable package (`winget list` keeps showing the version first installed).
 
 Behind a shared office NAT, set a [GitHub API token](configuration.md#github-api-token) to avoid the anonymous rate limit.
 
