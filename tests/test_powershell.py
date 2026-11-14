@@ -31,7 +31,8 @@ def run_pwsh(script: str, home: Path, *, path: str | None = None) -> subprocess.
         "USERPROFILE": str(home),
         "PATH": path if path is not None else os.environ["PATH"],
     }
-    for name in ("USE_CORP_PROXY", "CORP_PROXY_URL", "HTTP_PROXY", "HTTPS_PROXY", "NO_PROXY"):
+    proxy_vars = ("USE_CORP_PROXY", "CORP_PROXY_URL", "CORP_NO_PROXY")
+    for name in (*proxy_vars, "HTTP_PROXY", "HTTPS_PROXY", "NO_PROXY"):
         env.pop(name, None)
         env.pop(name.lower(), None)
     return subprocess.run(
@@ -74,6 +75,29 @@ def test_profile_sets_proxy_and_starship_config(home):
     ], result.stderr
 
 
+def test_profile_appends_corp_no_proxy(home):
+    (home / ".shell_local.ps1").write_text(
+        f"$env:USE_CORP_PROXY = '1'\n$env:CORP_PROXY_URL = '{PROXY}'\n"
+        "$env:CORP_NO_PROXY = '.corp.example.com'\n"
+    )
+    result = run_pwsh(f". '{PROFILE}'; $env:NO_PROXY", home)
+    assert result.stdout.strip() == "127.0.0.1,localhost,.corp.example.com", result.stderr
+
+
+@pytest.mark.parametrize("on_path", [False, True], ids=["missing", "later-on-path"])
+def test_profile_puts_local_bin_first(home, on_path):
+    local_bin = home / ".local" / "bin"
+    local_bin.mkdir(parents=True)
+    path = os.pathsep.join([os.environ["PATH"], str(local_bin)]) if on_path else None
+    script = (
+        f". '{PROFILE}'; $e = $env:PATH -split [IO.Path]::PathSeparator; "
+        f"$e[0]; @($e | Where-Object {{ $_ -eq '{local_bin}' }}).Count"
+    )
+    result = run_pwsh(script, home, path=path)
+    # first, and moved rather than duplicated
+    assert result.stdout.splitlines() == [str(local_bin), "1"], result.stderr
+
+
 def test_profile_uses_nvim_as_editor(tmp_path, home):
     # Get-Command -CommandType Application needs a .cmd on Windows, an executable bit elsewhere
     bin_dir = tmp_path / "bin"
@@ -92,9 +116,12 @@ def test_profile_uses_nvim_as_editor(tmp_path, home):
 
 
 def test_profile_removes_its_helpers(home):
-    script = f". '{PROFILE}'; [bool](Get-Command Test-Command, Add-PathEntry -ErrorAction Ignore)"
+    script = (
+        f". '{PROFILE}'; [bool](Get-Command Test-Command, Add-PathEntry -ErrorAction Ignore); "
+        "[bool](Get-Variable shellLocal, localBin, goBin, openSslBin -ErrorAction Ignore)"
+    )
     result = run_pwsh(script, home)
-    assert result.stdout.strip() == "False", result.stderr
+    assert result.stdout.splitlines() == ["False", "False"], result.stderr
 
 
 def test_install_ps1_dot_source_does_not_run_main(home):
@@ -143,7 +170,7 @@ def test_install_ps1_passes_upgrade_to_install_py(home, flag, suffix):
     )
     result = run_pwsh(script, home)
     assert result.stdout.splitlines() == [
-        "uv python install",
-        "uv sync",
+        "uv python install --default",
+        "uv sync --locked",
         f"uv run install.py -a -y{suffix}",
     ], result.stderr

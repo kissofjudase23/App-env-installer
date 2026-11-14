@@ -11,6 +11,7 @@ fd-find
 fontconfig
 gh
 git
+gron
 jq
 make
 netcat-openbsd

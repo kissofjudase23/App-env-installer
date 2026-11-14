@@ -48,6 +48,8 @@ Use a single scope matching the main area changed; omit it if the change spans m
 | `vim`       | `assets/editor/vimrc.vim` (vim + nvim)                        |
 | `git`       | `assets/git/*`                                                |
 | `tmux`      | `assets/tmux/*`                                               |
+| `tig`       | `assets/tig/*`                                                |
+| `tests`     | `tests/*` (pytest for `install.py`, shell and PowerShell)     |
 | `ci`        | `.github/workflows/*`                                         |
 | `make`      | `Makefile`                                                    |
 | `readme`    | `README.md`                                                   |
@@ -101,12 +103,12 @@ Refs: #123461
 ```
 
 ```text
-ci: add shellcheck job for ubuntu and macos
+ci: cache go modules in install workflows
 
 ```
 
 ```text
-docs(readme): add tigrc to dotfiles linked table
+docs: add tigrc to dotfiles linked table
 
 Refs: #123463
 ```

@@ -4,7 +4,7 @@ name: Install (macOS)
 on:
   # Weekly: catches upstream drift (renamed formulae or casks, release changes) with no commit here
   schedule:
-    - cron: "0 3 * * 1"
+    - cron: "27 3 * * 1"
   push:
     branches: [master]
     paths: &paths
@@ -13,6 +13,7 @@ on:
       - packages/Brewfile
       - config.yaml
       - .python-version
+      - pyproject.toml
       - uv.lock
       - assets/shell/**
       - .github/workflows/install-macos.yml
@@ -25,7 +26,8 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # Only superseded PR runs; a push to master must not cancel the weekly run
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   install:

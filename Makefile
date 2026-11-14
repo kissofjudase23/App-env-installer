@@ -30,7 +30,7 @@ help: ##u Show available targets and their descriptions (default target)
 install: ##u Full bootstrap: OS packages (brew/apt), Python via uv (.python-version), install.py -a -y, chsh to zsh (uses sudo, modifies $HOME)
 	bash install.sh
 
-upgrade: ##u Like install, but also update Go tools, Nerd Fonts (Linux) and fzf, eza, delta, starship, nvim (Ubuntu) (bash install.sh --upgrade)
+upgrade: ##u Like install, but also upgrade brew/apt packages, Go tools, Nerd Fonts (Linux), uv and fzf, eza, delta, starship, nvim (Ubuntu) (bash install.sh --upgrade)
 	bash install.sh --upgrade
 endif
 

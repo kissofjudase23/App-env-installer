@@ -92,9 +92,9 @@ function Install-PwshModule {
 
 function Install-Python {
     param([switch] $Upgrade)
-    # No argument: uv reads the version from .python-version
-    Invoke-Native uv @('python', 'install')
-    Invoke-Native uv @('sync')
+    # No version argument: uv reads it from .python-version; --default adds python to ~/.local/bin
+    Invoke-Native uv @('python', 'install', '--default')
+    Invoke-Native uv @('sync', '--locked')
     $installArgs = @('run', 'install.py', '-a', '-y')
     if ($Upgrade) { $installArgs += '--upgrade' }
     Invoke-Native uv $installArgs

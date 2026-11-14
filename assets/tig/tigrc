@@ -1,5 +1,3 @@
-
-
-set mouse = True
+set mouse = true
 set mouse-scroll = 3
 set pager-view = line-number:yes,interval=10 text

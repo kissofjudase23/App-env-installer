@@ -38,7 +38,8 @@ for _plugin in zsh-autosuggestions zsh-syntax-highlighting; do
 done
 unset _plugin
 
-source $ZSH/oh-my-zsh.sh
+# install.py -d alone doesn't clone oh-my-zsh; don't break the shell when it's missing
+[[ -f $ZSH/oh-my-zsh.sh ]] && source $ZSH/oh-my-zsh.sh
 
 # oh-my-zsh defines its own ll/la/l; re-apply the shared aliases from common.sh
 alias_setting

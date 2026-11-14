@@ -17,14 +17,14 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1            # first run; l
 powershell -ExecutionPolicy Bypass -File .\install.ps1 -Upgrade   # also upgrade packages, Go tools, fonts (make upgrade)
 ```
 
-`-Upgrade` also reinstalls the Go tools and replaces fonts from an older Nerd Fonts release ([details](configuration.md#manual-installpy-usage)). It skips PowerShell 7 itself while any `pwsh` window is open, because its installer cannot replace a running `pwsh`; close them and run `winget upgrade Microsoft.PowerShell` from `cmd` or Windows PowerShell. It never upgrades GitHub Copilot CLI: `copilot` updates itself in place, after which winget refuses to replace the "modified" portable package (`winget list` keeps showing the version first installed).
+`-Upgrade` also reinstalls the Go tools and replaces fonts from an older Nerd Fonts release ([what each run updates](configuration.md#updating)). It skips PowerShell 7 itself while any `pwsh` window is open, because its installer cannot replace a running `pwsh`; close them and run `winget upgrade Microsoft.PowerShell` from `cmd` or Windows PowerShell. It never upgrades GitHub Copilot CLI: `copilot` updates itself in place, after which winget refuses to replace the "modified" portable package (`winget list` keeps showing the version first installed).
 
 Behind a shared office NAT, set a [GitHub API token](configuration.md#github-api-token) to avoid the anonymous rate limit.
 
 `install.ps1` runs on the built-in Windows PowerShell 5.1 and will:
 1. Run `winget import` with [packages/winget-packages.json](../packages/winget-packages.json).
 2. Install the PSScriptAnalyzer (for `make pslint`) and PSFzf PowerShell modules for the current user.
-3. Run `uv python install`, `uv sync` and `uv run install.py -a -y`, which writes the `~/.gitconfig`, PowerShell `$PROFILE` and Neovim `init.vim` stubs (see [Dotfiles Linked](configuration.md#dotfiles-linked)), creates `~/.gitconfig.local`, installs the Meslo and Mononoki Nerd Fonts for the current user (`%LOCALAPPDATA%\Microsoft\Windows\Fonts`) and runs `go install` for the Go tools.
+3. Run `uv python install --default` (new PowerShell 7 windows get `python` from uv through `~/.local/bin`, ahead of the Microsoft Store placeholder), `uv sync` and `uv run install.py -a -y`, which writes the `~/.gitconfig`, PowerShell `$PROFILE` and Neovim `init.vim` stubs (see [Dotfiles Linked](configuration.md#dotfiles-linked)), creates `~/.gitconfig.local`, installs the Meslo and Mononoki Nerd Fonts for the current user (`%LOCALAPPDATA%\Microsoft\Windows\Fonts`) and runs `go install` for the Go tools.
 
 An existing `~/.gitconfig` is backed up as `~/.gitconfig.bak.<timestamp>`; move your `[user]` section from it into `~/.gitconfig.local`.
 
