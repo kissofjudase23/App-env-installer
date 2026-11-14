@@ -92,9 +92,12 @@ def test_profile_uses_nvim_as_editor(tmp_path, home):
 
 
 def test_profile_removes_its_helpers(home):
-    script = f". '{PROFILE}'; [bool](Get-Command Test-Command, Add-PathEntry -ErrorAction Ignore)"
+    script = (
+        f". '{PROFILE}'; [bool](Get-Command Test-Command, Add-PathEntry -ErrorAction Ignore); "
+        "[bool](Get-Variable shellLocal, goBin, openSslBin -ErrorAction Ignore)"
+    )
     result = run_pwsh(script, home)
-    assert result.stdout.strip() == "False", result.stderr
+    assert result.stdout.splitlines() == ["False", "False"], result.stderr
 
 
 def test_install_ps1_dot_source_does_not_run_main(home):

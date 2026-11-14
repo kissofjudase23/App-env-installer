@@ -36,7 +36,6 @@ if ($env:USE_CORP_PROXY -eq '1' -and $env:CORP_PROXY_URL) {
 if (Test-Command fd) {
     $env:FZF_DEFAULT_COMMAND = 'fd --type f --hidden --exclude .git'
     $env:FZF_CTRL_T_COMMAND = $env:FZF_DEFAULT_COMMAND
-    $env:FZF_ALT_C_COMMAND = 'fd --type d --hidden --exclude .git'
 }
 
 if (Test-Command nvim) {
@@ -97,4 +96,4 @@ if (Test-Command zoxide) {
 }
 
 Remove-Item Function:Add-PathEntry, Function:Test-Command
-Remove-Variable shellLocal, goBin
+Remove-Variable shellLocal, goBin, openSslBin -ErrorAction SilentlyContinue
