@@ -19,7 +19,8 @@ Options:
   --upgrade   Reinstall the Go tools and update the Nerd Fonts (Linux) even
               when installed; on Ubuntu also reinstall the latest fzf, eza,
               delta, starship and Neovim releases (macOS: brew bundle
-              already upgrades the packages)
+              upgrades outdated packages on every run; run brew update
+              first for the newest versions)
   -h, --help  Show this help and exit
 USAGE
 }
