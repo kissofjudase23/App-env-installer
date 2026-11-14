@@ -414,7 +414,6 @@ class Installer:
                 raise InstallerError(f"sha256 mismatch for {archive}")
             previous = set((font_dir / name).glob("*.ttf"))
             extract_fonts(data, font_dir / name)
-            release_file.write_text(f"{tag}\n", encoding="utf-8")
             if not linux:
                 current = sorted((font_dir / name).glob("*.ttf"))
                 # a release may rename or drop files; their registry values would dangle
@@ -422,6 +421,8 @@ class Installer:
                     unregister_windows_font(ttf)
                 for ttf in current:
                     register_windows_font(ttf)
+            # written last so a failed registration is retried by the next --upgrade
+            release_file.write_text(f"{tag}\n", encoding="utf-8")
 
         if linux:
             run(["fc-cache", "-f", str(font_dir)], dry_run=self.dry_run)

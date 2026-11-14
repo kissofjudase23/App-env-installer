@@ -581,6 +581,25 @@ def test_install_fonts_registers_windows_fonts(tmp_path, home, nerd_fonts_releas
     assert commands == []
 
 
+def test_install_fonts_failed_registration_is_retried(
+    tmp_path, home, nerd_fonts_release, monkeypatch
+):
+    archives, _, _ = nerd_fonts_release
+    archives["Meslo.tar.xz"] = make_font_archive({"A.ttf": b"font"})
+
+    def fail(ttf):
+        raise OSError("registry unavailable")
+
+    monkeypatch.setattr(install, "register_windows_font", fail)
+
+    with pytest.raises(OSError):
+        make_installer(tmp_path, home, system="Windows", nerd_fonts=["Meslo"]).install_fonts()
+
+    # .release is written last; without it the next --upgrade retries the font
+    font_dir = home / "AppData/Local/Microsoft/Windows/Fonts/NerdFonts/Meslo"
+    assert not (font_dir / ".release").exists()
+
+
 def test_install_fonts_skips_wsl(tmp_path, home, nerd_fonts_release, monkeypatch):
     _, fetched, commands = nerd_fonts_release
     monkeypatch.setattr(install, "is_wsl", lambda: True)
