@@ -65,19 +65,18 @@ Run these from inside the repo, where `uv` finds the project and its dependencie
 
 Dotfiles are symlinks (stubs on Windows) into this repo, so after a `git pull` new shells pick up changed dotfiles right away. Re-run the installer (`bash install.sh`, or `install.ps1` on Windows) when the pull changes `config.yaml` or `packages/`; everything already in place is skipped.
 
-What a re-run updates, with and without `--upgrade` (`-Upgrade` on Windows):
+A plain re-run only installs what is missing; `--upgrade` (`-Upgrade` on Windows) also upgrades what is already installed:
 
 | Component | Plain re-run | With `--upgrade` |
 | --- | --- | --- |
-| Brewfile packages (macOS) | Installs missing ones, upgrades outdated ones | Same |
-| apt packages (Ubuntu) | `apt-get update`, then installs missing ones and upgrades the listed ones | Same |
+| Brewfile packages (macOS) | Installs missing ones | Runs `brew update`, then upgrades outdated ones |
+| apt packages (Ubuntu) | `apt-get update`, then installs missing ones | Also upgrades the listed ones |
 | winget packages (Windows) | Installs missing ones | Also upgrades installed ones, except GitHub Copilot CLI and, while `pwsh` runs, PowerShell 7 ([why](windows.md#installation)) |
-| fzf, eza, delta, starship, Neovim (Ubuntu) | Installs missing ones, and replaces fzf older than 0.48 and Neovim older than 0.11 | Reinstalls the latest GitHub releases |
-| Go tools | Installs those missing from `$GOBIN` | Reinstalls all at the version in `config.yaml` |
+| uv (Ubuntu) | Installs it if missing | `uv self update` (only the copy the uv installer put in `~/.local/bin`) |
+| fzf, eza, delta, starship, Neovim (Ubuntu) | Installs those missing from `/usr/local/bin` (an older copy elsewhere, e.g. from apt, does not count), and replaces fzf older than 0.48 and Neovim older than 0.11 | Reinstalls the latest GitHub releases |
+| Go tools | Installs those missing from the Go bin directory (`go env GOBIN`, default `~/go/bin`) | Reinstalls all at the version in `config.yaml` |
 | Nerd Fonts (Linux, Windows) | Installs missing ones | Replaces fonts from an older release |
 | Dotfiles | Links missing ones, replaces stale links and stubs | Same |
-
-On macOS, shells set up by this repo export `HOMEBREW_NO_AUTO_UPDATE=1`, so `brew bundle` compares against the package index Homebrew last fetched; run `brew update` first to get the newest versions.
 
 Neither kind of run updates the following; update them yourself:
 
@@ -86,7 +85,6 @@ Neither kind of run updates the following; update them yourself:
 | oh-my-zsh | `omz update` (oh-my-zsh also offers updates by itself every couple of weeks) |
 | Vim / Neovim plugins | `:PlugUpdate`, and `:PlugUpgrade` for vim-plug itself |
 | Go in `/usr/local/go` (Ubuntu) | Usually not needed: projects get newer Go versions through `GOTOOLCHAIN`. For a newer bootstrap, `sudo rm -rf /usr/local/go` and re-run `install.sh` |
-| uv (Ubuntu) | `uv self update` |
 | Python patch releases | `uv python upgrade` |
 | PSFzf, PSScriptAnalyzer (Windows) | `Update-PSResource PSFzf, PSScriptAnalyzer` in `pwsh` |
 

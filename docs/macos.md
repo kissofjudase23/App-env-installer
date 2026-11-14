@@ -32,7 +32,7 @@ See [packages/Brewfile](../packages/Brewfile): formulae, `claude` (Claude Deskto
 
 `curl`, `openssl` (LibreSSL), `nc` and `dig` ship with macOS, so they are not in the Brewfile (Homebrew's `curl` is keg-only and would not be on `PATH`). Usage: [cli-tools.md](cli-tools.md#network-tools).
 
-To add a package, edit the Brewfile and re-run `bash install.sh`. `brew bundle` also upgrades outdated packages on every run, but in shells set up by this repo `common.sh` sets `HOMEBREW_NO_AUTO_UPDATE=1`, so Homebrew compares against the package index it last fetched; run `brew update` first to get the newest versions. `bash install.sh --upgrade` (or `make upgrade`) additionally reinstalls the Go tools ([what each run updates](configuration.md#updating)).
+To add a package, edit the Brewfile and re-run `bash install.sh`, which only installs what is missing. `bash install.sh --upgrade` (or `make upgrade`) runs `brew update`, upgrades outdated Brewfile packages and reinstalls the Go tools ([what each run updates](configuration.md#updating)).
 
 ## iTerm2
 

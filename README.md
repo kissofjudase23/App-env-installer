@@ -43,7 +43,7 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1
    - clones oh-my-zsh (macOS, Linux),
    - installs the Go tools with `go install` (tools already in `~/go/bin` are skipped).
 
-Both stages are idempotent and can be re-run safely; `--upgrade` (`-Upgrade` on Windows) also updates tools that are already installed ([what each run updates](docs/configuration.md#updating)).
+Both stages are idempotent and can be re-run safely: a re-run only installs what is missing, and `--upgrade` (`-Upgrade` on Windows) also upgrades what is already installed ([what each run updates](docs/configuration.md#updating)).
 
 ## Documentation
 

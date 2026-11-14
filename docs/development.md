@@ -10,7 +10,7 @@ Run `make` (or `make help`) to list all targets with descriptions. On Windows, `
 | ------------------- | ------------------------------------------------------------------------------------------------------------ |
 | `make help`         | Default target. Lists all targets and their descriptions.                                                    |
 | `make install`      | Full bootstrap via `install.sh` (Windows: `install.ps1`): OS packages, Python (from `.python-version`), `install.py -a -y`, `chsh` to zsh. Uses `sudo` and modifies `$HOME`. |
-| `make upgrade`      | Like `install`, plus `--upgrade`: reinstalls Go tools, updates Nerd Fonts, and on Ubuntu the GitHub-release tools (Windows: also upgrades winget packages). |
+| `make upgrade`      | Like `install`, plus `--upgrade`: also upgrades the brew/apt/winget packages, reinstalls Go tools, updates Nerd Fonts, and on Ubuntu updates uv and the GitHub-release tools ([details](configuration.md#updating)). |
 | `make sync`         | Creates/updates `.venv` with the Python deps pinned in `uv.lock` (`uv sync`).                                |
 | `make lint`         | `ruff check` + `ruff format --check`; reports issues without modifying files (same as CI).                   |
 | `make format`       | `ruff check --fix` + `ruff format`; fixes lint issues and reformats Python code in place.                    |
