@@ -4,7 +4,7 @@ name: Install (Windows)
 on:
   # Weekly: catches upstream drift (renamed winget packages, release changes) with no commit here
   schedule:
-    - cron: "0 3 * * 1"
+    - cron: "37 3 * * 1"
   push:
     branches: [master]
     paths: &paths
@@ -14,11 +14,14 @@ on:
       - config.yaml
       - Makefile
       - PSScriptAnalyzerSettings.psd1
+      - .gitattributes
       - .python-version
+      - pyproject.toml
       - uv.lock
       - assets/shell/profile.ps1
       - assets/git/**
       - assets/editor/**
+      - assets/starship/**
       - .github/workflows/install-windows.yml
   pull_request:
     paths: *paths
@@ -29,7 +32,8 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # Only superseded PR runs; a push to master must not cancel the weekly run
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   install:
