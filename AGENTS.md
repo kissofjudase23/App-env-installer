@@ -31,6 +31,7 @@ For any new GitHub-hosted binary on Ubuntu, reuse `github_release_asset` / `inst
 | `install.py` tests | [tests/](tests/) (pytest; `Installer` takes `home`/`base_dirs`/`ConfigMgr` so tests use `tmp_path`, never the real `$HOME`; symlink tests skip where symlinks need privileges) |
 | Shell tests | [tests/test_shell.py](tests/test_shell.py) (dotfile smoke tests in clean `bash --norc` / `zsh -f` with a temp `$HOME`, plus unit tests of the `source`d `install.sh` functions; skipped when the shell is missing and on Windows) |
 | PowerShell tests | [tests/test_powershell.py](tests/test_powershell.py) (`profile.ps1` smoke tests with `pwsh -NoProfile` and a temp `USERPROFILE`, plus unit tests of the dot-sourced `install.ps1`; skipped without `pwsh`, so `make check` on a machine without it does not run them; pinned to one xdist worker because concurrent pwsh startups crash on macOS) |
+| Config file parse checks | [tests/test_assets.py](tests/test_assets.py) (`gitconfig` via `git config --list`, `starship.toml` via `tomllib`, `tmux.conf` via `tmux source-file -n`; skipped when the tool is missing) |
 | PowerShell lint rules | [PSScriptAnalyzerSettings.psd1](PSScriptAnalyzerSettings.psd1) |
 | Line endings | [.gitattributes](.gitattributes) (LF everywhere) |
 | Python deps, ruff config | [pyproject.toml](pyproject.toml) (`uv` project, `package = false`) |
