@@ -113,12 +113,13 @@ function change_default_shell_to_zsh() {
 
 function add_gh_apt_repo() {
     # Ubuntu's own gh lags far behind; the official repo keeps it current through apt
-    local keyring="/etc/apt/keyrings/githubcli-archive-keyring.gpg"
+    local keyring="/etc/apt/keyrings/githubcli-archive-keyring.gpg" tmp
     if [ ! -f "${keyring}" ]; then
         sudo mkdir -p -m 755 /etc/apt/keyrings
-        curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg |
-            sudo tee "${keyring}" > /dev/null
-        sudo chmod go+r "${keyring}"
+        # download fully first; a failed curl must not leave a partial keyring behind
+        tmp="$(mktemp "${WORK_DIR}/XXXXXX")"
+        curl -fsSL -o "${tmp}" https://cli.github.com/packages/githubcli-archive-keyring.gpg
+        sudo install -m 0644 "${tmp}" "${keyring}"
     fi
     echo "deb [arch=$(dpkg --print-architecture) signed-by=${keyring}] https://cli.github.com/packages stable main" |
         sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
