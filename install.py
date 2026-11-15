@@ -378,15 +378,17 @@ class Installer:
                 continue
 
             click.echo(f"{'link' if stub is None else 'stub'} {src} -> {dst}")
+            backup = None
+            if not dst.is_symlink() and dst.exists():
+                backup = dst.with_name(f"{dst.name}.bak.{datetime.now():%Y%m%d%H%M%S}")
+                click.echo(f"backup {dst} -> {backup}")
             if self.dry_run:
                 continue
 
             dst.parent.mkdir(parents=True, exist_ok=True)
             if dst.is_symlink():
                 dst.unlink()
-            elif dst.exists():
-                backup = dst.with_name(f"{dst.name}.bak.{datetime.now():%Y%m%d%H%M%S}")
-                click.echo(f"backup {dst} -> {backup}")
+            elif backup is not None:
                 dst.rename(backup)
             if stub is not None:
                 dst.write_text(stub, encoding="utf-8", newline="\n")

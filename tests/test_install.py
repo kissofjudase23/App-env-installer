@@ -282,6 +282,17 @@ def test_link_dotfiles_explains_missing_symlink_privilege(tmp_path, home, monkey
         make_installer(tmp_path, home, system="Windows", dotfiles=dotfiles).link_dotfiles()
 
 
+def test_link_dotfiles_dry_run_reports_backup(tmp_path, home, capsys):
+    (home / ".tigrc").write_text("mine")
+    dotfiles = [{"src": "assets/tig/tigrc", "dst": ".tigrc"}]
+    make_installer(tmp_path, home, dry_run=True, dotfiles=dotfiles).link_dotfiles()
+
+    dst = re.escape(str(home / ".tigrc"))
+    assert re.search(rf"^backup {dst} -> {dst}\.bak\.\d{{14}}$", capsys.readouterr().out, re.M)
+    assert (home / ".tigrc").read_text() == "mine"
+    assert backups(home, ".tigrc") == []
+
+
 def test_ensure_gitconfig_local_keeps_existing(tmp_path, home):
     installer = make_installer(tmp_path, home)
     installer.ensure_gitconfig_local()
