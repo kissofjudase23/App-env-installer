@@ -40,6 +40,7 @@ For any new GitHub-hosted binary on Ubuntu, reuse `github_release_asset` / `inst
 | Go tools (`go install`) | `go_tools` in [config.yaml](config.yaml) |
 | CLI tool usage docs | [docs/cli-tools.md](docs/cli-tools.md) – update when tool integrations in `common.sh`, `bashrc.sh`, `zshrc.zsh` or `profile.ps1` change |
 | User docs | [README.md](README.md) is only the entry page; per-OS guides [docs/macos.md](docs/macos.md), [docs/ubuntu.md](docs/ubuntu.md), [docs/windows.md](docs/windows.md); shared [docs/configuration.md](docs/configuration.md), [docs/shell.md](docs/shell.md), [docs/development.md](docs/development.md), [docs/troubleshooting.md](docs/troubleshooting.md); the make target table in development.md must list every `.PHONY` target in order (a test compares them) |
+| What a plain re-run and `--upgrade` update | The Updating table in [docs/configuration.md](docs/configuration.md#updating) is the only user-facing list; other docs, `make help` and `install.sh --help` link there instead of repeating it (the Architecture section above covers the mechanism) |
 | Shell formatting style | [.editorconfig](.editorconfig) (read by shfmt) |
 | Shared bash+zsh env | [assets/shell/common.sh](assets/shell/common.sh) |
 | PowerShell 7 env (Windows) | [assets/shell/profile.ps1](assets/shell/profile.ps1) – mirror `common.sh` changes here when they apply to Windows |

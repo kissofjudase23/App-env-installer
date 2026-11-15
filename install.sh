@@ -16,11 +16,9 @@ Usage: bash install.sh [--upgrade]
 Bootstrap packages, Python, dotfiles and Go tools on macOS or Ubuntu.
 
 Options:
-  --upgrade   Also upgrade what is already installed: the Brewfile packages
-              (after brew update) on macOS; the apt packages, uv and the
-              fzf, eza, delta, starship and Neovim releases on Ubuntu; the
-              Go tools and the Nerd Fonts (Linux). Without it, only what
-              is missing gets installed
+  --upgrade   Also upgrade what is already installed (packages, release
+              tools, Go tools, Nerd Fonts); without it, only what is
+              missing gets installed. Details: docs/configuration.md#updating
   -h, --help  Show this help and exit
 USAGE
 }

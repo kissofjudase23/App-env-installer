@@ -62,7 +62,7 @@ uv run install.py -a -y           # skip confirmation prompts
 uv run install.py -a --upgrade    # also reinstall Go tools and update Nerd Fonts
 ```
 
-Run these from inside the repo, where `uv` finds the project and its dependencies; `install.py` itself resolves every path from its own location, so the working directory does not change what it links. Without `--upgrade`, Go tools whose binary already exists in the Go bin directory (`go env GOBIN`, or `bin` under the first `GOPATH` entry; default `~/go/bin`) and fonts that are already installed are skipped. Each `go_tools` entry needs a version (`@latest` or `@v1.2.3`), because `go install` outside a Go module requires one. With `--upgrade`, every Go tool is reinstalled at the version in `config.yaml` (`@latest`), and a font is replaced only when the latest Nerd Fonts release differs from the one recorded in its `.release` file. `bash install.sh --upgrade` and `install.ps1 -Upgrade` pass `--upgrade` through.
+Run these from inside the repo, where `uv` finds the project and its dependencies; `install.py` itself resolves every path from its own location, so the working directory does not change what it links. Each `go_tools` entry needs a version (`@latest` or `@v1.2.3`), because `go install` outside a Go module requires one. Go tools and fonts that are already installed are skipped unless you pass `--upgrade` ([details](#updating)); it does not change how dotfiles are linked or repos cloned, so without `-f`, `-t` or `-a` it prints a warning. `bash install.sh --upgrade` and `install.ps1 -Upgrade` pass it through.
 
 ## Updating
 
@@ -77,8 +77,8 @@ A plain re-run only installs what is missing; `--upgrade` (`-Upgrade` on Windows
 | winget packages (Windows) | Installs missing ones | Also upgrades installed ones, except GitHub Copilot CLI and, while `pwsh` runs, PowerShell 7 ([why](windows.md#installation)) |
 | uv (Ubuntu) | Installs it if missing | `uv self update` (only the copy the uv installer put in `~/.local/bin`) |
 | fzf, eza, delta, starship, Neovim (Ubuntu) | Installs eza, delta and starship when missing from `/usr/local/bin` (an older copy elsewhere, e.g. from apt, does not count), and fzf and Neovim when the copy on `PATH` is missing or older than 0.48 / 0.11 | Reinstalls the latest GitHub releases |
-| Go tools | Installs those missing from the Go bin directory (`go env GOBIN`, default `~/go/bin`) | Reinstalls all at the version in `config.yaml` |
-| Nerd Fonts (Linux, Windows) | Installs missing ones | Replaces fonts from an older release |
+| Go tools | Installs those missing from the Go bin directory (`go env GOBIN`, or `bin` under the first `GOPATH` entry; default `~/go/bin`) | Reinstalls all at the version in `config.yaml` (e.g. `@latest`) |
+| Nerd Fonts (Linux, Windows) | Installs missing ones | Replaces a font when the latest release differs from the one recorded in its `.release` file |
 | Dotfiles | Links missing ones, replaces stale links and stubs | Same |
 
 Neither kind of run updates the following; update them yourself:
