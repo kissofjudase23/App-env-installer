@@ -17,9 +17,12 @@
 
 | Key    | Description                                                                                  |
 | ------ | -------------------------------------------------------------------------------------------- |
+| `name` | A label for readers; `install.py` ignores it                                                 |
 | `os`   | Subset of `[darwin, linux, windows]` the entry applies to; all when omitted                  |
 | `base` | `home` (default), `documents` (the Windows Documents folder) or `local_app_data` (`%LOCALAPPDATA%`); `dst` is relative to it |
 | `stub` | Dotfiles only: `gitconfig`, `powershell` or `vim` writes a file that includes `src` instead of a symlink |
+
+Any other key is rejected, so a typo such as `oss:` fails before anything is installed.
 
 OS packages live in [packages/](../packages): [Brewfile](../packages/Brewfile) (macOS), [apt-packages.txt](../packages/apt-packages.txt) (Ubuntu), [winget-packages.json](../packages/winget-packages.json) (Windows).
 
@@ -73,7 +76,7 @@ A plain re-run only installs what is missing; `--upgrade` (`-Upgrade` on Windows
 | apt packages (Ubuntu) | `apt-get update`, then installs missing ones | Also upgrades the listed ones |
 | winget packages (Windows) | Installs missing ones | Also upgrades installed ones, except GitHub Copilot CLI and, while `pwsh` runs, PowerShell 7 ([why](windows.md#installation)) |
 | uv (Ubuntu) | Installs it if missing | `uv self update` (only the copy the uv installer put in `~/.local/bin`) |
-| fzf, eza, delta, starship, Neovim (Ubuntu) | Installs those missing from `/usr/local/bin` (an older copy elsewhere, e.g. from apt, does not count), and replaces fzf older than 0.48 and Neovim older than 0.11 | Reinstalls the latest GitHub releases |
+| fzf, eza, delta, starship, Neovim (Ubuntu) | Installs eza, delta and starship when missing from `/usr/local/bin` (an older copy elsewhere, e.g. from apt, does not count), and fzf and Neovim when the copy on `PATH` is missing or older than 0.48 / 0.11 | Reinstalls the latest GitHub releases |
 | Go tools | Installs those missing from the Go bin directory (`go env GOBIN`, default `~/go/bin`) | Reinstalls all at the version in `config.yaml` |
 | Nerd Fonts (Linux, Windows) | Installs missing ones | Replaces fonts from an older release |
 | Dotfiles | Links missing ones, replaces stale links and stubs | Same |
@@ -90,17 +93,17 @@ Neither kind of run updates the following; update them yourself:
 
 ## GitHub API token
 
-GitHub's API allows 60 anonymous requests per hour per IP, which a shared office NAT can exhaust. If `GITHUB_TOKEN` or `GH_TOKEN` is set, `install.sh` and `install.py` send it to `api.github.com` only (never to download hosts), e.g. `GH_TOKEN=$(gh auth token) bash install.sh`.
+GitHub's API allows 60 anonymous requests per hour per IP, which a shared office NAT can exhaust. If `GITHUB_TOKEN` or `GH_TOKEN` is set, `install.sh` and `install.py` send it to `api.github.com` only (never to download hosts), e.g. `GH_TOKEN=$(gh auth token) bash install.sh`. On Ubuntu, `install.sh --upgrade` also passes it to `uv self update` as `UV_GITHUB_TOKEN`, the only variable uv reads a token from.
 
 ## Moving the repo
 
-Symlinks (macOS, Linux) and stubs (Windows) point at absolute paths in this repo. After moving or renaming the clone, the old links break and new shells start without these settings. Re-run `uv run install.py` from the new location: it replaces stale symlinks and rewrites stubs without creating backups.
+Symlinks (macOS, Linux) and stubs (Windows) point at absolute paths in this repo. After moving or renaming the clone, the old links break and new shells start without these settings. Re-run `uv run install.py` from the new location: it replaces stale symlinks without creating backups. A stub is a regular file, so on Windows each old stub is backed up as `<file>.bak.<timestamp>` before the new one is written; delete those backups once the new stubs work.
 
 ## Undo / uninstall
 
 1. Remove the links or stubs listed under [Dotfiles Linked](#dotfiles-linked) (`rm ~/.zshrc ~/.assets ...`; on Windows, the `~/.gitconfig`, PowerShell `$PROFILE` and `%LOCALAPPDATA%\nvim\init.vim` stubs). `~/.gitconfig.local` holds your git identity; delete it only if you no longer need it.
 2. Restore any backups: `install.py` renamed each file it replaced to `<file>.bak.<YYYYmmddHHMMSS>`, e.g. `mv ~/.zshrc.bak.20260101120000 ~/.zshrc`.
-3. Switch the login shell back if you like: `chsh -s /bin/bash`.
+3. Switch the login shell back if you like: `chsh -s /bin/zsh` (the macOS default) or `chsh -s /bin/bash` (the Ubuntu default).
 4. Packages stay installed; remove them with `brew uninstall`, `apt remove` or `winget uninstall`. Everything else the installers put in place:
 
 | OS | What | Remove with |

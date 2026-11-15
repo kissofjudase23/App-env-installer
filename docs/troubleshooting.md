@@ -18,13 +18,15 @@ The terminal is not using a Nerd Font. Select *MesloLGS Nerd Font* in the termin
 
 `~/.zshrc`, `~/.bashrc` and the other dotfiles are symlinks to the old path, so the shell finds nothing to load (zsh may show its new-user setup menu; press `q`). Re-run `uv run install.py` from the new location; see [Moving the repo](configuration.md#moving-the-repo).
 
-## `git status` shows changes under `assets/shell/` you did not make
+## `git status` shows changes under `assets/` you did not make
 
 Most dotfiles in `$HOME` are symlinks into this repo, so an installer that appends to `~/.zshrc` or `~/.bash_profile` (Docker Desktop, SDKs) edits the repo file. Check with `git diff assets/`, move anything you want to keep into the untracked `~/.shell_local`, then `git checkout -- assets/`.
 
+`git config --global` does the same: it writes through the `~/.gitconfig` link into `assets/git/gitconfig`, so a `git config --global user.email ...` would end up in a commit. Keep such settings in the untracked `~/.gitconfig.local` instead, e.g. `git config --file ~/.gitconfig.local user.email you@example.com`. On Windows, `git config --global` writes into the `~/.gitconfig` stub, which the next `install.py` run backs up and replaces.
+
 ## `chsh` asks for a password
 
-`install.sh` switches the login shell with `sudo chsh`, which reuses the sudo credentials of earlier steps; if they have expired, sudo asks once more. It runs only when your login shell is not zsh yet.
+`install.sh` switches the login shell with `sudo chsh`, which reuses the sudo credentials of earlier steps; if they have expired, sudo asks once more. It runs only when your login shell differs from the first `zsh` on `PATH`; on macOS that is Homebrew's zsh, so a login shell of `/bin/zsh` is switched too.
 
 ## tmux still opens bash after the switch to zsh
 

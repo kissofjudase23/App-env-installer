@@ -4,7 +4,7 @@
 
 ## Prerequisites
 
-`git`, `curl` and `bash` (all preinstalled). Homebrew is installed by `install.sh` if missing.
+`curl` and `bash` (preinstalled) and `git`, which comes with the Xcode Command Line Tools: on a fresh Mac the first `git` call offers to install them (or run `xcode-select --install`). Homebrew is installed by `install.sh` if missing.
 Python (the version pinned in [.python-version](../.python-version)) is installed by `uv`; no
 system Python is required.
 
@@ -22,7 +22,7 @@ Behind a shared office NAT, set a [GitHub API token](configuration.md#github-api
 `install.sh` will:
 1. Install Homebrew (if missing) and run `brew bundle` with the [Brewfile](../packages/Brewfile) (includes Nerd Fonts).
 2. Run `uv python install --default` (version read from [.python-version](../.python-version); new shells get `python3` from uv through `~/.local/bin`), `uv sync` and `uv run install.py -a -y` ([what it does](../README.md#how-it-works)).
-3. Add `zsh` to `/etc/shells` if needed and switch your login shell to it (`sudo chsh`).
+3. Add Homebrew's `zsh` to `/etc/shells` if needed and switch your login shell to it (`sudo chsh`), also when it is the system `/bin/zsh`.
 
 Both stages are idempotent and can be re-run safely. See [configuration.md](configuration.md) for what gets linked and how to run `install.py` by hand.
 

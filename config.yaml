@@ -1,9 +1,11 @@
 
 # Entry keys: src (repo-relative), dst (relative to base), optional
+#   name: a label for readers; install.py ignores it
 #   os:   [darwin, linux, windows] subset; omitted = all
 #   base: home (default) | documents (Windows known folder, follows OneDrive redirection)
 #         | local_app_data (Windows %LOCALAPPDATA%)
 #   stub: gitconfig | powershell | vim – write a file that includes src instead of a symlink
+# Any other key is rejected (catches typos)
 
 git_repos:
   - {name: "oh-my-zsh",

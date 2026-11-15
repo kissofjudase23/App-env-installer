@@ -75,7 +75,7 @@ eza --tree --git-ignore      # tree view without files ignored by .gitignore
 eza -l --icons               # file-type icons (needs a Nerd Font, which this repo installs)
 ```
 
-Aliases set by common.sh (directories are always listed first):
+Aliases set by common.sh (all but `lm`, `lS` and `ld` list directories first):
 
 | Alias | Command | Like |
 |---|---|---|
