@@ -15,8 +15,8 @@ Run `make` (or `make help`) to list all targets with descriptions. On Windows, `
 | `make lint`         | `ruff check` + `ruff format --check`; reports issues without modifying files (same as CI).                   |
 | `make format`       | `ruff check --fix` + `ruff format`; fixes lint issues and reformats Python code in place.                    |
 | `make test`         | Runs `pytest` (in parallel via pytest-xdist) against a temporary `$HOME`: `install.py` unit tests; shell smoke tests (syntax, and `common.sh` / non-interactive bash must print nothing) and `install.sh` function tests, skipped on Windows; PowerShell smoke tests (`profile.ps1` must print nothing) and `install.ps1` function tests, skipped without `pwsh`. |
-| `make shellcheck`   | Runs `shellcheck` on `install.sh`, `common.sh`, `bashrc.sh`, `bash_profile.sh` (`shellcheck` is installed by `install.sh`). |
-| `make shfmt`        | Checks shell formatting with `shfmt` (style in `.editorconfig`).                                             |
+| `make shellcheck`   | Runs `shellcheck` on `install.sh`, `common.sh`, `bashrc.sh`, `bash_profile.sh` (a dev dependency pinned in `uv.lock`). |
+| `make shfmt`        | Checks shell formatting with `shfmt` (a dev dependency pinned in `uv.lock`; style in `.editorconfig`).      |
 | `make format-shell` | Rewrites the shell scripts in place with `shfmt`.                                                            |
 | `make actionlint`   | Lints `.github/workflows/*` with [actionlint](https://github.com/rhysd/actionlint) (a dev dependency pinned in `uv.lock`, so no separate install). |
 | `make pslint`       | Runs PSScriptAnalyzer on `install.ps1` and `profile.ps1` (settings in `PSScriptAnalyzerSettings.psd1`).      |
@@ -26,7 +26,7 @@ Run `make` (or `make help`) to list all targets with descriptions. On Windows, `
 
 AI coding agents (Claude Code, GitHub Copilot): project instructions live in [AGENTS.md](../AGENTS.md).
 
-Without a local `shellcheck`, run it via `uvx --from shellcheck-py shellcheck <files>`.
+`make shellcheck`, `make shfmt` and `make actionlint` run the versions pinned in `uv.lock`, the same ones CI runs. The `shellcheck` and `shfmt` that the OS packages install are for your editor (e.g. ALE in Vim) and may be older or newer.
 
 To test `install.py` without touching your real home directory:
 

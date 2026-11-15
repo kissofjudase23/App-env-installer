@@ -34,7 +34,7 @@ For any new GitHub-hosted binary on Ubuntu, reuse `github_release_asset` / `inst
 | Config file parse checks | [tests/test_assets.py](tests/test_assets.py) (`gitconfig` via `git config --list`, `starship.toml` via `tomllib`, `tmux.conf` via `tmux source-file -n`; skipped when the tool is missing) |
 | PowerShell lint rules | [PSScriptAnalyzerSettings.psd1](PSScriptAnalyzerSettings.psd1) |
 | Line endings | [.gitattributes](.gitattributes) (LF everywhere) |
-| Python deps, ruff config | [pyproject.toml](pyproject.toml) (`uv` project, `package = false`) |
+| Python deps (including the shellcheck, shfmt and actionlint dev tools the Makefile runs), ruff config | [pyproject.toml](pyproject.toml) (`uv` project, `package = false`) |
 | Python interpreter version | [.python-version](.python-version) – single source of truth; `install.sh` calls `uv python install --default`, `install.ps1` and CI a bare `uv python install`, all without a version. Bump `requires-python` in [pyproject.toml](pyproject.toml) only if the floor changes. |
 | Go version | Go's official toolchain (`GOTOOLCHAIN=auto`, per-project `go.mod` `go`/`toolchain` lines). Only a bootstrap `go` is installed; no gvm/goenv. |
 | Go tools (`go install`) | `go_tools` in [config.yaml](config.yaml) |
@@ -74,8 +74,8 @@ make sync        # uv sync
 make lint        # ruff check + ruff format --check
 make format      # ruff check --fix + ruff format
 make test        # pytest (tests/, parallel via pytest-xdist): install.py on a temp $HOME with subprocess/network blocked; shell dotfiles in clean bash/zsh (syntax, no output); install.sh / install.ps1 functions
-make shellcheck  # needs shellcheck; or: uvx --from shellcheck-py shellcheck <files>
-make shfmt       # shfmt -d (style from .editorconfig); make format-shell to fix
+make shellcheck  # shellcheck (dev dependency in uv.lock)
+make shfmt       # shfmt -d (dev dependency in uv.lock, style from .editorconfig); make format-shell to fix
 make actionlint  # actionlint on .github/workflows (dev dependency in uv.lock)
 make pslint      # PSScriptAnalyzer on install.ps1 + profile.ps1 (needs pwsh + module)
 make check       # lint + test + shellcheck + shfmt + actionlint + install.py -a -y --dry-run (Windows: + pslint)

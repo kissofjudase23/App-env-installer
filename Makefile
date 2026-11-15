@@ -48,14 +48,14 @@ format: ## Auto-fix ruff lint issues and reformat Python code in place
 test: ## Run pytest: install.py unit tests and shell/PowerShell dotfile smoke tests (temp $HOME, no side effects)
 	uv run pytest
 
-shellcheck: ## Run shellcheck on install.sh and bash dotfiles (requires shellcheck in PATH)
-	shellcheck $(SHELL_SCRIPTS)
+shellcheck: ## Run shellcheck on install.sh and bash dotfiles (pinned in uv.lock)
+	uv run shellcheck $(SHELL_SCRIPTS)
 
-shfmt: ## Check shell formatting with shfmt (style from .editorconfig), without modifying files
-	shfmt -d $(SHELL_SCRIPTS)
+shfmt: ## Check shell formatting with shfmt (pinned in uv.lock, style from .editorconfig), without modifying files
+	uv run shfmt -d $(SHELL_SCRIPTS)
 
 format-shell: ## Reformat shell scripts in place with shfmt
-	shfmt -w $(SHELL_SCRIPTS)
+	uv run shfmt -w $(SHELL_SCRIPTS)
 
 actionlint: ## Lint GitHub Actions workflows with actionlint (pinned in uv.lock)
 	uv run actionlint
