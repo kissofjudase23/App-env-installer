@@ -552,6 +552,8 @@ def cli(
 ) -> None:
     if not (link_dotfiles or clone_git_repos or install_fonts or install_go_tools or install_all):
         link_dotfiles = True
+    if upgrade and not (install_fonts or install_go_tools or install_all):
+        click.echo("--upgrade has no effect without -f, -t or -a", err=True)
 
     try:
         installer = Installer(

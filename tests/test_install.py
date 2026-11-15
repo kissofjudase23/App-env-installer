@@ -584,6 +584,14 @@ def test_cli_upgrade_dry_run_reinstalls_go_tools(cli_home, go):
     assert "go install golang.org/x/tools/gopls@latest" in upgrade.output
 
 
+@pytest.mark.parametrize(("args", "warned"), [(["--upgrade"], True), (["-t", "--upgrade"], False)])
+def test_cli_warns_when_upgrade_has_no_effect(cli_home, args, warned):
+    result = CliRunner().invoke(install.cli, [*args, "-y", "--dry-run"])
+
+    assert result.exit_code == 0, result.output
+    assert ("--upgrade has no effect" in result.stderr) is warned
+
+
 @pytest.mark.parametrize(
     ("error", "message"),
     [
