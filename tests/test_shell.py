@@ -119,6 +119,22 @@ def test_common_sh_prepends_local_bin(shell, exists, home):
     assert (str(local_bin) in entries) is exists
 
 
+@pytest.mark.parametrize("shell", ["bash", "zsh"])
+@pytest.mark.parametrize(
+    ("env", "expected"),
+    [
+        ({}, None),
+        ({"GOPATH": "/first:/second"}, "/first/bin"),
+        ({"GOBIN": "/gobin", "GOPATH": "/first"}, "/gobin"),
+    ],
+    ids=["default", "gopath-list", "gobin"],
+)
+def test_common_sh_appends_go_bin(shell, env, expected, home):
+    # go install writes to the first GOPATH entry
+    result = run_shell(shell, 'source "$1"; printf "%s" "$PATH"', home, str(COMMON), env=env)
+    assert result.stdout.split(":")[-1] == (expected or str(home / "go/bin")), result.stderr
+
+
 def test_common_sh_keeps_only_alias_setting(home):
     result = run_shell("bash", 'source "$1"; declare -F', home, str(COMMON))
     assert result.stdout.split() == ["declare", "-f", "alias_setting"]

@@ -24,7 +24,7 @@ Go versions are managed by Go's official [toolchain mechanism](https://go.dev/do
 - Pin a project: `go get go@1.23.0` (minimum version) or `go get toolchain@go1.23.4` (preferred toolchain).
 - Global override: `go env -w GOTOOLCHAIN=go1.23.4+auto` (undo with `go env -u GOTOOLCHAIN`).
 - Run a one-off version: `GOTOOLCHAIN=go1.22.0 go version`.
-- `${GOBIN:-${GOPATH:-~/go}/bin}` is added to `PATH` by [common.sh](../assets/shell/common.sh); the starship prompt shows the Go version inside Go projects.
+- `GOBIN`, or `bin` under the first `GOPATH` entry (default `~/go/bin`), where `go install` puts binaries, is added to `PATH` by [common.sh](../assets/shell/common.sh) (`profile.ps1` on Windows); the starship prompt shows the Go version inside Go projects.
 
 ## Editor
 
