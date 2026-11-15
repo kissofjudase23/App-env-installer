@@ -4,7 +4,7 @@
 
 ## Prerequisites
 
-Ubuntu 24.04 or 26.04 (`install.sh` refuses older releases; both are tested in CI), with
+Ubuntu 24.04 or 26.04 (`install.sh` refuses older releases; both are tested in CI, on x64 and arm64), with
 `git`, `curl`, `bash` and `sudo` (for apt installs and `/etc/shells`). Python (the version
 pinned in [.python-version](../.python-version)) is installed by `uv`; no system Python is
 required.

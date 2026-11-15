@@ -36,7 +36,9 @@ jobs:
       fail-fast: false
       matrix:
         ubuntu: ["24.04", "26.04"]
-    runs-on: ubuntu-latest
+        # arm64 exercises the aarch64 release assets and the shellcheck-py sdist build
+        runner: [ubuntu-latest, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.runner }}
     container: ubuntu:${{ matrix.ubuntu }}
     timeout-minutes: 30
     env:
