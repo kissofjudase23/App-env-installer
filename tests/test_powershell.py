@@ -12,6 +12,9 @@ PROXY = "http://proxy.example.com:8080"
 
 # One xdist worker (--dist loadgroup): pwsh processes started at the same time crash on macOS
 pytestmark = pytest.mark.xdist_group(name="pwsh")
+# Even one at a time, pwsh on macOS runners now and then dies from SIGSEGV with no output; such a
+# crash says nothing about the script under test, so run_pwsh starts it again
+PWSH_ATTEMPTS = 3
 
 
 @pytest.fixture
@@ -35,14 +38,19 @@ def run_pwsh(script: str, home: Path, *, path: str | None = None) -> subprocess.
     for name in (*proxy_vars, "HTTP_PROXY", "HTTPS_PROXY", "NO_PROXY"):
         env.pop(name, None)
         env.pop(name.lower(), None)
-    return subprocess.run(
-        [pwsh, "-NoProfile", "-NonInteractive", "-Command", script],
-        env=env,
-        capture_output=True,
-        text=True,
-        timeout=60,
-        check=False,
-    )
+    for _ in range(PWSH_ATTEMPTS):
+        result = subprocess.run(
+            [pwsh, "-NoProfile", "-NonInteractive", "-Command", script],
+            env=env,
+            capture_output=True,
+            text=True,
+            timeout=60,
+            check=False,
+        )
+        # negative: killed by a signal (POSIX only; Windows reports crashes as positive codes)
+        if result.returncode >= 0:
+            break
+    return result
 
 
 @pytest.mark.parametrize("proxy", [False, True], ids=["plain", "proxy"])
