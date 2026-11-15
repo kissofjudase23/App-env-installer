@@ -107,6 +107,9 @@ function cli_tools_env() {
     if command -v delta > /dev/null 2>&1; then
         export GIT_PAGER='delta'
     fi
+
+    # eza paints your user/group, read bits, source and build files bold yellow; make them green
+    export EZA_COLORS='ur=1;32:gr=32:tr=32:uu=1;32:gu=1;32:sc=1;32:bu=1;4;32'
 }
 
 function network_setting() {

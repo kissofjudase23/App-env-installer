@@ -71,6 +71,8 @@ if (Test-Command eza) {
     function lm { eza -al --git --sort=modified @args }
     function lS { eza -al --sort=size @args }
     function ld { eza -lD @args }
+    # Same as common.sh: green in place of eza's bold yellow
+    $env:EZA_COLORS = 'ur=1;32:gr=32:tr=32:uu=1;32:gu=1;32:sc=1;32:bu=1;4;32'
 }
 
 if (Test-Command bat) {

@@ -93,6 +93,12 @@ eza's flags are not fully compatible with ls. For example, `-t` takes a field na
 (`ls -lt` fails), so use `lm` instead. Scripts are unaffected because aliases apply only to
 interactive shells; run `command ls` for the original ls.
 
+Colors: common.sh (and `profile.ps1`) set `EZA_COLORS` so that what eza paints bold yellow by
+default (your user and group, the read permission bits, source files and build files such as
+`Makefile`) appears in your terminal theme's green instead, the color of the prompt's git
+segment. To pick another color, replace the `32`s there (for example with `38;5;180`, a tan from
+the 256-color palette); `man eza_colors` lists the keys.
+
 ## fd
 
 fd matches by **regex** against file names, skips hidden files, and respects `.gitignore` by default.
