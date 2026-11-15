@@ -2,17 +2,19 @@
 
 # Upstream: https://github.com/carlosplanchon/starship-p10k-rainbow (MIT), commit f61ab74.
 # Local changes: os_fg 39 (blue) -> 7 (silver, follows the terminal theme); full directory path
-# (truncation_length 0, truncate_to_repo false). Keep them when re-copying from upstream.
+# (truncation_length 0, truncate_to_repo false); round head after $git_status in `format`.
+# Keep them when re-copying from upstream.
 # ───────────────────────────────────────────────────────────────
 #  Powerlevel10k "rainbow"-style: powerline, 1 line, compact.
 #  Left: OS · directory · Git
 #  Right: exit status · duration · jobs · direnv · languages · user@host (SSH/root)
-#  Flat heads, flat tails.
+#  Round head, flat tail.
 # ───────────────────────────────────────────────────────────────
 
 add_newline = false
 palette = 'p10k'
 
+#  (U+E0B4) is the powerline half circle; prev_bg colors it like the last segment
 format = """
 $os\
 $directory\
@@ -21,6 +23,7 @@ $git_commit\
 $git_state\
 $git_metrics\
 $git_status\
+[](fg:prev_bg)\
 $character"""
 
 right_format = """
