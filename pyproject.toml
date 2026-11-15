@@ -14,6 +14,8 @@ dev = [
     "pytest>=9.2.0",
     "pytest-xdist>=3.8.0",
     "ruff",
+    "shellcheck-py>=0.11.0.1",
+    "shfmt-py>=4.2.0",
 ]
 
 [tool.uv]

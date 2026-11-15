@@ -61,7 +61,9 @@ function go_env() {
         path_prepend /usr/local/go/bin
     fi
 
-    path_append "${GOBIN:-${GOPATH:-${HOME}/go}/bin}"
+    # go install writes to the first GOPATH entry
+    local gopath="${GOPATH:-${HOME}/go}"
+    path_append "${GOBIN:-${gopath%%:*}/bin}"
 }
 
 function docker_env() {

@@ -1,3 +1,5 @@
+import hashlib
+import json
 import os
 import shutil
 import subprocess
@@ -119,6 +121,22 @@ def test_common_sh_prepends_local_bin(shell, exists, home):
     assert (str(local_bin) in entries) is exists
 
 
+@pytest.mark.parametrize("shell", ["bash", "zsh"])
+@pytest.mark.parametrize(
+    ("env", "expected"),
+    [
+        ({}, None),
+        ({"GOPATH": "/first:/second"}, "/first/bin"),
+        ({"GOBIN": "/gobin", "GOPATH": "/first"}, "/gobin"),
+    ],
+    ids=["default", "gopath-list", "gobin"],
+)
+def test_common_sh_appends_go_bin(shell, env, expected, home):
+    # go install writes to the first GOPATH entry
+    result = run_shell(shell, 'source "$1"; printf "%s" "$PATH"', home, str(COMMON), env=env)
+    assert result.stdout.split(":")[-1] == (expected or str(home / "go/bin")), result.stderr
+
+
 def test_common_sh_keeps_only_alias_setting(home):
     result = run_shell("bash", 'source "$1"; declare -F', home, str(COMMON))
     assert result.stdout.split() == ["declare", "-f", "alias_setting"]
@@ -178,6 +196,82 @@ def test_github_api_without_token(home):
     assert result.stdout.splitlines() == [
         f"args: {CURL_RETRY} -fsSL https://api.github.com/repos/o/r/releases/latest"
     ], result.stderr
+
+
+ARCH_SCRIPT = 'source "$1"; machine="$3"; uname() { echo "${machine}"; }; ubuntu_arch "$2"'
+
+
+@pytest.mark.parametrize(
+    ("naming", "machine", "expected"),
+    [
+        ("go", "x86_64", "amd64"),
+        ("go", "aarch64", "arm64"),
+        ("rust", "x86_64", "x86_64"),
+        ("rust", "aarch64", "aarch64"),
+        ("nvim", "x86_64", "x86_64"),
+        ("nvim", "aarch64", "arm64"),
+    ],
+)
+def test_ubuntu_arch(home, naming, machine, expected):
+    result = run_shell("bash", ARCH_SCRIPT, home, str(INSTALL_SH), naming, machine)
+    assert result.stdout == f"{expected}\n", result.stderr
+
+
+def test_ubuntu_arch_rejects_unknown_machine(home):
+    result = run_shell("bash", ARCH_SCRIPT, home, str(INSTALL_SH), "go", "riscv64")
+    assert result.returncode == 1
+    assert "Unsupported architecture for go: riscv64" in result.stderr
+
+
+# github_api serves release JSON $2; curl writes $3 to its -o file instead of downloading.
+# release_json, not release: github_release_asset has a local release that would shadow it.
+RELEASE_ASSET_SCRIPT = """
+source "$1"
+release_json="$2"
+payload="$3"
+github_api() { printf '%s' "${release_json}"; }
+curl() {
+    while (($# > 1)); do
+        if [[ "$1" == -o ]]; then printf '%s' "${payload}" > "$2"; fi
+        shift
+    done
+}
+github_release_asset o/r '^tool-linux_amd64\\.tar\\.gz$' "${HOME}/asset"
+echo "tag=${RELEASE_TAG} asset=$(cat "${HOME}/asset")"
+"""
+PAYLOAD = "payload"
+PAYLOAD_DIGEST = f"sha256:{hashlib.sha256(PAYLOAD.encode()).hexdigest()}"
+
+
+@pytest.mark.parametrize(
+    ("name", "digest", "error", "downloaded"),
+    [
+        ("tool-linux_amd64.tar.gz", PAYLOAD_DIGEST, None, True),
+        # sha256sum's own message differs between GNU and uutils (Ubuntu 26.04)
+        ("tool-linux_amd64.tar.gz", f"sha256:{'0' * 64}", "failed with exit code 1", True),
+        ("tool-linux_amd64.tar.gz", None, "No sha256 digest for tool-linux_amd64.tar.gz", False),
+        ("tool-linux_arm64.tar.gz", PAYLOAD_DIGEST, "No o/r release asset matches", False),
+    ],
+    ids=["verified", "digest-mismatch", "no-digest", "no-matching-asset"],
+)
+def test_github_release_asset_verifies_sha256(home, name, digest, error, downloaded):
+    for tool in ("jq", "sha256sum"):
+        if shutil.which(tool) is None:
+            pytest.skip(f"{tool} is not installed")
+    asset = {"name": name, "browser_download_url": "https://example.com/asset"}
+    if digest is not None:
+        asset["digest"] = digest
+    release = json.dumps({"tag_name": "v1.2.3", "assets": [asset]})
+
+    result = run_shell("bash", RELEASE_ASSET_SCRIPT, home, str(INSTALL_SH), release, PAYLOAD)
+
+    assert (home / "asset").exists() is downloaded, result.stderr
+    if error is None:
+        assert (result.returncode, result.stdout) == (0, f"tag=v1.2.3 asset={PAYLOAD}\n")
+    else:
+        assert result.returncode != 0
+        assert "tag=" not in result.stdout
+        assert error in result.stderr
 
 
 @pytest.mark.parametrize(("args", "upgrade"), [([], "0"), (["--upgrade"], "1")])

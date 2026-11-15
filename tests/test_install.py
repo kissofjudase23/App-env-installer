@@ -1,4 +1,5 @@
 import hashlib
+import http.client
 import io
 import json
 import os
@@ -6,6 +7,7 @@ import re
 import subprocess
 import tarfile
 import tempfile
+import urllib.error
 from pathlib import Path
 
 import pytest
@@ -278,6 +280,17 @@ def test_link_dotfiles_explains_missing_symlink_privilege(tmp_path, home, monkey
     dotfiles = [{"src": "assets/tig/tigrc", "dst": ".tigrc"}]
     with pytest.raises(install.InstallerError, match="give the entry a stub"):
         make_installer(tmp_path, home, system="Windows", dotfiles=dotfiles).link_dotfiles()
+
+
+def test_link_dotfiles_dry_run_reports_backup(tmp_path, home, capsys):
+    (home / ".tigrc").write_text("mine")
+    dotfiles = [{"src": "assets/tig/tigrc", "dst": ".tigrc"}]
+    make_installer(tmp_path, home, dry_run=True, dotfiles=dotfiles).link_dotfiles()
+
+    dst = re.escape(str(home / ".tigrc"))
+    assert re.search(rf"^backup {dst} -> {dst}\.bak\.\d{{14}}$", capsys.readouterr().out, re.M)
+    assert (home / ".tigrc").read_text() == "mine"
+    assert backups(home, ".tigrc") == []
 
 
 def test_ensure_gitconfig_local_keeps_existing(tmp_path, home):
@@ -571,15 +584,32 @@ def test_cli_upgrade_dry_run_reinstalls_go_tools(cli_home, go):
     assert "go install golang.org/x/tools/gopls@latest" in upgrade.output
 
 
-def test_cli_reports_errors_with_exit_code(cli_home, monkeypatch):
-    def unsupported():
-        raise install.NotSupportError("does not support Plan9")
+@pytest.mark.parametrize(("args", "warned"), [(["--upgrade"], True), (["-t", "--upgrade"], False)])
+def test_cli_warns_when_upgrade_has_no_effect(cli_home, args, warned):
+    result = CliRunner().invoke(install.cli, [*args, "-y", "--dry-run"])
 
-    monkeypatch.setattr(install, "check_supported", unsupported)
+    assert result.exit_code == 0, result.output
+    assert ("--upgrade has no effect" in result.stderr) is warned
+
+
+@pytest.mark.parametrize(
+    ("error", "message"),
+    [
+        (install.NotSupportError("does not support Plan9"), "does not support Plan9"),
+        # a download cut short; not an OSError
+        (http.client.IncompleteRead(b"x", 1), "IncompleteRead(1 bytes read, 1 more expected)"),
+    ],
+    ids=["installer-error", "incomplete-read"],
+)
+def test_cli_reports_errors_with_exit_code(cli_home, monkeypatch, error, message):
+    def fail():
+        raise error
+
+    monkeypatch.setattr(install, "check_supported", fail)
     result = CliRunner().invoke(install.cli, ["-y"])
 
     assert result.exit_code == 1
-    assert "error: does not support Plan9" in result.output
+    assert f"error: {message}" in result.output
 
 
 @pytest.mark.parametrize(
@@ -609,6 +639,51 @@ def test_fetch_sends_token_only_to_github_api(monkeypatch, env, url, auth):
     assert req.get_header("Authorization") == auth
     # never forwarded to a redirect target
     assert "Authorization" not in req.headers
+
+
+def http_error(code: int) -> urllib.error.HTTPError:
+    return urllib.error.HTTPError(install.NERD_FONTS_RELEASE_API, code, "error", {}, None)
+
+
+def fake_urlopen(monkeypatch, outcomes: list) -> list[int]:
+    """Make urlopen raise (exceptions) or return (bytes) the outcomes in turn; returns sleeps."""
+    queue = list(outcomes)
+    sleeps: list[int] = []
+
+    def urlopen(req, timeout):
+        outcome = queue.pop(0)
+        if isinstance(outcome, Exception):
+            raise outcome
+        return io.BytesIO(outcome)
+
+    monkeypatch.setattr(install.urllib.request, "urlopen", urlopen)
+    monkeypatch.setattr(install.time, "sleep", sleeps.append)
+    return sleeps
+
+
+@pytest.mark.parametrize(
+    "error",
+    [http_error(503), http_error(429), TimeoutError("timed out"), http.client.IncompleteRead(b"")],
+    ids=["5xx", "429", "timeout", "incomplete-read"],
+)
+def test_fetch_retries_transient_errors(monkeypatch, error):
+    sleeps = fake_urlopen(monkeypatch, [error, error, b"ok"])
+
+    assert install.fetch(install.NERD_FONTS_RELEASE_API) == b"ok"
+    assert sleeps == [1, 2]
+
+
+@pytest.mark.parametrize(
+    ("error", "attempts"),
+    [(http_error(403), 1), (http_error(404), 1), (http_error(503), 3), (TimeoutError("t"), 3)],
+    ids=["rate-limit", "not-found", "5xx", "timeout"],
+)
+def test_fetch_gives_up(monkeypatch, error, attempts):
+    sleeps = fake_urlopen(monkeypatch, [error] * attempts)
+
+    with pytest.raises(type(error)):
+        install.fetch(install.NERD_FONTS_RELEASE_API)
+    assert len(sleeps) == attempts - 1
 
 
 def make_font_archive(files: dict[str, bytes]) -> bytes:

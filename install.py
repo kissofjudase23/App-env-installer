@@ -1,5 +1,6 @@
 import contextlib
 import hashlib
+import http.client
 import io
 import json
 import os
@@ -9,6 +10,8 @@ import shutil
 import subprocess
 import sys
 import tarfile
+import time
+import urllib.error
 import urllib.request
 import uuid
 from datetime import datetime
@@ -24,6 +27,9 @@ ROOT = Path(__file__).resolve().parent
 
 GITHUB_API = "https://api.github.com/"
 NERD_FONTS_RELEASE_API = f"{GITHUB_API}repos/ryanoasis/nerd-fonts/releases/latest"
+# Like CURL_RETRY in install.sh: retry timeouts, network errors and these statuses
+RETRY_STATUSES = frozenset({408, 429, 500, 502, 503, 504})
+FETCH_ATTEMPTS = 3
 
 WINDOWS_FONTS_KEY = r"Software\Microsoft\Windows NT\CurrentVersion\Fonts"
 # Known folder API follows OneDrive/GPO redirection, unlike ~/Documents
@@ -129,8 +135,21 @@ def fetch(url: str) -> bytes:
     token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
     if token and url.startswith(GITHUB_API):
         req.add_unredirected_header("Authorization", f"Bearer {token}")
-    with urllib.request.urlopen(req, timeout=60) as resp:
-        return resp.read()
+
+    def read() -> bytes:
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            return resp.read()
+
+    for attempt in range(1, FETCH_ATTEMPTS):
+        try:
+            return read()
+        except (OSError, http.client.HTTPException) as e:
+            # HTTPError is an OSError too; a 403 (rate limit) or 404 does not go away
+            if isinstance(e, urllib.error.HTTPError) and e.code not in RETRY_STATUSES:
+                raise
+            click.echo(f"retry {url}: {e}", err=True)
+            time.sleep(attempt)
+    return read()
 
 
 def extract_fonts(archive: bytes, dst: Path) -> None:
@@ -359,15 +378,17 @@ class Installer:
                 continue
 
             click.echo(f"{'link' if stub is None else 'stub'} {src} -> {dst}")
+            backup = None
+            if not dst.is_symlink() and dst.exists():
+                backup = dst.with_name(f"{dst.name}.bak.{datetime.now():%Y%m%d%H%M%S}")
+                click.echo(f"backup {dst} -> {backup}")
             if self.dry_run:
                 continue
 
             dst.parent.mkdir(parents=True, exist_ok=True)
             if dst.is_symlink():
                 dst.unlink()
-            elif dst.exists():
-                backup = dst.with_name(f"{dst.name}.bak.{datetime.now():%Y%m%d%H%M%S}")
-                click.echo(f"backup {dst} -> {backup}")
+            elif backup is not None:
                 dst.rename(backup)
             if stub is not None:
                 dst.write_text(stub, encoding="utf-8", newline="\n")
@@ -531,6 +552,8 @@ def cli(
 ) -> None:
     if not (link_dotfiles or clone_git_repos or install_fonts or install_go_tools or install_all):
         link_dotfiles = True
+    if upgrade and not (install_fonts or install_go_tools or install_all):
+        click.echo("--upgrade has no effect without -f, -t or -a", err=True)
 
     try:
         installer = Installer(
@@ -555,7 +578,8 @@ def cli(
 
         if install_all or install_go_tools:
             installer.install_go_tools()
-    except (InstallerError, subprocess.CalledProcessError, OSError) as e:
+    # HTTPException: e.g. IncompleteRead from a download cut short, which is not an OSError
+    except (InstallerError, subprocess.CalledProcessError, OSError, http.client.HTTPException) as e:
         click.echo(f"error: {e}", err=True)
         sys.exit(1)
 

@@ -39,12 +39,12 @@ jobs:
           uv run ruff check .
           uv run ruff format --check .
 
-      # zsh for tests/test_shell.py (macOS ships it)
-      - name: Install shell tools
+      # zsh for tests/test_shell.py (macOS ships it); shellcheck and shfmt come from uv.lock
+      - name: Install zsh
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y shfmt zsh
+          sudo apt-get install -y zsh
 
       # pwsh for tests/test_powershell.py ships on all runners
       - name: Test
