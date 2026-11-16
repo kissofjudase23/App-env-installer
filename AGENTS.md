@@ -18,6 +18,8 @@ Two-stage install:
    - Flags: `-d` (default), `-g`, `-f`, `-t`, `-a`, `-y`, `--upgrade` (affects only `-f`/`-t`; warns without `-f`, `-t` or `-a`), `--dry-run`. Every side effect must honor `dry_run`.
    - All paths resolve from `ROOT = Path(__file__).resolve().parent`; never rely on cwd.
 
+Progress output: `install.sh` (`run_steps "func|Title" ...`), `install.ps1` (`Invoke-Step @{ Title; Action }`) and `install.py` (`run_steps` in `cli`) each build one step list, print it as the plan, then run each step under a `[i/N] Title` heading and name the step on failure. A new step goes into that list, never as a bare call, and the step functions themselves print no headings, only what they do or skip.
+
 For any new GitHub-hosted binary on Ubuntu, reuse `github_release_asset` / `install_github_binary` in `install.sh` (they verify the sha256 digest from the GitHub API); call them directly, not inside `$(...)`, check for the binary in `RELEASE_BIN_DIR` (not `command -v`, which also finds apt's older copies), and guard them with `keep_installed` so `--upgrade` works. curl calls take `"${CURL_RETRY[@]}"`, except `curl | sh`, where a retry could append to what the shell already read. GitHub API calls go through `github_api` (shell) / `fetch` (Python), which add `GITHUB_TOKEN`/`GH_TOKEN` for `api.github.com` only (`uv self update` gets it as `UV_GITHUB_TOKEN`); never print or log the token. `fetch` retries timeouts, network errors and 408/429/5xx like `CURL_RETRY`, but not 403/404. `install.sh` runs `main` only when executed, so tests can `source` it.
 
 ## Where things live

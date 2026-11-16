@@ -4,10 +4,44 @@ set -Eeuo pipefail
 
 function on_error() {
     echo "Error: '${BASH_COMMAND}' failed with exit code $1 (install.sh line $2)" >&2
+    if [[ -n "${CURRENT_STEP}" ]]; then
+        echo "Error: step ${CURRENT_STEP} failed" >&2
+    fi
 }
 trap 'on_error $? ${LINENO}' ERR
 
 UPGRADE=0
+# "[i/N] Title" of the step run_steps is in, for on_error
+CURRENT_STEP=""
+
+# Bold cyan on a terminal; plain when piped (CI logs) or NO_COLOR is set
+function heading() {
+    if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
+        printf '\033[1;36m%s\033[0m\n' "$1"
+    else
+        printf '%s\n' "$1"
+    fi
+}
+
+# Print the plan, then run each "function|Title" argument under a "==> [i/N] Title" heading
+function run_steps() {
+    local step i=0 total=$#
+    echo "    Steps:"
+    for step in "$@"; do
+        i=$((i + 1))
+        echo "      ${i}. ${step#*|}"
+    done
+
+    i=0
+    for step in "$@"; do
+        i=$((i + 1))
+        CURRENT_STEP="[${i}/${total}] ${step#*|}"
+        echo
+        heading "==> ${CURRENT_STEP}"
+        "${step%%|*}"
+    done
+    CURRENT_STEP=""
+}
 
 function usage() {
     cat << 'USAGE'
@@ -55,8 +89,8 @@ function detect_os() {
 
     case "${os_type}" in
         Darwin)
-            echo "Detected OS: macOS (Darwin)"
             DETECTED_OS="Darwin"
+            OS_LABEL="macOS"
             ;;
         Linux)
             if [ ! -f /etc/os-release ]; then
@@ -73,8 +107,8 @@ function detect_os() {
                 echo "Error: Unsupported Ubuntu ${VERSION_ID:-}: ${UBUNTU_MIN_VERSION} or newer is required" >&2
                 exit 1
             fi
-            echo "Detected OS: Linux (Ubuntu ${VERSION_ID:-})"
             DETECTED_OS="Linux"
+            OS_LABEL="Ubuntu ${VERSION_ID:-}"
             ;;
         *)
             echo "Error: Unsupported OS: ${os_type}" >&2
@@ -106,6 +140,8 @@ function change_default_shell_to_zsh() {
         echo "Changing default shell to ${zsh_path}..."
         # sudo reuses the credentials cached by earlier steps; plain chsh asks for a password
         sudo chsh -s "${zsh_path}" "$(id -un)"
+    else
+        echo "Default shell is already ${zsh_path}, skip chsh"
     fi
 }
 
@@ -129,8 +165,13 @@ function link_debian_renamed_tools() {
     for pair in fdfind:fd batcat:bat; do
         src="${pair%%:*}"
         dst="${pair##*:}"
-        if command -v "${src}" &> /dev/null && ! command -v "${dst}" &> /dev/null; then
+        if command -v "${dst}" &> /dev/null; then
+            echo "${dst} found, skip link"
+        elif command -v "${src}" &> /dev/null; then
+            echo "Linking /usr/local/bin/${dst} to ${src}..."
             sudo ln -sf "$(command -v "${src}")" "/usr/local/bin/${dst}"
+        else
+            echo "${src} not found, skip link"
         fi
     done
 }
@@ -154,16 +195,20 @@ function install_pkgs_for_ubuntu() {
     # common.sh already puts ~/.local/bin on PATH
     export PATH="${HOME}/.local/bin:${PATH}"
     if ! command -v uv &> /dev/null; then
+        echo "Installing uv to ${HOME}/.local/bin..."
         curl -LsSf https://astral.sh/uv/install.sh |
             env UV_NO_MODIFY_PATH=1 UV_INSTALL_DIR="${HOME}/.local/bin" sh
     elif ((UPGRADE == 1)) && [[ "$(command -v uv)" == "${HOME}/.local/bin/uv" ]]; then
         # uv reads a GitHub token (rate limit) only from UV_GITHUB_TOKEN
         local token="${GITHUB_TOKEN:-${GH_TOKEN:-}}"
+        echo "Updating uv..."
         if [[ -n "${token}" ]]; then
             UV_GITHUB_TOKEN="${token}" uv self update
         else
             uv self update
         fi
+    else
+        echo "uv found, skip install"
     fi
 }
 
@@ -370,19 +415,37 @@ function main() {
 
     detect_os
 
+    # Every step goes in this list, so the plan printed up front matches what runs
+    local mode="install" missing="Install missing" latest="Install"
+    local -a steps
+    if ((UPGRADE == 1)); then
+        mode="upgrade" missing="Install and upgrade" latest="Install the latest"
+    fi
     case "${DETECTED_OS}" in
-        Darwin) install_pkgs_for_darwin ;;
+        Darwin) steps=("install_pkgs_for_darwin|${missing} Homebrew packages (packages/Brewfile)") ;;
         Linux)
-            install_pkgs_for_ubuntu
-            link_debian_renamed_tools
-            install_go_for_ubuntu
-            install_release_tools_for_ubuntu
-            install_neovim_for_ubuntu
+            steps=(
+                "install_pkgs_for_ubuntu|${missing} apt packages and uv"
+                "link_debian_renamed_tools|Link fdfind / batcat as fd / bat"
+                "install_go_for_ubuntu|Bootstrap Go"
+                "install_release_tools_for_ubuntu|${latest} fzf, eza, delta, starship (GitHub releases)"
+                "install_neovim_for_ubuntu|${latest} Neovim (GitHub release)"
+            )
             ;;
     esac
+    steps+=(
+        "setup_python|Set up Python, then run install.py (dotfiles, fonts, git repos, Go tools)"
+        "change_default_shell_to_zsh|Make zsh the default shell"
+    )
 
-    setup_python
-    change_default_shell_to_zsh
+    heading "==> App-env-installer: ${mode} on ${OS_LABEL}"
+    run_steps "${steps[@]}"
+
+    echo
+    heading "==> Done in $((SECONDS / 60))m$((SECONDS % 60))s (${mode}). Open a new terminal to load the shell config."
+    if ((UPGRADE == 0)); then
+        echo "    Installed tools were kept as they are; 'make upgrade' also updates them."
+    fi
 }
 
 # Sourcing only defines the functions (tests/test_shell.py)

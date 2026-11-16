@@ -572,6 +572,29 @@ def test_cli_runs_only_the_selected_action(cli_home, flag, title):
     assert re.findall(r"^Prepare to [a-z ]+", result.output, re.MULTILINE) == [title]
 
 
+def test_cli_prints_plan_and_numbered_steps(cli_home):
+    result = CliRunner().invoke(install.cli, ["-a", "-y", "--dry-run"])
+
+    assert result.exit_code == 0, result.output
+    assert "install.py: install (dry run: nothing will be changed)" in result.output
+    titles = ["Link dotfiles", "Install Nerd Fonts", "Clone git repos", "Install Go tools"]
+    plan = [f"    {i}. {title}" for i, title in enumerate(titles, 1)]
+    assert [line for line in result.output.splitlines() if line in plan] == plan
+    headings = re.findall(r"^  --> \[(\d)/(\d)\] (.+)$", result.output, re.MULTILINE)
+    assert headings == [(str(i), "4", title) for i, title in enumerate(titles, 1)]
+    assert result.output.rstrip().endswith("Dry run finished: nothing was changed")
+
+
+def test_cli_plan_shows_upgrade_mode_and_only_selected_steps(cli_home):
+    result = CliRunner().invoke(install.cli, ["-t", "-y", "--dry-run", "--upgrade"])
+
+    assert result.exit_code == 0, result.output
+    assert "install.py: upgrade (dry run" in result.output
+    assert re.findall(r"^  --> .+$", result.output, re.MULTILINE) == [
+        "  --> [1/1] Install Go tools"
+    ]
+
+
 def test_cli_upgrade_dry_run_reinstalls_go_tools(cli_home, go):
     go.mkdir()
     (go / "gopls").write_text("")

@@ -182,3 +182,39 @@ def test_install_ps1_passes_upgrade_to_install_py(home, flag, suffix):
         "uv sync --locked",
         f"uv run install.py -a -y{suffix}",
     ], result.stderr
+
+
+STEPS_SCRIPT = """
+. '{install}'
+$steps = @(
+    @{{ Title = 'First step'; Action = {{ Write-Host 'first ran' }} }},
+    @{{ Title = '{second}'; Action = {{ {action} }} }}
+)
+Invoke-Step $steps 6>&1
+"""
+
+
+def test_install_ps1_invoke_step_prints_plan_then_numbered_steps(home):
+    script = STEPS_SCRIPT.format(
+        install=INSTALL_PS1, second="Second step", action="Write-Host 'second ran'"
+    )
+    result = run_pwsh(script, home)
+    assert result.stdout.splitlines() == [
+        "    Steps:",
+        "      1. First step",
+        "      2. Second step",
+        "",
+        "==> [1/2] First step",
+        "first ran",
+        "",
+        "==> [2/2] Second step",
+        "second ran",
+    ], result.stderr
+
+
+def test_install_ps1_invoke_step_names_the_failed_step(home):
+    script = STEPS_SCRIPT.format(install=INSTALL_PS1, second="Broken step", action="throw 'boom'")
+    result = run_pwsh(script, home)
+    assert result.returncode != 0
+    assert "Error: step [2/2] Broken step failed" in result.stdout
+    assert "boom" in result.stderr

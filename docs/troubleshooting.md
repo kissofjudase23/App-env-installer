@@ -2,6 +2,10 @@
 
 [← README](../README.md)
 
+## Finding the step that failed
+
+`install.sh` and `install.ps1` print their steps up front, then each one under a `==> [i/N] <step>` heading; `install.py` numbers its own actions as `--> [i/N] <action>`. When a step fails, the error names it (`Error: step [3/7] Bootstrap Go failed`). Scroll up to that heading for the output of the failing command. Headings are colored only on a terminal; set `NO_COLOR=1` to turn the colors off there too.
+
 ## GitHub API rate limit (`returned error: 403` / `HTTP Error 403`)
 
 Anonymous GitHub API calls are limited to 60 per hour per IP, shared by everyone behind the same NAT. When the limit is hit, `install.sh` stops with `curl: (22) The requested URL returned error: 403` (or `429`) and `install.py` with `error: HTTP Error 403: ...`. Set a token and re-run, e.g. `GH_TOKEN=$(gh auth token) bash install.sh`; see [GitHub API token](configuration.md#github-api-token).

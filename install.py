@@ -14,6 +14,7 @@ import time
 import urllib.error
 import urllib.request
 import uuid
+from collections.abc import Callable
 from datetime import datetime
 from enum import Enum, unique
 from pathlib import Path
@@ -351,7 +352,10 @@ class Installer:
 
     def clone_git_repos(self) -> None:
         pairs = [(repo["src"], self._dst(repo)) for repo in self._entries("git_repos")]
-        if not pairs or not self._confirm("Prepare to clone git repos", pairs):
+        if not pairs:
+            click.echo(f"nothing to do: no git_repos for {self.system} in config.yaml")
+            return
+        if not self._confirm("Prepare to clone git repos", pairs):
             return
 
         for src, dst in pairs:
@@ -360,7 +364,10 @@ class Installer:
     def link_dotfiles(self) -> None:
         entries = self._entries("dotfiles")
         pairs = [(ROOT / f["src"], self._dst(f)) for f in entries]
-        if not pairs or not self._confirm("Prepare to link dotfiles", pairs):
+        if not pairs:
+            click.echo(f"nothing to do: no dotfiles for {self.system} in config.yaml")
+            return
+        if not self._confirm("Prepare to link dotfiles", pairs):
             return
 
         for entry, (src, dst) in zip(entries, pairs, strict=True):
@@ -405,6 +412,7 @@ class Installer:
     def ensure_gitconfig_local(self) -> None:
         path = self.home / ".gitconfig.local"
         if path.exists():
+            click.echo(f"skip {path}: already exists")
             return
         click.echo(f"create {path}: set your git user.name/user.email there")
         if not self.dry_run:
@@ -420,7 +428,7 @@ class Installer:
         elif self.system == SupportedSystems.WINDOWS.value:
             font_dir = self.base_dirs["local_app_data"] / "Microsoft/Windows/Fonts/NerdFonts"
         else:
-            # macOS fonts are installed by the Brewfile
+            click.echo("skip fonts: macOS fonts come from packages/Brewfile")
             return
         names = self.config_mgr.nerd_fonts
         if not self.upgrade:
@@ -429,6 +437,7 @@ class Installer:
                 click.echo(f"skip {font_dir / name}: already installed (--upgrade to update)")
             names = [n for n in names if n not in installed]
         if not names:
+            click.echo("nothing to do: all fonts installed")
             return
 
         # dry run stays offline: report the archives without resolving the release
@@ -495,12 +504,34 @@ class Installer:
             else:
                 pairs.append((pkg, gobin))
         if not pairs:
+            click.echo("nothing to do: all go tools installed")
             return
         if not self._confirm("Prepare to install go tools", pairs):
             return
 
         for pkg, _ in pairs:
             run([go or "go", "install", pkg], dry_run=self.dry_run)
+
+
+def run_steps(steps: list[tuple[str, Callable[[], None]]], *, mode: str, dry_run: bool) -> None:
+    note = " (dry run: nothing will be changed)" if dry_run else ""
+    click.secho(f"  install.py: {mode}{note}", bold=True)
+    for i, (title, _) in enumerate(steps, 1):
+        click.echo(f"    {i}. {title}")
+
+    for i, (title, action) in enumerate(steps, 1):
+        click.echo()
+        # click drops the colors when stdout is not a terminal
+        click.secho(f"  --> [{i}/{len(steps)}] {title}", fg="cyan", bold=True)
+        try:
+            action()
+        except Exception:
+            click.echo(f"error: step [{i}/{len(steps)}] {title} failed", err=True)
+            raise
+
+    click.echo()
+    done = "Dry run finished: nothing was changed" if dry_run else "install.py done"
+    click.secho(f"  {done}", bold=True)
 
 
 def check_supported() -> str:
@@ -566,18 +597,19 @@ def cli(
             upgrade=upgrade,
         )
 
-        if install_all or link_dotfiles:
+        def dotfiles() -> None:
             installer.link_dotfiles()
             installer.ensure_gitconfig_local()
 
-        if install_all or install_fonts:
-            installer.install_fonts()
-
-        if install_all or clone_git_repos:
-            installer.clone_git_repos()
-
-        if install_all or install_go_tools:
-            installer.install_go_tools()
+        # Every action goes in this list, so the plan printed up front matches what runs
+        selected = [
+            (install_all or link_dotfiles, "Link dotfiles", dotfiles),
+            (install_all or install_fonts, "Install Nerd Fonts", installer.install_fonts),
+            (install_all or clone_git_repos, "Clone git repos", installer.clone_git_repos),
+            (install_all or install_go_tools, "Install Go tools", installer.install_go_tools),
+        ]
+        steps = [(title, action) for wanted, title, action in selected if wanted]
+        run_steps(steps, mode="upgrade" if upgrade else "install", dry_run=dry_run)
     # HTTPException: e.g. IncompleteRead from a download cut short, which is not an OSError
     except (InstallerError, subprocess.CalledProcessError, OSError, http.client.HTTPException) as e:
         click.echo(f"error: {e}", err=True)

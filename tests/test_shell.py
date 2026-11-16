@@ -457,9 +457,9 @@ def apt_packages() -> list[str]:
 @pytest.mark.parametrize(
     ("args", "token", "expected_uv"),
     [
-        ([], None, []),
-        (["--upgrade"], None, ["token= uv self update"]),
-        (["--upgrade"], "t0k", ["token=t0k uv self update"]),
+        ([], None, ["uv found, skip install"]),
+        (["--upgrade"], None, ["Updating uv...", "token= uv self update"]),
+        (["--upgrade"], "t0k", ["Updating uv...", "token=t0k uv self update"]),
     ],
     ids=["install", "upgrade", "upgrade-token"],
 )
@@ -519,8 +519,47 @@ def test_change_default_shell_to_zsh(home, current):
     current = zsh if current == "zsh" else current
     result = run_shell("bash", CHSH_SCRIPT, home, str(INSTALL_SH), current)
     expected = (
-        []
+        [f"Default shell is already {zsh}, skip chsh"]
         if current == zsh
         else [f"Changing default shell to {zsh}...", f"sudo chsh -s {zsh} alice"]
     )
     assert result.stdout.splitlines() == expected, result.stderr
+
+
+STEPS_SCRIPT = """
+source "$1"
+shift
+first() { echo "first ran"; }
+second() { echo "second ran"; }
+broken() { false; }
+trap 'on_error $? ${LINENO}' ERR
+run_steps "$@"
+"""
+
+
+def test_run_steps_prints_plan_then_numbered_steps(home):
+    result = run_shell(
+        "bash", STEPS_SCRIPT, home, str(INSTALL_SH), "first|First step", "second|Second step"
+    )
+    # stdout is a pipe here, so the headings carry no color codes
+    assert result.stdout.splitlines() == [
+        "    Steps:",
+        "      1. First step",
+        "      2. Second step",
+        "",
+        "==> [1/2] First step",
+        "first ran",
+        "",
+        "==> [2/2] Second step",
+        "second ran",
+    ], result.stderr
+
+
+def test_run_steps_names_the_failed_step(home):
+    script = "set -Eeuo pipefail\n" + STEPS_SCRIPT
+    result = run_shell(
+        "bash", script, home, str(INSTALL_SH), "first|First step", "broken|Broken step"
+    )
+    assert result.returncode != 0
+    assert "second ran" not in result.stdout
+    assert "Error: step [2/2] Broken step failed" in result.stderr

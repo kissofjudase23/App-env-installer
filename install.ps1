@@ -36,6 +36,36 @@ function Invoke-Native {
     }
 }
 
+function Write-Heading {
+    param([Parameter(Mandatory)] [string] $Text)
+    # Plain text in CI logs and when NO_COLOR is set
+    if ($env:NO_COLOR -or [Console]::IsOutputRedirected) {
+        Write-Host $Text
+    } else {
+        Write-Host $Text -ForegroundColor Cyan
+    }
+}
+
+# Print the plan, then run each @{ Title; Action } under a "==> [i/N] Title" heading
+function Invoke-Step {
+    param([Parameter(Mandatory)] [hashtable[]] $Steps)
+    Write-Host '    Steps:'
+    for ($i = 0; $i -lt $Steps.Count; $i++) {
+        Write-Host "      $($i + 1). $($Steps[$i].Title)"
+    }
+    for ($i = 0; $i -lt $Steps.Count; $i++) {
+        $current = "[$($i + 1)/$($Steps.Count)] $($Steps[$i].Title)"
+        Write-Host ''
+        Write-Heading "==> $current"
+        try {
+            & $Steps[$i].Action
+        } catch {
+            Write-Host "Error: step $current failed" -ForegroundColor Red
+            throw
+        }
+    }
+}
+
 function Assert-Windows {
     # $IsWindows only exists on PowerShell 6+; 5.1 runs on Windows only
     if ((Test-Path Variable:IsWindows) -and -not $IsWindows) {
@@ -107,20 +137,40 @@ function Main {
         return
     }
     Assert-Windows
+    $timer = [Diagnostics.Stopwatch]::StartNew()
+    $mode = 'install'
+    $packages = 'Install missing winget packages (packages\winget-packages.json)'
+    if ($Upgrade) {
+        $mode = 'upgrade'
+        $packages = 'Install and upgrade winget packages (packages\winget-packages.json)'
+    }
+    # Every step goes in this list, so the plan printed up front matches what runs
+    $steps = @(
+        @{ Title = $packages; Action = { Install-WingetPackage -Upgrade:$Upgrade } },
+        @{ Title = 'Reload PATH from the registry'; Action = { Sync-SessionPath } },
+        @{ Title = 'Install PowerShell modules (PSScriptAnalyzer, PSFzf)'; Action = { Install-PwshModule } },
+        @{
+            Title = 'Set up Python, then run install.py (dotfiles, fonts, git repos, Go tools)'
+            Action = { Install-Python -Upgrade:$Upgrade }
+        }
+    )
+    Write-Heading "==> App-env-installer: $mode on Windows"
     Push-Location $PSScriptRoot
     try {
-        Install-WingetPackage -Upgrade:$Upgrade
-        Sync-SessionPath
-        Install-PwshModule
-        Install-Python -Upgrade:$Upgrade
+        Invoke-Step $steps
     } finally {
         Pop-Location
     }
+    $elapsed = $timer.Elapsed
+    Write-Host ''
+    Write-Heading ("==> Done in {0}m{1}s ({2})." -f [int][Math]::Floor($elapsed.TotalMinutes), $elapsed.Seconds, $mode)
+    if (-not $Upgrade) {
+        Write-Host "    Installed packages were kept as they are; 'make upgrade' also updates them."
+    }
     Write-Host @'
-
-Done. Open Windows Terminal and set:
-  Settings > Startup > Default profile: PowerShell (7)
-  Settings > Profiles > Defaults > Appearance > Font face: MesloLGS Nerd Font
+    Open Windows Terminal and set:
+      Settings > Startup > Default profile: PowerShell (7)
+      Settings > Profiles > Defaults > Appearance > Font face: MesloLGS Nerd Font
 '@
 }
 
