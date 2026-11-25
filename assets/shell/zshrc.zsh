@@ -27,6 +27,10 @@ for _plugin _cmd in \
   zoxide zoxide \
   tig tig \
   tmux tmux \
+  aws aws \
+  azure az \
+  gcloud gcloud \
+  terraform terraform \
   fzf fzf; do
   (( $+commands[$_cmd] )) && plugins+=($_plugin)
 done

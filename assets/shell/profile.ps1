@@ -106,5 +106,47 @@ if (Test-Command zoxide) {
     Set-Alias -Name ji -Value zi
 }
 
+# Tab completion for the optional cloud CLIs (install.ps1 -Cloud). aws_completer and terraform use
+# bash's `complete -C` protocol: the command line in COMP_LINE, one candidate per output line.
+foreach ($completer in @{ aws = 'aws_completer'; terraform = 'terraform' }.GetEnumerator()) {
+    if (-not (Test-Command $completer.Value)) { continue }
+    $completerExe = $completer.Value
+    Register-ArgumentCompleter -Native -CommandName $completer.Key -ScriptBlock {
+        # Native completers get the word to complete, the command AST and the cursor position
+        $env:COMP_LINE = "$($args[1])".PadRight($args[2])
+        $env:COMP_POINT = $args[2]
+        try {
+            & $completerExe | ForEach-Object {
+                [Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
+            }
+        } finally {
+            Remove-Item Env:COMP_LINE, Env:COMP_POINT -ErrorAction SilentlyContinue
+        }
+    }.GetNewClosure()
+}
+
+# az uses Python's argcomplete, which writes the candidates to _ARGCOMPLETE_STDOUT_FILENAME
+if (Test-Command az) {
+    Register-ArgumentCompleter -Native -CommandName az -ScriptBlock {
+        $out = New-TemporaryFile
+        $vars = @{
+            _ARGCOMPLETE = '1'; _ARGCOMPLETE_SHELL = 'powershell'; _ARGCOMPLETE_IFS = "`n"
+            _ARGCOMPLETE_SUPPRESS_SPACE = '0'; ARGCOMPLETE_USE_TEMPFILES = '1'
+            _ARGCOMPLETE_STDOUT_FILENAME = "$out"
+            COMP_LINE = "$($args[1])".PadRight($args[2]); COMP_POINT = "$($args[2])"
+        }
+        foreach ($name in $vars.Keys) { Set-Item "Env:$name" $vars[$name] }
+        try {
+            az 2>&1 | Out-Null
+            Get-Content $out | Sort-Object | ForEach-Object {
+                [Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
+            }
+        } finally {
+            foreach ($name in $vars.Keys) { Remove-Item "Env:$name" -ErrorAction SilentlyContinue }
+            Remove-Item $out -ErrorAction SilentlyContinue
+        }
+    }
+}
+
 Remove-Item Function:Add-PathEntry, Function:Test-Command
-Remove-Variable shellLocal, localBin, goBin, openSslBin -ErrorAction SilentlyContinue
+Remove-Variable shellLocal, localBin, goBin, openSslBin, completer, completerExe -ErrorAction SilentlyContinue

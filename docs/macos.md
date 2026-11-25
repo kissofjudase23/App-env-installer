@@ -32,6 +32,8 @@ See [packages/Brewfile](../packages/Brewfile): formulae, `claude` (Claude Deskto
 
 `curl`, `openssl` (LibreSSL), `nc` and `dig` ship with macOS, so they are not in the Brewfile (Homebrew's `curl` is keg-only and would not be on `PATH`). Usage: [cli-tools.md](cli-tools.md#network-tools).
 
+Optional: `bash install.sh --cloud` (or `make install CLOUD=1`) also installs `aws`, `az`, `gcloud` and `terraform` from [packages/Brewfile.cloud](../packages/Brewfile.cloud) ([details](configuration.md#optional-cloud-clis)).
+
 To add a package, edit the Brewfile and re-run `bash install.sh`, which only installs what is missing; `bash install.sh --upgrade` (or `make upgrade`) also upgrades what is already installed ([what each run updates](configuration.md#updating)).
 
 ## iTerm2

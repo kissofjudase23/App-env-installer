@@ -274,18 +274,26 @@ def test_github_release_asset_verifies_sha256(home, name, digest, error, downloa
         assert error in result.stderr
 
 
-@pytest.mark.parametrize(("args", "upgrade"), [([], "0"), (["--upgrade"], "1")])
-def test_parse_args(home, args, upgrade):
-    script = 'source "$1"; shift; parse_args "$@"; echo "UPGRADE=${UPGRADE}"'
+@pytest.mark.parametrize(
+    ("args", "expected"),
+    [
+        ([], "UPGRADE=0 CLOUD=0"),
+        (["--upgrade"], "UPGRADE=1 CLOUD=0"),
+        (["--cloud"], "UPGRADE=0 CLOUD=1"),
+        (["--cloud", "--upgrade"], "UPGRADE=1 CLOUD=1"),
+    ],
+)
+def test_parse_args(home, args, expected):
+    script = 'source "$1"; shift; parse_args "$@"; echo "UPGRADE=${UPGRADE} CLOUD=${CLOUD}"'
     result = run_shell("bash", script, home, str(INSTALL_SH), *args)
-    assert (result.returncode, result.stdout) == (0, f"UPGRADE={upgrade}\n"), result.stderr
+    assert (result.returncode, result.stdout) == (0, f"{expected}\n"), result.stderr
 
 
 @pytest.mark.parametrize("flag", ["-h", "--help"])
 def test_parse_args_help(home, flag):
     result = run_shell("bash", 'source "$1"; parse_args "$2"', home, str(INSTALL_SH), flag)
     assert result.returncode == 0
-    assert result.stdout.startswith("Usage: bash install.sh [--upgrade]")
+    assert result.stdout.startswith("Usage: bash install.sh [--upgrade] [--cloud]")
     assert result.stderr == ""
 
 
@@ -416,24 +424,43 @@ def test_setup_python_passes_upgrade(home, args, flag):
 
 DARWIN_PKGS_SCRIPT = """
 source "$1"
-shift
+step="$2"
+shift 2
 load_brew_env() { :; }
 brew() { echo "brew $*"; }
 parse_args "$@"
-install_pkgs_for_darwin
+"${step}"
 """
 
 
 @pytest.mark.parametrize(
-    ("args", "expected"),
+    ("step", "args", "expected"),
     [
-        ([], ["brew bundle install --no-upgrade --file=packages/Brewfile"]),
-        (["--upgrade"], ["brew update", "brew bundle install --upgrade --file=packages/Brewfile"]),
+        (
+            "install_pkgs_for_darwin",
+            [],
+            ["brew bundle install --no-upgrade --file=packages/Brewfile"],
+        ),
+        (
+            "install_pkgs_for_darwin",
+            ["--upgrade"],
+            ["brew update", "brew bundle install --upgrade --file=packages/Brewfile"],
+        ),
+        (
+            "install_cloud_pkgs_for_darwin",
+            [],
+            ["brew bundle install --no-upgrade --file=packages/Brewfile.cloud"],
+        ),
+        (
+            "install_cloud_pkgs_for_darwin",
+            ["--upgrade"],
+            ["brew bundle install --upgrade --file=packages/Brewfile.cloud"],
+        ),
     ],
-    ids=["install", "upgrade"],
+    ids=["install", "upgrade", "cloud-install", "cloud-upgrade"],
 )
-def test_install_pkgs_for_darwin_upgrades_only_with_flag(home, args, expected):
-    result = run_shell("bash", DARWIN_PKGS_SCRIPT, home, str(INSTALL_SH), *args)
+def test_install_pkgs_for_darwin_upgrades_only_with_flag(home, step, args, expected):
+    result = run_shell("bash", DARWIN_PKGS_SCRIPT, home, str(INSTALL_SH), step, *args)
     assert result.stdout.splitlines() == expected, result.stderr
 
 
@@ -449,8 +476,8 @@ install_pkgs_for_ubuntu
 """
 
 
-def apt_packages() -> list[str]:
-    text = (ROOT / "packages/apt-packages.txt").read_text()
+def apt_packages(name: str = "apt-packages.txt") -> list[str]:
+    text = (ROOT / "packages" / name).read_text()
     return [word for line in text.splitlines() for word in line.split("#", 1)[0].split()]
 
 
@@ -479,6 +506,178 @@ def test_install_pkgs_for_ubuntu_upgrades_only_with_flag(home, args, token, expe
         "sudo apt-get update -y",
         f"{install} {' '.join(apt_packages())}",
         *expected_uv,
+    ], result.stderr
+
+
+UBUNTU_CLOUD_PKGS_SCRIPT = """
+source "$1"
+cd "$(dirname "$1")"
+shift
+apt_suite() { echo S; }
+add_apt_repo() { echo "repo $1 $2 $3 | $4"; }
+sudo() { echo "sudo $*"; }
+parse_args "$@"
+install_cloud_pkgs_for_ubuntu
+"""
+
+
+@pytest.mark.parametrize("args", [[], ["--upgrade"]], ids=["install", "upgrade"])
+def test_install_cloud_pkgs_for_ubuntu(home, args):
+    result = run_shell("bash", UBUNTU_CLOUD_PKGS_SCRIPT, home, str(INSTALL_SH), *args)
+
+    packages = apt_packages("apt-cloud-packages.txt")
+    # install_aws_cli_for_ubuntu runs right after and unzips the AWS installer
+    assert "unzip" in packages
+    flags = "-y" if args else "-y --no-upgrade"
+    azure = "https://packages.microsoft.com/repos/azure-cli"
+    hashicorp = "https://apt.releases.hashicorp.com"
+    assert result.stdout.splitlines() == [
+        "Adding the Azure CLI, Google Cloud CLI and HashiCorp apt repos...",
+        f"repo azure-cli microsoft.asc https://packages.microsoft.com/keys/microsoft.asc"
+        f" | {azure} S main",
+        "repo google-cloud-sdk cloud.google.asc https://packages.cloud.google.com/apt/doc/apt-key.gpg"
+        " | https://packages.cloud.google.com/apt cloud-sdk main",
+        f"repo hashicorp hashicorp.asc {hashicorp}/gpg | {hashicorp} S main",
+        "sudo apt-get update -y",
+        f"sudo env DEBIAN_FRONTEND=noninteractive apt-get install {flags} {' '.join(packages)}",
+    ], result.stderr
+
+
+# The source line goes through `sudo tee > /dev/null`, so the stubs report on stderr
+ADD_APT_REPO_SCRIPT = """
+source "$1"
+WORK_DIR=/nonexistent
+mktemp() { echo /tmp/key; }
+curl() { echo "curl $*" >&2; }
+dpkg() { echo arm64; }
+sudo() { echo "sudo $*" >&2; [[ "$1" != tee ]] || cat >&2; }
+add_apt_repo app-env-installer-test app-env-installer-test.asc https://example.com/key \\
+    "https://example.com/apt stable main"
+"""
+
+
+def test_add_apt_repo_installs_key_then_writes_source(home):
+    keyring = "/etc/apt/keyrings/app-env-installer-test.asc"
+    result = run_shell("bash", ADD_APT_REPO_SCRIPT, home, str(INSTALL_SH))
+    assert result.returncode == 0
+    assert result.stderr.splitlines() == [
+        "sudo mkdir -p -m 755 /etc/apt/keyrings",
+        "curl --retry 3 --connect-timeout 10 -fsSL -o /tmp/key https://example.com/key",
+        f"sudo install -m 0644 /tmp/key {keyring}",
+        "sudo tee /etc/apt/sources.list.d/app-env-installer-test.list",
+        f"deb [arch=arm64 signed-by={keyring}] https://example.com/apt stable main",
+    ]
+
+
+# curl succeeds only for the Release file of the repo passed as $2
+APT_SUITE_SCRIPT = """
+source "$1"
+VERSION_CODENAME=resolute
+published="$2"
+curl() { [[ "${*: -1}" == "${published}/dists/resolute/Release" ]]; }
+apt_suite "$3"
+"""
+
+
+@pytest.mark.parametrize(
+    ("published", "suite", "message"),
+    [
+        ("https://repo.example.com", "resolute", ""),
+        ("https://other.example.com", "noble", "No resolute suite at https://repo.example.com yet"),
+    ],
+    ids=["published", "fallback"],
+)
+def test_apt_suite_falls_back_until_codename_is_published(home, published, suite, message):
+    result = run_shell(
+        "bash", APT_SUITE_SCRIPT, home, str(INSTALL_SH), published, "https://repo.example.com"
+    )
+    assert (result.returncode, result.stdout) == (0, f"{suite}\n")
+    assert message in result.stderr
+    assert bool(result.stderr) is bool(message)
+
+
+AWS_CLI_SCRIPT = """
+source "$1"
+RELEASE_BIN_DIR="$2"
+shift 2
+WORK_DIR=/nonexistent
+ubuntu_arch() { echo aarch64; }
+mktemp() { echo "${WORK_DIR}"; }
+curl() { echo "curl ${*: -1}"; }
+unzip() { echo "unzip $*"; }
+sudo() { echo "sudo $*"; }
+parse_args "$@"
+install_aws_cli_for_ubuntu
+"""
+
+
+@pytest.mark.parametrize(
+    ("installed", "args", "installs"),
+    [(True, [], False), (False, [], True), (True, ["--upgrade"], True)],
+    ids=["keep", "missing", "upgrade"],
+)
+def test_install_aws_cli_for_ubuntu(tmp_path, home, installed, args, installs):
+    release_bin = tmp_path / "release-bin"
+    release_bin.mkdir()
+    if installed:
+        (release_bin / "aws").write_text("")
+        (release_bin / "aws").chmod(0o755)
+    result = run_shell("bash", AWS_CLI_SCRIPT, home, str(INSTALL_SH), str(release_bin), *args)
+    expected = (
+        [
+            "Installing the latest AWS CLI v2 to /usr/local/aws-cli...",
+            "curl https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip",
+            "unzip -q /nonexistent/awscliv2.zip -d /nonexistent",
+            f"sudo /nonexistent/aws/install --bin-dir {release_bin}"
+            " --install-dir /usr/local/aws-cli --update",
+        ]
+        if installs
+        else [f"AWS CLI {KEEP}"]
+    )
+    assert result.stdout.splitlines() == expected, result.stderr
+
+
+# Prints the step functions in order, plus any that install.sh does not define
+PLAN_STEPS_SCRIPT = """
+source "$1"
+DETECTED_OS="$2"
+shift 2
+parse_args "$@"
+plan_steps
+for step in "${STEPS[@]%%|*}"; do
+    declare -F "${step}" > /dev/null || echo "undefined ${step}"
+    echo "${step}"
+done
+"""
+UBUNTU_STEPS = [
+    "install_pkgs_for_ubuntu",
+    "link_debian_renamed_tools",
+    "install_go_for_ubuntu",
+    "install_release_tools_for_ubuntu",
+    "install_neovim_for_ubuntu",
+]
+
+
+@pytest.mark.parametrize(
+    ("os_name", "args", "os_steps"),
+    [
+        ("Darwin", [], ["install_pkgs_for_darwin"]),
+        ("Darwin", ["--cloud"], ["install_pkgs_for_darwin", "install_cloud_pkgs_for_darwin"]),
+        ("Linux", ["--upgrade"], UBUNTU_STEPS),
+        (
+            "Linux",
+            ["--cloud"],
+            [*UBUNTU_STEPS, "install_cloud_pkgs_for_ubuntu", "install_aws_cli_for_ubuntu"],
+        ),
+    ],
+    ids=["darwin", "darwin-cloud", "linux", "linux-cloud"],
+)
+def test_plan_steps_adds_cloud_steps_only_with_flag(home, os_name, args, os_steps):
+    result = run_shell("bash", PLAN_STEPS_SCRIPT, home, str(INSTALL_SH), os_name, *args)
+    assert result.stdout.splitlines() == [
+        *os_steps,
+        "setup_python",
+        "change_default_shell_to_zsh",
     ], result.stderr
 
 

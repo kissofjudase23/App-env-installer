@@ -9,8 +9,8 @@ Run `make` (or `make help`) to list all targets with descriptions. On Windows, `
 | Target              | Description                                                                                                  |
 | ------------------- | ------------------------------------------------------------------------------------------------------------ |
 | `make help`         | Default target. Lists all targets and their descriptions.                                                    |
-| `make install`      | Full bootstrap via `install.sh` (Windows: `install.ps1`): OS packages, Python (from `.python-version`), `install.py -a -y`, `chsh` to zsh. Uses `sudo` and modifies `$HOME`. |
-| `make upgrade`      | Like `install`, plus `--upgrade` (Windows: `-Upgrade`): also upgrades what is already installed ([details](configuration.md#updating)). |
+| `make install`      | Full bootstrap via `install.sh` (Windows: `install.ps1`): OS packages, Python (from `.python-version`), `install.py -a -y`, `chsh` to zsh. Uses `sudo` and modifies `$HOME`. `CLOUD=1` adds the [cloud CLIs](configuration.md#optional-cloud-clis) (`--cloud`; Windows: `-Cloud`). |
+| `make upgrade`      | Like `install`, plus `--upgrade` (Windows: `-Upgrade`): also upgrades what is already installed ([details](configuration.md#updating)). `CLOUD=1` includes the cloud CLIs. |
 | `make sync`         | Creates/updates `.venv` with the Python deps pinned in `uv.lock` (`uv sync`).                                |
 | `make lint`         | `ruff check` + `ruff format --check`; reports issues without modifying files (same as CI).                   |
 | `make format`       | `ruff check --fix` + `ruff format`; fixes lint issues and reformats Python code in place.                    |
@@ -41,9 +41,9 @@ Python deps and tool config live in [pyproject.toml](../pyproject.toml); `uv.loc
 | Workflow | Runs on | Triggers | What it does |
 | --- | --- | --- | --- |
 | [ci.yml](../.github/workflows/ci.yml) | Ubuntu, macOS, Windows | every push to `master` and PR | ruff, pytest and an `install.py` dry run; shellcheck, shfmt and actionlint on Ubuntu; PSScriptAnalyzer on Windows |
-| [install-ubuntu.yml](../.github/workflows/install-ubuntu.yml) | Ubuntu 24.04 and 26.04 containers, on x64 and arm64 runners | weekly, pushes / PRs touching the install path, manual | real `install.sh`, then `install.sh --upgrade`, then checks tools, the login shell, silent dotfiles and an unchanged repo, and runs `make check` |
-| [install-macos.yml](../.github/workflows/install-macos.yml) | macOS runner | weekly, pushes / PRs touching the install path, manual | real `install.sh` (Homebrew + Brewfile), then `--upgrade`, then checks tools, the login shell, silent dotfiles and an unchanged repo (no `make check`) |
-| [install-windows.yml](../.github/workflows/install-windows.yml) | Windows runner | weekly, pushes / PRs touching the install path, manual | real `install.ps1` from Windows PowerShell 5.1, then `-Upgrade`, then tool, stub and Neovim plugin checks and `make check` |
+| [install-ubuntu.yml](../.github/workflows/install-ubuntu.yml) | Ubuntu 24.04 and 26.04 containers, on x64 and arm64 runners | weekly, pushes / PRs touching the install path, manual | real `install.sh --cloud`, then `install.sh --upgrade --cloud`, then checks tools, the login shell, silent dotfiles and an unchanged repo, and runs `make check` |
+| [install-macos.yml](../.github/workflows/install-macos.yml) | macOS runner | weekly, pushes / PRs touching the install path, manual | real `install.sh --cloud` (Homebrew + Brewfile + Brewfile.cloud), then `--upgrade --cloud`, then checks tools, the login shell, silent dotfiles and an unchanged repo (no `make check`) |
+| [install-windows.yml](../.github/workflows/install-windows.yml) | Windows runner | weekly, pushes / PRs touching the install path, manual | real `install.ps1 -Cloud` from Windows PowerShell 5.1, then `-Upgrade -Cloud`, then tool, stub and Neovim plugin checks and `make check` |
 
 Each install workflow lists the files that affect installation once, under `push.paths`, and reuses them for `pull_request` through a YAML anchor. Run one by hand from Actions → *workflow name* → Run workflow.
 

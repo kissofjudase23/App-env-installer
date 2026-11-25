@@ -123,10 +123,49 @@ def test_profile_uses_nvim_as_editor(tmp_path, home):
     assert result.stdout.splitlines() == ["nvim"] * 5 + ["True"], result.stderr
 
 
+# Completers report what they received, so the test sees the COMP_LINE / COMP_POINT protocol
+CLOUD_FAKES = {
+    "nt": {
+        "aws_completer.cmd": "@echo [%COMP_POINT%:%COMP_LINE%]\n",
+        "terraform.cmd": "@echo [%COMP_POINT%:%COMP_LINE%]\n",
+        "az.cmd": '@echo account>"%_ARGCOMPLETE_STDOUT_FILENAME%"\n',
+    },
+    "posix": {
+        "aws_completer": '#!/bin/sh\necho "[$COMP_POINT:$COMP_LINE]"\n',
+        "terraform": '#!/bin/sh\necho "[$COMP_POINT:$COMP_LINE]"\n',
+        "az": '#!/bin/sh\necho account > "$_ARGCOMPLETE_STDOUT_FILENAME"\n',
+    },
+}
+
+
+def test_profile_completes_cloud_clis(tmp_path, home):
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    for name, text in CLOUD_FAKES["nt" if os.name == "nt" else "posix"].items():
+        (bin_dir / name).write_text(text)
+        (bin_dir / name).chmod(0o755)
+    pwsh_dir = str(Path(shutil.which("pwsh") or "pwsh").parent)
+    script = (
+        f". '{PROFILE}'; "
+        "(TabExpansion2 'aws s3 ' 7).CompletionMatches.CompletionText; "
+        "(TabExpansion2 'terraform ' 10).CompletionMatches.CompletionText; "
+        "(TabExpansion2 'az ' 3).CompletionMatches.CompletionText; "
+        "[bool](Get-ChildItem Env:COMP_LINE, Env:COMP_POINT, Env:_ARGCOMPLETE -ErrorAction Ignore)"
+    )
+    result = run_pwsh(script, home, path=os.pathsep.join([str(bin_dir), pwsh_dir]))
+    assert result.stdout.splitlines() == [
+        "[7:aws s3 ]",
+        "[10:terraform ]",
+        "account",
+        "False",
+    ], result.stderr
+
+
 def test_profile_removes_its_helpers(home):
     script = (
         f". '{PROFILE}'; [bool](Get-Command Test-Command, Add-PathEntry -ErrorAction Ignore); "
-        "[bool](Get-Variable shellLocal, localBin, goBin, openSslBin -ErrorAction Ignore)"
+        "[bool](Get-Variable shellLocal, localBin, goBin, openSslBin, completer, completerExe "
+        "-ErrorAction Ignore)"
     )
     result = run_pwsh(script, home)
     assert result.stdout.splitlines() == ["False", "False"], result.stderr
@@ -166,6 +205,56 @@ def test_install_ps1_skips_upgrading_pwsh_and_copilot(home, flag, expected):
     counts = [str(total)] + [str(total - 2)] * (len(expected) - 1)
     assert result.stdout.splitlines() == [
         f"{line} {count}" for line, count in zip(expected, counts, strict=True)
+    ], result.stderr
+
+
+def test_install_ps1_imports_cloud_packages_from_their_own_file(home):
+    # Nothing in the cloud list is skipped on upgrade
+    packages = INSTALL_PS1.parent / "packages" / "winget-cloud-packages.json"
+    total = packages.read_text().count("PackageIdentifier")
+    script = WINGET_SCRIPT.format(install=INSTALL_PS1, flag="-File $CloudPackagesFile -Upgrade")
+    result = run_pwsh(script, home)
+    assert result.stdout.splitlines() == [
+        f"True False False {total}",
+        f"False False False {total}",
+    ], result.stderr
+
+
+# Actions read $Upgrade from the caller's scope (Main), like Invoke-Step runs them
+INSTALL_STEP_SCRIPT = """
+. '{install}'
+function Install-WingetPackage([string] $File = $PackagesFile, [switch] $Upgrade) {{
+    Write-Output "import $(Split-Path $File -Leaf) $Upgrade"
+}}
+$Upgrade = {upgrade}
+$steps = Get-InstallStep {flags}
+$steps.Title
+foreach ($step in $steps | Where-Object Title -Like '*winget*') {{ & $step.Action }}
+"""
+
+
+@pytest.mark.parametrize(
+    ("flags", "upgrade", "cloud"),
+    [("", False, False), ("-Cloud", False, True), ("-Upgrade -Cloud", True, True)],
+    ids=["install", "cloud", "upgrade-cloud"],
+)
+def test_install_ps1_adds_cloud_step_only_with_flag(home, flags, upgrade, cloud):
+    script = INSTALL_STEP_SCRIPT.format(
+        install=INSTALL_PS1, flags=flags, upgrade="$true" if upgrade else "$false"
+    )
+    result = run_pwsh(script, home)
+    verb = "Install and upgrade" if upgrade else "Install missing"
+    titles = [f"{verb} winget packages (packages\\winget-packages.json)"]
+    imports = [f"import winget-packages.json {upgrade}"]
+    if cloud:
+        titles.append(f"{verb} cloud CLIs (packages\\winget-cloud-packages.json)")
+        imports.append(f"import winget-cloud-packages.json {upgrade}")
+    assert result.stdout.splitlines() == [
+        *titles,
+        "Reload PATH from the registry",
+        "Install PowerShell modules (PSScriptAnalyzer, PSFzf)",
+        "Set up Python, then run install.py (dotfiles, fonts, git repos, Go tools)",
+        *imports,
     ], result.stderr
 
 

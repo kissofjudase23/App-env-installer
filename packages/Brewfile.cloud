@@ -1,0 +1,9 @@
+# Optional cloud CLIs, installed only by `install.sh --cloud` (make install CLOUD=1)
+# terraform left homebrew/core over its license; HashiCorp's tap ships the official binaries
+tap "hashicorp/tap"
+
+brew "awscli"
+brew "hashicorp/tap/terraform"
+
+cask "azure-cli"
+cask "gcloud-cli"

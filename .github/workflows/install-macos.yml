@@ -11,6 +11,7 @@ on:
       - install.sh
       - install.py
       - packages/Brewfile
+      - packages/Brewfile.cloud
       - config.yaml
       - .python-version
       - pyproject.toml
@@ -44,18 +45,19 @@ jobs:
         with:
           persist-credentials: false
 
+      # --cloud also covers the optional cloud CLIs; the default path is a subset of it
       - name: Install
-        run: bash install.sh
+        run: bash install.sh --cloud
 
       - name: Re-run with --upgrade
-        run: bash install.sh --upgrade
+        run: bash install.sh --upgrade --cloud
 
       - name: Verify
         run: |
           source install.sh
           load_brew_env
           [[ "$(login_shell)" == "$(command -v zsh)" ]]
-          zsh -i -c 'for tool in bat delta eza fd fzf gh go nvim starship uv zoxide; do
+          zsh -i -c 'for tool in aws az bat delta eza fd fzf gcloud gh go nvim starship terraform uv zoxide; do
             command -v "${tool}" > /dev/null || { echo "${tool} not on PATH" >&2; exit 1; }
           done'
           # common.sh must stay silent for scp / ssh host cmd

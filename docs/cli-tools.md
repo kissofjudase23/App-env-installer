@@ -49,7 +49,7 @@ so nothing breaks on a machine that lacks one.
 | `grep`, `egrep`, `fgrep` | `--color=auto` (Linux) |
 | `ssh` | Runs with `TERM=xterm-256color`, because remote hosts may lack the terminfo entry for tmux or your local terminal |
 | `TERM` | Upgraded to `<term>-256color` when that terminfo entry exists |
-| `aws` | Tab completion in bash when `aws_completer` is installed |
+| `aws`, `az`, `gcloud`, `terraform` | Tab completion when installed ([Cloud CLIs](#cloud-clis)) |
 | Prompt | starship, configured in [starship.toml](../assets/starship/starship.toml), for bash and zsh |
 
 On Windows, [profile.ps1](../assets/shell/profile.ps1) sets up the same integrations for
@@ -59,7 +59,7 @@ PowerShell 7, with these differences:
   replace the built-in `ls` and `cat` aliases, so use `Get-ChildItem` / `Get-Content` for the originals.
 - fzf `Ctrl-T` / `Ctrl-R` come from the [PSFzf](https://github.com/kelleyma49/PSFzf) module
   (installed by `install.ps1`); `Alt-C` and `MANPAGER` are not set up.
-- The `tree`, `grep` and `ssh` aliases, the `TERM` upgrade and `aws` completion are not set up.
+- The `tree`, `grep` and `ssh` aliases, the `TERM` upgrade and `gcloud` completion are not set up.
 - `~/.shell_local.ps1` replaces `~/.shell_local` for machine-specific settings.
 
 ## eza
@@ -277,6 +277,29 @@ gh run view --log-failed     # logs of the failed steps only
 
 Scripting: `gh api repos/{owner}/{repo}/pulls --jq '.[].title'` calls the REST API with your
 auth, and `--jq` filters the result the same way jq does.
+
+## Cloud CLIs
+
+`aws`, `az`, `gcloud` and `terraform` are installed only with `install.sh --cloud` / `install.ps1 -Cloud`
+([configuration.md](configuration.md#optional-cloud-clis)). The dotfiles set up completion for
+whichever of them are on `PATH`:
+
+| Tool | bash | zsh (oh-my-zsh plugin) | PowerShell |
+|---|---|---|---|
+| `aws` | `aws_completer` | `aws`; also `asp <profile>` to switch `AWS_PROFILE` | `aws_completer` |
+| `az` | the completion file its package installs | `azure` | argcomplete, as in Azure's docs |
+| `gcloud` | `completion.bash.inc` from the SDK directory | `gcloud` | — |
+| `terraform` | `terraform` itself (`complete -C`) | `terraform`; also aliases such as `tf`, `tfi`, `tfp`, `tfa` | `terraform` itself |
+
+The starship prompt shows the Terraform workspace in directories with `.tf` files. The AWS profile,
+gcloud project and Azure subscription stay out of the prompt.
+
+```bash
+aws configure sso && aws sso login    # or aws configure, for access keys
+az login && az account show
+gcloud auth login && gcloud config set project <project-id>
+terraform init && terraform plan
+```
 
 ## Other tools
 

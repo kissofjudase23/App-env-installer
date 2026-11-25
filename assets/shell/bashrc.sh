@@ -32,6 +32,22 @@ function common_bash_setting() {
         complete -C "$(command -v aws_completer)" aws
     fi
 
+    if command -v terraform > /dev/null 2>&1; then
+        complete -C "$(command -v terraform)" terraform
+    fi
+
+    # gcloud ships its completion inside its SDK directory, not as a bash-completion file
+    if command -v gcloud > /dev/null 2>&1; then
+        local sdk
+        for sdk in "${HOMEBREW_PREFIX:-/nonexistent}/share/google-cloud-sdk" \
+            /usr/share/google-cloud-sdk /usr/lib/google-cloud-sdk; do
+            if [ -r "${sdk}/completion.bash.inc" ]; then
+                source "${sdk}/completion.bash.inc"
+                break
+            fi
+        done
+    fi
+
     if command -v zoxide > /dev/null 2>&1; then
         eval "$(zoxide init bash)"
     fi

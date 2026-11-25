@@ -46,6 +46,8 @@ Resolve-DnsName example.com                # dig example.com
 Resolve-DnsName example.com -Type MX -Server 1.1.1.1
 ```
 
+Optional: `install.ps1 -Cloud` (or `make install CLOUD=1`) also installs `aws`, `az`, `gcloud` and `terraform` from [packages/winget-cloud-packages.json](../packages/winget-cloud-packages.json) ([details](configuration.md#optional-cloud-clis)). `profile.ps1` sets up Tab completion for `aws`, `az` and `terraform`.
+
 To add a package, add its ID (check with `winget show --id <id> --exact`) to winget-packages.json and re-run `install.ps1`.
 
 ## Shell
