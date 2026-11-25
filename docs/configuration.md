@@ -64,6 +64,28 @@ uv run install.py -a --upgrade    # also reinstall Go tools and update Nerd Font
 
 Run these from inside the repo, where `uv` finds the project and its dependencies; `install.py` itself resolves every path from its own location, so the working directory does not change what it links. Each `go_tools` entry needs a version (`@latest` or `@v1.2.3`), because `go install` outside a Go module requires one. Go tools and fonts that are already installed are skipped unless you pass `--upgrade` ([details](#updating)); it does not change how dotfiles are linked or repos cloned, so without `-f`, `-t` or `-a` it prints a warning. `bash install.sh --upgrade` and `install.ps1 -Upgrade` pass it through.
 
+## Optional cloud CLIs
+
+`aws`, `az`, `gcloud` and `terraform` take about 1–1.5 GB together, so the installers add them only on request:
+
+```bash
+bash install.sh --cloud              # or: make install CLOUD=1
+bash install.sh --upgrade --cloud    # or: make upgrade CLOUD=1
+```
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\install.ps1 -Cloud             # or: make install CLOUD=1
+powershell -ExecutionPolicy Bypass -File .\install.ps1 -Upgrade -Cloud    # or: make upgrade CLOUD=1
+```
+
+| OS | Where they come from |
+| --- | --- |
+| macOS | [packages/Brewfile.cloud](../packages/Brewfile.cloud); `terraform` from HashiCorp's `hashicorp/tap`, since homebrew/core no longer ships it |
+| Ubuntu | [packages/apt-cloud-packages.txt](../packages/apt-cloud-packages.txt), from the Microsoft (`az`), Google (`gcloud`) and HashiCorp (`terraform`) apt repos; while a vendor has not published the running Ubuntu release yet, `install.sh` uses its `noble` (24.04) suite. `aws` comes from AWS's official installer, into `/usr/local/aws-cli` (linked as `/usr/local/bin/aws`) |
+| Windows | [packages/winget-cloud-packages.json](../packages/winget-cloud-packages.json) |
+
+The flag is not remembered: a later `--upgrade` (`-Upgrade`) without `--cloud` (`-Cloud`) leaves the cloud CLIs as they are. Tab completion and the starship Terraform segment work whenever the tools are on `PATH`, however they were installed ([cli-tools.md](cli-tools.md#cloud-clis)).
+
 ## Updating
 
 Dotfiles are symlinks (stubs on Windows) into this repo, so after a `git pull` new shells pick up changed dotfiles right away. Re-run the installer (`bash install.sh`, or `install.ps1` on Windows) when the pull changes `config.yaml` or `packages/`; everything already in place is skipped.
@@ -78,6 +100,7 @@ A plain re-run only installs what is missing; `--upgrade` (`-Upgrade` on Windows
 | uv (Ubuntu) | Installs it if missing | `uv self update` (only the copy the uv installer put in `~/.local/bin`) |
 | fzf, eza, delta, starship, Neovim (Ubuntu) | Installs eza, delta and starship when missing from `/usr/local/bin` (an older copy elsewhere, e.g. from apt, does not count), and fzf and Neovim when the copy on `PATH` is missing or older than 0.48 / 0.11 | Reinstalls the latest GitHub releases |
 | Go tools | Installs those missing from the Go bin directory (`go env GOBIN`, or `bin` under the first `GOPATH` entry; default `~/go/bin`) | Reinstalls all at the version in `config.yaml` (e.g. `@latest`) |
+| Cloud CLIs, only with `--cloud` (`-Cloud`) ([details](#optional-cloud-clis)) | Installs missing ones; on Ubuntu, the AWS CLI when `/usr/local/bin/aws` is missing | Also upgrades them; on Ubuntu, reinstalls the latest AWS CLI |
 | Nerd Fonts (Linux, Windows) | Installs missing ones | Replaces a font when the latest release differs from the one recorded in its `.release` file |
 | Dotfiles | Links missing ones, replaces stale links and stubs | Same |
 

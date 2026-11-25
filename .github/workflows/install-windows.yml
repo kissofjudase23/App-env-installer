@@ -11,6 +11,7 @@ on:
       - install.ps1
       - install.py
       - packages/winget-packages.json
+      - packages/winget-cloud-packages.json
       - config.yaml
       - Makefile
       - PSScriptAnalyzerSettings.psd1
@@ -50,19 +51,20 @@ jobs:
         with:
           persist-credentials: false
 
-      # Windows PowerShell 5.1, as on a fresh machine without pwsh
+      # Windows PowerShell 5.1, as on a fresh machine without pwsh; -Cloud also covers the
+      # optional cloud CLIs, and the default path is a subset of it
       - name: Install
-        run: powershell -NoProfile -ExecutionPolicy Bypass -File install.ps1
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File install.ps1 -Cloud
 
       - name: Re-run with -Upgrade
-        run: powershell -NoProfile -ExecutionPolicy Bypass -File install.ps1 -Upgrade
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File install.ps1 -Upgrade -Cloud
 
       - name: Verify
         run: |
           $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' +
             [Environment]::GetEnvironmentVariable('Path', 'User') + ";$env:Path"
-          foreach ($tool in 'bat', 'delta', 'eza', 'fd', 'fzf', 'gh', 'go', 'jq', 'make', 'nvim', 'rg',
-              'shellcheck', 'shfmt', 'starship', 'uv', 'zoxide') {
+          foreach ($tool in 'aws', 'az', 'bat', 'delta', 'eza', 'fd', 'fzf', 'gcloud', 'gh', 'go', 'jq',
+              'make', 'nvim', 'rg', 'shellcheck', 'shfmt', 'starship', 'terraform', 'uv', 'zoxide') {
             if (-not (Get-Command $tool -ErrorAction SilentlyContinue)) { throw "$tool not on PATH" }
           }
           # The ~/.gitconfig stub must pull in the repo gitconfig

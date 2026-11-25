@@ -11,6 +11,7 @@ on:
       - install.sh
       - install.py
       - packages/apt-packages.txt
+      - packages/apt-cloud-packages.txt
       - config.yaml
       - Makefile
       - .python-version
@@ -61,17 +62,18 @@ jobs:
         with:
           persist-credentials: false
 
+      # --cloud also covers the optional cloud CLIs; the default path is a subset of it
       - name: Install
-        run: bash install.sh
+        run: bash install.sh --cloud
 
       - name: Re-run with --upgrade
-        run: bash install.sh --upgrade
+        run: bash install.sh --upgrade --cloud
 
       - name: Verify
         run: |
           source install.sh
           [[ "$(getent passwd root | cut -d: -f7)" == "$(command -v zsh)" ]]
-          zsh -i -c 'for tool in bat curl delta dig eza fd fzf gh go nc nvim openssl starship uv zoxide; do
+          zsh -i -c 'for tool in aws az bat curl delta dig eza fd fzf gcloud gh go nc nvim openssl starship terraform uv zoxide; do
             command -v "${tool}" > /dev/null || { echo "${tool} not on PATH" >&2; exit 1; }
           done'
           nvim_version="$(zsh -i -c 'nvim --version | head -n1')"

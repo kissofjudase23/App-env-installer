@@ -2,12 +2,12 @@
 
 # Upstream: https://github.com/carlosplanchon/starship-p10k-rainbow (MIT), commit f61ab74.
 # Local changes: os_fg 39 (blue) -> 7 (silver, follows the terminal theme); full directory path
-# (truncation_length 0, truncate_to_repo false); round head after $git_status in `format`.
-# Keep them when re-copying from upstream.
+# (truncation_length 0, truncate_to_repo false); round head after $git_status in `format`;
+# $terraform segment. Keep them when re-copying from upstream.
 # ───────────────────────────────────────────────────────────────
 #  Powerlevel10k "rainbow"-style: powerline, 1 line, compact.
 #  Left: OS · directory · Git
-#  Right: exit status · duration · jobs · direnv · languages · user@host (SSH/root)
+#  Right: exit status · duration · jobs · direnv · languages · terraform · user@host (SSH/root)
 #  Round head, flat tail.
 # ───────────────────────────────────────────────────────────────
 
@@ -36,6 +36,7 @@ $bun\
 $python\
 $rust\
 $golang\
+$terraform\
 $username\
 $hostname"""
 
@@ -241,6 +242,12 @@ style = 'red'
 format = '[$symbol$version ]($style)'
 symbol = ' '
 style = 'cyan'
+
+[terraform]
+# Workspace only, in directories with .tf files; $version would run `terraform version`.
+format = '[$symbol$workspace ]($style)'
+symbol = '󱁢 '
+style = 'purple'
 
 # ── user@host, only when it matters ────────────────────────────
 # Hidden locally; user@host appears over SSH, red user when root.

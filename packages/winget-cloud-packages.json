@@ -1,0 +1,19 @@
+{
+  "$schema": "https://aka.ms/winget-packages.schema.2.0.json",
+  "Sources": [
+    {
+      "SourceDetails": {
+        "Name": "winget",
+        "Identifier": "Microsoft.Winget.Source_8wekyb3d8bbwe",
+        "Argument": "https://cdn.winget.microsoft.com/cache",
+        "Type": "Microsoft.PreIndexed.Package"
+      },
+      "Packages": [
+        { "PackageIdentifier": "Amazon.AWSCLI" },
+        { "PackageIdentifier": "Microsoft.AzureCLI" },
+        { "PackageIdentifier": "Google.CloudSDK" },
+        { "PackageIdentifier": "Hashicorp.Terraform" }
+      ]
+    }
+  ]
+}

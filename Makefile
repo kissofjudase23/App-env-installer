@@ -6,6 +6,8 @@
 
 SHELL_SCRIPTS := install.sh assets/shell/common.sh assets/shell/bashrc.sh assets/shell/bash_profile.sh
 PS_SCRIPTS := install.ps1 assets/shell/profile.ps1
+# make install CLOUD=1 / make upgrade CLOUD=1 also install the cloud CLIs (aws, az, gcloud, terraform)
+CLOUD ?=
 PSLINT := $$r = foreach ($$f in "$(PS_SCRIPTS)".Split(" ")) { Invoke-ScriptAnalyzer -Settings PSScriptAnalyzerSettings.psd1 -Path $$f }; $$r; exit [int][bool]$$r
 
 # Windows has no sh/grep/awk by default: recipes run in PowerShell 7 there.
@@ -17,21 +19,21 @@ SHELL := pwsh.exe
 help: ##w Show available targets and their descriptions (default target)
 	@Select-String -Path $(firstword $(MAKEFILE_LIST)) -Pattern '^([a-zA-Z_-]+):.*##w? (.*)' | ForEach-Object { '  {0,-12} {1}' -f $$_.Matches[0].Groups[1].Value, $$_.Matches[0].Groups[2].Value }
 
-install: ##w Full bootstrap: winget packages, Python via uv (.python-version), install.py -a -y (modifies $HOME)
-	powershell -NoProfile -ExecutionPolicy Bypass -File install.ps1
+install: ##w Full bootstrap: winget packages, Python via uv (.python-version), install.py -a -y (modifies $HOME); CLOUD=1 adds the cloud CLIs
+	powershell -NoProfile -ExecutionPolicy Bypass -File install.ps1 $(if $(filter 1,$(CLOUD)),-Cloud)
 
 upgrade: ##w Like install, but also upgrade what is already installed (install.ps1 -Upgrade; see docs/configuration.md#updating)
-	powershell -NoProfile -ExecutionPolicy Bypass -File install.ps1 -Upgrade
+	powershell -NoProfile -ExecutionPolicy Bypass -File install.ps1 -Upgrade $(if $(filter 1,$(CLOUD)),-Cloud)
 else
 help: ##u Show available targets and their descriptions (default target)
 	@grep -E '^[a-zA-Z_-]+:.*##u? ' $(MAKEFILE_LIST) | \
 		awk 'BEGIN {FS = ":.*##u? "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
 
-install: ##u Full bootstrap: OS packages (brew/apt), Python via uv (.python-version), install.py -a -y, chsh to zsh (uses sudo, modifies $HOME)
-	bash install.sh
+install: ##u Full bootstrap: OS packages (brew/apt), Python via uv (.python-version), install.py -a -y, chsh to zsh (uses sudo, modifies $HOME); CLOUD=1 adds the cloud CLIs
+	bash install.sh $(if $(filter 1,$(CLOUD)),--cloud)
 
 upgrade: ##u Like install, but also upgrade what is already installed (bash install.sh --upgrade; see docs/configuration.md#updating)
-	bash install.sh --upgrade
+	bash install.sh --upgrade $(if $(filter 1,$(CLOUD)),--cloud)
 endif
 
 sync: ## Create/update .venv with Python deps pinned in uv.lock (uv sync)

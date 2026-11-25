@@ -11,6 +11,9 @@ function on_error() {
 trap 'on_error $? ${LINENO}' ERR
 
 UPGRADE=0
+CLOUD=0
+# "function|Title" steps plan_steps picks for main
+STEPS=()
 # "[i/N] Title" of the step run_steps is in, for on_error
 CURRENT_STEP=""
 
@@ -45,7 +48,7 @@ function run_steps() {
 
 function usage() {
     cat << 'USAGE'
-Usage: bash install.sh [--upgrade]
+Usage: bash install.sh [--upgrade] [--cloud]
 
 Bootstrap packages, Python, dotfiles and Go tools on macOS or Ubuntu.
 
@@ -53,6 +56,8 @@ Options:
   --upgrade   Also upgrade what is already installed (packages, release
               tools, Go tools, Nerd Fonts); without it, only what is
               missing gets installed. Details: docs/configuration.md#updating
+  --cloud     Also install the cloud CLIs aws, az, gcloud and terraform;
+              pass it together with --upgrade to upgrade them too
   -h, --help  Show this help and exit
 USAGE
 }
@@ -61,6 +66,7 @@ function parse_args() {
     while (($# > 0)); do
         case "$1" in
             --upgrade) UPGRADE=1 ;;
+            --cloud) CLOUD=1 ;;
             -h | --help)
                 usage
                 exit 0
@@ -145,18 +151,49 @@ function change_default_shell_to_zsh() {
     fi
 }
 
-function add_gh_apt_repo() {
-    # Ubuntu's own gh lags far behind; the official repo keeps it current through apt
-    local keyring="/etc/apt/keyrings/githubcli-archive-keyring.gpg" tmp
+# Write /etc/apt/sources.list.d/$1.list for repo "$4" (URL, suite, components), signed by the
+# key at URL $3, kept as /etc/apt/keyrings/$2 (.asc for armored keys, which apt reads as they are)
+function add_apt_repo() {
+    local name="$1" keyring="/etc/apt/keyrings/$2" key_url="$3" repo="$4" tmp
     if [ ! -f "${keyring}" ]; then
         sudo mkdir -p -m 755 /etc/apt/keyrings
         # download fully first; a failed curl must not leave a partial keyring behind
         tmp="$(mktemp "${WORK_DIR}/XXXXXX")"
-        curl "${CURL_RETRY[@]}" -fsSL -o "${tmp}" https://cli.github.com/packages/githubcli-archive-keyring.gpg
+        curl "${CURL_RETRY[@]}" -fsSL -o "${tmp}" "${key_url}"
         sudo install -m 0644 "${tmp}" "${keyring}"
     fi
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=${keyring}] https://cli.github.com/packages stable main" |
-        sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=${keyring}] ${repo}" |
+        sudo tee "/etc/apt/sources.list.d/${name}.list" > /dev/null
+}
+
+function add_gh_apt_repo() {
+    # Ubuntu's own gh lags far behind; the official repo keeps it current through apt
+    add_apt_repo github-cli githubcli-archive-keyring.gpg \
+        https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+        "https://cli.github.com/packages stable main"
+}
+
+# Suite to use from the apt repo at URL $1: this Ubuntu's codename, or APT_SUITE_FALLBACK while
+# the vendor has not published that codename yet (new releases lag behind)
+function apt_suite() {
+    if curl "${CURL_RETRY[@]}" -fsSIL -o /dev/null "$1/dists/${VERSION_CODENAME}/Release"; then
+        echo "${VERSION_CODENAME}"
+    else
+        echo "No ${VERSION_CODENAME} suite at $1 yet, using ${APT_SUITE_FALLBACK}" >&2
+        echo "${APT_SUITE_FALLBACK}"
+    fi
+}
+
+# apt-get install the packages listed in file $1 (# comments allowed)
+function apt_install() {
+    local -a pkgs flags=(-y)
+    read -r -d '' -a pkgs < <(sed -e 's/#.*//' "$1") || true
+    # Without --upgrade only install what is missing, like winget import --no-upgrade
+    if ((UPGRADE == 0)); then
+        flags+=(--no-upgrade)
+    fi
+    # sudo drops exported variables, so pass DEBIAN_FRONTEND through env
+    sudo env DEBIAN_FRONTEND=noninteractive apt-get install "${flags[@]}" "${pkgs[@]}"
 }
 
 function link_debian_renamed_tools() {
@@ -181,15 +218,7 @@ function install_pkgs_for_ubuntu() {
 
     add_gh_apt_repo
     sudo apt-get update -y
-
-    local -a pkgs flags=(-y)
-    read -r -d '' -a pkgs < <(sed -e 's/#.*//' packages/apt-packages.txt) || true
-    # Without --upgrade only install what is missing, like winget import --no-upgrade
-    if ((UPGRADE == 0)); then
-        flags+=(--no-upgrade)
-    fi
-    # sudo drops exported variables, so pass DEBIAN_FRONTEND through env
-    sudo env DEBIAN_FRONTEND=noninteractive apt-get install "${flags[@]}" "${pkgs[@]}"
+    apt_install packages/apt-packages.txt
 
     # Never let the uv installer edit rc files (they may be symlinks into this repo);
     # common.sh already puts ~/.local/bin on PATH
@@ -213,6 +242,9 @@ function install_pkgs_for_ubuntu() {
 }
 
 UBUNTU_MIN_VERSION="24.04"
+# Suite for vendor apt repos that have not published this Ubuntu's codename yet
+APT_SUITE_FALLBACK="noble"
+AWS_CLI_ROOT="/usr/local/aws-cli"
 GO_MIN_VERSION="1.21"
 GO_ROOT="/usr/local/go"
 FZF_MIN_VERSION="0.48"
@@ -367,6 +399,40 @@ function install_neovim_for_ubuntu() {
     sudo ln -sf "${NVIM_ROOT}/bin/nvim" "${RELEASE_BIN_DIR}/nvim"
 }
 
+function install_cloud_pkgs_for_ubuntu() {
+    echo "Adding the Azure CLI, Google Cloud CLI and HashiCorp apt repos..."
+    local azure="https://packages.microsoft.com/repos/azure-cli"
+    local hashicorp="https://apt.releases.hashicorp.com"
+    local azure_suite hashicorp_suite
+    azure_suite="$(apt_suite "${azure}")"
+    hashicorp_suite="$(apt_suite "${hashicorp}")"
+    add_apt_repo azure-cli microsoft.asc https://packages.microsoft.com/keys/microsoft.asc \
+        "${azure} ${azure_suite} main"
+    add_apt_repo google-cloud-sdk cloud.google.asc https://packages.cloud.google.com/apt/doc/apt-key.gpg \
+        "https://packages.cloud.google.com/apt cloud-sdk main"
+    add_apt_repo hashicorp hashicorp.asc "${hashicorp}/gpg" "${hashicorp} ${hashicorp_suite} main"
+    sudo apt-get update -y
+    apt_install packages/apt-cloud-packages.txt
+}
+
+function install_aws_cli_for_ubuntu() {
+    # No apt repo; AWS's installer keeps the CLI in AWS_CLI_ROOT and links it into RELEASE_BIN_DIR.
+    # AWS publishes a PGP signature but no checksum, so like the uv installer this relies on HTTPS.
+    if [[ -x "${RELEASE_BIN_DIR}/aws" ]] && keep_installed "AWS CLI"; then
+        return
+    fi
+
+    local arch tmp_dir
+    arch="$(ubuntu_arch rust)"
+    tmp_dir="$(mktemp -d "${WORK_DIR}/XXXXXX")"
+    echo "Installing the latest AWS CLI v2 to ${AWS_CLI_ROOT}..."
+    curl "${CURL_RETRY[@]}" -fsSL -o "${tmp_dir}/awscliv2.zip" \
+        "https://awscli.amazonaws.com/awscli-exe-linux-${arch}.zip"
+    unzip -q "${tmp_dir}/awscliv2.zip" -d "${tmp_dir}"
+    # --update replaces an existing install instead of failing on it
+    sudo "${tmp_dir}/aws/install" --bin-dir "${RELEASE_BIN_DIR}" --install-dir "${AWS_CLI_ROOT}" --update
+}
+
 function load_brew_env() {
     local brew_bin
     for brew_bin in /opt/homebrew/bin/brew /usr/local/bin/brew; do
@@ -386,13 +452,24 @@ function install_pkgs_for_darwin() {
         load_brew_env
     fi
 
-    # Without --upgrade only install what is missing, like winget import --no-upgrade;
-    # an explicit --upgrade also wins over HOMEBREW_BUNDLE_NO_UPGRADE
     if ((UPGRADE == 1)); then
         brew update
-        brew bundle install --upgrade --file=packages/Brewfile
+    fi
+    brew_bundle packages/Brewfile
+}
+
+function install_cloud_pkgs_for_darwin() {
+    load_brew_env
+    brew_bundle packages/Brewfile.cloud
+}
+
+# brew bundle Brewfile $1. Without --upgrade only install what is missing, like winget import
+# --no-upgrade; an explicit --upgrade also wins over HOMEBREW_BUNDLE_NO_UPGRADE
+function brew_bundle() {
+    if ((UPGRADE == 1)); then
+        brew bundle install --upgrade --file="$1"
     else
-        brew bundle install --no-upgrade --file=packages/Brewfile
+        brew bundle install --no-upgrade --file="$1"
     fi
 }
 
@@ -407,6 +484,41 @@ function setup_python() {
     fi
 }
 
+# Every step goes in STEPS, so the plan printed up front matches what runs
+function plan_steps() {
+    local missing="Install missing" latest="Install"
+    if ((UPGRADE == 1)); then
+        missing="Install and upgrade" latest="Install the latest"
+    fi
+    case "${DETECTED_OS}" in
+        Darwin)
+            STEPS=("install_pkgs_for_darwin|${missing} Homebrew packages (packages/Brewfile)")
+            if ((CLOUD == 1)); then
+                STEPS+=("install_cloud_pkgs_for_darwin|${missing} cloud CLIs (packages/Brewfile.cloud)")
+            fi
+            ;;
+        Linux)
+            STEPS=(
+                "install_pkgs_for_ubuntu|${missing} apt packages and uv"
+                "link_debian_renamed_tools|Link fdfind / batcat as fd / bat"
+                "install_go_for_ubuntu|Bootstrap Go"
+                "install_release_tools_for_ubuntu|${latest} fzf, eza, delta, starship (GitHub releases)"
+                "install_neovim_for_ubuntu|${latest} Neovim (GitHub release)"
+            )
+            if ((CLOUD == 1)); then
+                STEPS+=(
+                    "install_cloud_pkgs_for_ubuntu|${missing} az, gcloud, terraform (vendor apt repos)"
+                    "install_aws_cli_for_ubuntu|${latest} AWS CLI (official installer)"
+                )
+            fi
+            ;;
+    esac
+    STEPS+=(
+        "setup_python|Set up Python, then run install.py (dotfiles, fonts, git repos, Go tools)"
+        "change_default_shell_to_zsh|Make zsh the default shell"
+    )
+}
+
 function main() {
     parse_args "$@"
     cd "$(dirname "${BASH_SOURCE[0]}")"
@@ -414,32 +526,14 @@ function main() {
     trap 'rm -rf "${WORK_DIR}"' EXIT
 
     detect_os
+    plan_steps
 
-    # Every step goes in this list, so the plan printed up front matches what runs
-    local mode="install" missing="Install missing" latest="Install"
-    local -a steps
+    local mode="install"
     if ((UPGRADE == 1)); then
-        mode="upgrade" missing="Install and upgrade" latest="Install the latest"
+        mode="upgrade"
     fi
-    case "${DETECTED_OS}" in
-        Darwin) steps=("install_pkgs_for_darwin|${missing} Homebrew packages (packages/Brewfile)") ;;
-        Linux)
-            steps=(
-                "install_pkgs_for_ubuntu|${missing} apt packages and uv"
-                "link_debian_renamed_tools|Link fdfind / batcat as fd / bat"
-                "install_go_for_ubuntu|Bootstrap Go"
-                "install_release_tools_for_ubuntu|${latest} fzf, eza, delta, starship (GitHub releases)"
-                "install_neovim_for_ubuntu|${latest} Neovim (GitHub release)"
-            )
-            ;;
-    esac
-    steps+=(
-        "setup_python|Set up Python, then run install.py (dotfiles, fonts, git repos, Go tools)"
-        "change_default_shell_to_zsh|Make zsh the default shell"
-    )
-
     heading "==> App-env-installer: ${mode} on ${OS_LABEL}"
-    run_steps "${steps[@]}"
+    run_steps "${STEPS[@]}"
 
     echo
     heading "==> Done in $((SECONDS / 60))m$((SECONDS % 60))s (${mode}). Open a new terminal to load the shell config."

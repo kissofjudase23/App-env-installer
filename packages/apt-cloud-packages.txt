@@ -1,0 +1,6 @@
+# Installed only by `install.sh --cloud` on Ubuntu, from the vendors' apt repos that install.sh adds.
+# The AWS CLI has no apt repo: install.sh runs its official installer, which needs unzip.
+azure-cli
+google-cloud-cli
+terraform
+unzip

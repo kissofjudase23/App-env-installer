@@ -1,10 +1,12 @@
 # Bootstrap packages, Python, dotfiles and Go tools on Windows.
 # Runs on Windows PowerShell 5.1 (a fresh machine has no pwsh yet):
-#   powershell -ExecutionPolicy Bypass -File .\install.ps1 [-Upgrade]
+#   powershell -ExecutionPolicy Bypass -File .\install.ps1 [-Upgrade] [-Cloud]
 [CmdletBinding()]
 param(
     # Also upgrade installed packages, Go tools and Nerd Fonts
     [switch] $Upgrade,
+    # Also install the cloud CLIs (packages\winget-cloud-packages.json)
+    [switch] $Cloud,
     [switch] $Help
 )
 
@@ -12,16 +14,19 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 $PackagesFile = Join-Path $PSScriptRoot 'packages\winget-packages.json'
+$CloudPackagesFile = Join-Path $PSScriptRoot 'packages\winget-cloud-packages.json'
 
 function Show-Usage {
     @'
-Usage: powershell -ExecutionPolicy Bypass -File .\install.ps1 [-Upgrade]
+Usage: powershell -ExecutionPolicy Bypass -File .\install.ps1 [-Upgrade] [-Cloud]
 
 Bootstrap winget packages, Python, dotfiles and Go tools on Windows.
 
 Options:
   -Upgrade  Upgrade the packages in packages\winget-packages.json, the Go tools
             and the Nerd Fonts even when installed
+  -Cloud    Also install the cloud CLIs aws, az, gcloud and terraform
+            (packages\winget-cloud-packages.json); with -Upgrade, upgrade them too
   -Help     Show this help and exit
 '@
 }
@@ -77,10 +82,10 @@ function Assert-Windows {
 }
 
 function Install-WingetPackage {
-    param([switch] $Upgrade)
+    param([string] $File = $PackagesFile, [switch] $Upgrade)
     $common = @('--accept-package-agreements', '--accept-source-agreements', '--disable-interactivity')
     # Install what is missing; import exits non-zero if any package fails
-    Invoke-Native winget (@('import', '--import-file', $PackagesFile, '--no-upgrade') + $common)
+    Invoke-Native winget (@('import', '--import-file', $File, '--no-upgrade') + $common)
     if (-not $Upgrade) { return }
 
     # Copilot CLI updates its portable exe in place, so winget refuses to remove the "modified" package
@@ -90,11 +95,11 @@ function Install-WingetPackage {
         $skip += 'Microsoft.PowerShell'
         Write-Host 'Skip upgrading PowerShell 7 while pwsh is running; close it, then from cmd run: winget upgrade Microsoft.PowerShell'
     }
-    $config = Get-Content $PackagesFile -Raw | ConvertFrom-Json
+    $config = Get-Content $File -Raw | ConvertFrom-Json
     foreach ($source in $config.Sources) {
         $source.Packages = @($source.Packages | Where-Object { $skip -notcontains $_.PackageIdentifier })
     }
-    $upgradeFile = Join-Path ([IO.Path]::GetTempPath()) 'app-env-installer-winget.json'
+    $upgradeFile = Join-Path ([IO.Path]::GetTempPath()) "app-env-installer-$(Split-Path $File -Leaf)"
     # WriteAllText: UTF-8 without the BOM that 5.1's Set-Content -Encoding UTF8 adds
     [IO.File]::WriteAllText($upgradeFile, ($config | ConvertTo-Json -Depth 5))
     try {
@@ -130,23 +135,25 @@ function Install-Python {
     Invoke-Native uv $installArgs
 }
 
-function Main {
-    param([switch] $Upgrade, [switch] $Help)
-    if ($Help) {
-        Show-Usage
-        return
-    }
-    Assert-Windows
-    $timer = [Diagnostics.Stopwatch]::StartNew()
-    $mode = 'install'
-    $packages = 'Install missing winget packages (packages\winget-packages.json)'
-    if ($Upgrade) {
-        $mode = 'upgrade'
-        $packages = 'Install and upgrade winget packages (packages\winget-packages.json)'
-    }
-    # Every step goes in this list, so the plan printed up front matches what runs
+# Every step goes in this list, so the plan printed up front matches what runs.
+# Actions read $Upgrade from Main, whose scope Invoke-Step runs them in.
+function Get-InstallStep {
+    param([switch] $Upgrade, [switch] $Cloud)
+    $verb = 'Install missing'
+    if ($Upgrade) { $verb = 'Install and upgrade' }
     $steps = @(
-        @{ Title = $packages; Action = { Install-WingetPackage -Upgrade:$Upgrade } },
+        @{
+            Title = "$verb winget packages (packages\winget-packages.json)"
+            Action = { Install-WingetPackage -Upgrade:$Upgrade }
+        }
+    )
+    if ($Cloud) {
+        $steps += @{
+            Title = "$verb cloud CLIs (packages\winget-cloud-packages.json)"
+            Action = { Install-WingetPackage -File $CloudPackagesFile -Upgrade:$Upgrade }
+        }
+    }
+    $steps += @(
         @{ Title = 'Reload PATH from the registry'; Action = { Sync-SessionPath } },
         @{ Title = 'Install PowerShell modules (PSScriptAnalyzer, PSFzf)'; Action = { Install-PwshModule } },
         @{
@@ -154,6 +161,20 @@ function Main {
             Action = { Install-Python -Upgrade:$Upgrade }
         }
     )
+    $steps
+}
+
+function Main {
+    param([switch] $Upgrade, [switch] $Cloud, [switch] $Help)
+    if ($Help) {
+        Show-Usage
+        return
+    }
+    Assert-Windows
+    $timer = [Diagnostics.Stopwatch]::StartNew()
+    $mode = 'install'
+    if ($Upgrade) { $mode = 'upgrade' }
+    $steps = Get-InstallStep -Upgrade:$Upgrade -Cloud:$Cloud
     Write-Heading "==> App-env-installer: $mode on Windows"
     Push-Location $PSScriptRoot
     try {
@@ -176,5 +197,5 @@ function Main {
 
 # Dot-sourcing only defines the functions (tests/test_powershell.py)
 if ($MyInvocation.InvocationName -ne '.') {
-    Main -Upgrade:$Upgrade -Help:$Help
+    Main -Upgrade:$Upgrade -Cloud:$Cloud -Help:$Help
 }

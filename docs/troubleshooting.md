@@ -40,6 +40,10 @@ Most dotfiles in `$HOME` are symlinks into this repo, so an installer that appen
 
 The first launch downloads vim-plug from GitHub with `curl` and then runs `:PlugInstall`. Offline, or behind a proxy that is not configured yet ([Machine-specific settings](configuration.md#machine-specific-settings)), the download fails. Fix the network and restart the editor: the download is retried as long as `plug.vim` is missing (`~/.vim/autoload/plug.vim`; Neovim: `stdpath('data')/site/autoload/plug.vim`).
 
+## `apt-get update` fails with `Conflicting values set for option Signed-By`
+
+An apt repo that `install.sh --cloud` adds was set up by hand before, with another keyring: typically `/etc/apt/sources.list.d/azure-cli.sources` from Microsoft's instructions. Remove that file, keep the `.list` file `install.sh` wrote, and re-run. (`google-cloud-sdk.list` and `hashicorp.list` are overwritten, since `install.sh` uses the same names as the vendors' instructions.)
+
 ## Windows: `install.ps1 -Upgrade` fails while replacing a font
 
 A newer Nerd Fonts release is replaced in `%LOCALAPPDATA%\Microsoft\Windows\Fonts\NerdFonts`, and Windows keeps fonts open while an application uses them. Close Windows Terminal (run the upgrade from Windows PowerShell or `cmd`) and re-run it.

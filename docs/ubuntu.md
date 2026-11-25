@@ -33,6 +33,8 @@ See [packages/apt-packages.txt](../packages/apt-packages.txt), which includes `m
 
 Network tools: `curl`, `openssl`, `nc` (`netcat-openbsd`) and `dig` (`bind9-dnsutils`); usage in [cli-tools.md](cli-tools.md#network-tools).
 
+Optional: `bash install.sh --cloud` (or `make install CLOUD=1`) also installs `az`, `gcloud` and `terraform` from the vendors' apt repos and `aws` from AWS's installer ([details](configuration.md#optional-cloud-clis)).
+
 To add a package, edit apt-packages.txt and re-run `bash install.sh`, which only installs what is missing; `bash install.sh --upgrade` (or `make upgrade`) also upgrades what is already installed ([what each run updates](configuration.md#updating), including when a GitHub-release tool counts as installed).
 
 ## WSL2

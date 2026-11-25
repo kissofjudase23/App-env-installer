@@ -43,6 +43,8 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1
    - clones oh-my-zsh (macOS, Linux),
    - installs the Go tools with `go install` (tools already in `~/go/bin` are skipped).
 
+The `aws`, `az`, `gcloud` and `terraform` CLIs are opt-in: add `--cloud` (`-Cloud` on Windows) ([details](docs/configuration.md#optional-cloud-clis)).
+
 Both stages are idempotent and can be re-run safely: a re-run only installs what is missing, and `--upgrade` (`-Upgrade` on Windows) also upgrades what is already installed ([what each run updates](docs/configuration.md#updating)).
 
 ## Documentation
@@ -51,6 +53,6 @@ Both stages are idempotent and can be re-run safely: a re-run only installs what
 - [Shell, Go and Editor](docs/shell.md) – zsh/oh-my-zsh, starship, PowerShell profile, Go toolchains, Vim/Neovim
 - [CLI tools](docs/cli-tools.md) – eza, fd, bat, ripgrep, fzf, zoxide, delta, jq, gh, network tools
 - [Development](docs/development.md) – make targets, tests, CI
-- [Troubleshooting](docs/troubleshooting.md) – rate limits, missing icons, zsh without oh-my-zsh, a moved repo, unexpected `git status` changes, `chsh`, tmux shell and clipboard, Vim plugin bootstrap, Windows font upgrades
+- [Troubleshooting](docs/troubleshooting.md) – rate limits, missing icons, zsh without oh-my-zsh, a moved repo, unexpected `git status` changes, `chsh`, tmux shell and clipboard, Vim plugin bootstrap, conflicting apt keyrings, Windows font upgrades
 
 AI coding agents (Claude Code, GitHub Copilot): project instructions live in [AGENTS.md](AGENTS.md).
