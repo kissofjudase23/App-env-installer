@@ -3,7 +3,7 @@
 tap "hashicorp/tap"
 
 brew "awscli"
-brew "azure-cli"
 brew "hashicorp/tap/terraform"
 
+cask "azure-cli"
 cask "gcloud-cli"
